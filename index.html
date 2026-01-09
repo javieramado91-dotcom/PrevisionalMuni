@@ -171,17 +171,23 @@
 
             <!-- User Footer -->
             <div class="p-4 border-t border-slate-100 bg-slate-50/50">
-                <div class="flex items-center gap-3 mb-3 bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+                <!-- User Card with Edit Button -->
+                <div class="flex items-center gap-3 mb-3 bg-white p-2 rounded-xl border border-slate-100 shadow-sm relative group">
                     <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow">
                         <i class="fas fa-user"></i>
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0 pr-6">
                         <p class="text-sm font-bold text-slate-700 truncate" id="displayUserName">...</p>
                         <p class="text-[10px] text-green-500 font-bold flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Online
                         </p>
                     </div>
+                    <!-- Botón Configuración (Nuevo) -->
+                    <button onclick="openProfileModal()" class="absolute right-2 top-2 w-6 h-6 flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Editar Mi Perfil">
+                        <i class="fas fa-gear text-xs"></i>
+                    </button>
                 </div>
+
                 <button id="btnLogout" class="w-full py-2.5 px-4 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="fas fa-power-off"></i> Cerrar Sesión
                 </button>
@@ -405,6 +411,30 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal Mi Perfil (NUEVO) -->
+    <div id="profileModal" class="fixed inset-0 z-[65] hidden flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm border border-white/20">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-user-gear text-blue-600"></i> Mi Perfil</h3>
+                <button onclick="closeModal('profileModal')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Nuevo Nombre</label>
+                    <input type="text" id="profileName" class="w-full mt-1 p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase font-bold text-slate-700">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Nueva Clave</label>
+                    <input type="text" id="profilePass" class="w-full mt-1 p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <button onclick="saveProfile()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition mt-2">
+                    Actualizar Datos
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Autor -->
     <div id="authorModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
@@ -482,7 +512,17 @@
             const q = query(usersRef, where("username", "==", "YULI"));
             const querySnapshot = await getDocs(q);
             if (querySnapshot.empty) {
-                await addDoc(usersRef, { username: "YULI", password: "PREVIYU25", role: "master" });
+                // Solo creamos si no existe un usuario llamado YULI.
+                // Si YULI cambió su nombre, no lo volveremos a crear automáticamente
+                // para evitar duplicados si la intención era renombrar.
+                // Sin embargo, para la primera ejecución, esto es necesario.
+                
+                // Mejor check: ver si hay ALGUN usuario master.
+                const qMaster = query(usersRef, where("role", "==", "master"));
+                const snapMaster = await getDocs(qMaster);
+                if (snapMaster.empty) {
+                     await addDoc(usersRef, { username: "YULI", password: "PREVIYU25", role: "master" });
+                }
             }
         }
 
@@ -513,6 +553,7 @@
 
         function loginSuccess(user) {
             currentUser = user;
+            // El rol define si es maestro. También mantenemos el hardcode por si acaso, pero el rol es lo principal.
             isMaster = (user.role === 'master' || user.username === 'YULI');
             document.getElementById('displayUserName').textContent = user.username;
             dom.loginView.classList.add('hidden');
@@ -526,6 +567,39 @@
         }
 
         document.getElementById('btnLogout').addEventListener('click', () => location.reload());
+
+        // --- Profile Management (NUEVO) ---
+        window.openProfileModal = () => {
+            document.getElementById('profileName').value = currentUser.username;
+            document.getElementById('profilePass').value = currentUser.password;
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        window.saveProfile = async () => {
+            const newName = document.getElementById('profileName').value.trim().toUpperCase();
+            const newPass = document.getElementById('profilePass').value.trim();
+
+            if (!newName || !newPass) return alert("Completa todos los campos");
+
+            try {
+                // Actualizar en Firebase
+                await updateDoc(doc(db, "app_users", currentUser.id), {
+                    username: newName,
+                    password: newPass
+                });
+
+                // Actualizar estado local
+                currentUser.username = newName;
+                currentUser.password = newPass;
+                document.getElementById('displayUserName').textContent = newName;
+
+                alert("Perfil actualizado correctamente.");
+                closeModal('profileModal');
+            } catch (e) {
+                console.error(e);
+                alert("Error al actualizar perfil.");
+            }
+        }
 
         // --- Mobile Menu ---
         window.toggleMobileMenu = () => {
