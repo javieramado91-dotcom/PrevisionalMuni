@@ -24,7 +24,11 @@
     <div id="root" class="flex-1 flex flex-col relative">
         <!-- Loader Inicial -->
         <div id="loader" class="fixed inset-0 bg-gray-50 flex items-center justify-center z-50">
-            <div class="text-blue-900 font-semibold animate-pulse">Cargando Sistema...</div>
+            <div class="flex flex-col items-center gap-4">
+                <div class="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+                <div id="loader-text" class="text-blue-900 font-semibold animate-pulse">Conectando...</div>
+                <div id="error-message" class="hidden text-red-600 text-sm max-w-md text-center bg-red-50 p-4 rounded border border-red-200"></div>
+            </div>
         </div>
 
         <!-- Pantalla de Login (Oculta por defecto) -->
@@ -214,12 +218,24 @@
         import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // CONFIGURACIÓN
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const firebaseConfigRaw = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+        const firebaseConfig = JSON.parse(firebaseConfigRaw);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
-        const appFirebase = initializeApp(firebaseConfig);
-        const auth = getAuth(appFirebase);
-        const db = getFirestore(appFirebase);
+        let appFirebase, auth, db;
+        
+        // Manejo de error crítico de configuración
+        try {
+            if (Object.keys(firebaseConfig).length === 0) throw new Error("Configuración de Firebase vacía.");
+            appFirebase = initializeApp(firebaseConfig);
+            auth = getAuth(appFirebase);
+            db = getFirestore(appFirebase);
+        } catch (e) {
+            document.getElementById('loader-text').textContent = "Error de Configuración";
+            document.getElementById('error-message').textContent = "No se pudo iniciar Firebase. Si estás corriendo esto localmente, necesitas la configuración del entorno. Error: " + e.message;
+            document.getElementById('error-message').classList.remove('hidden');
+            throw e; // Detener ejecución
+        }
 
         // ESTADO GLOBAL
         const state = {
@@ -230,12 +246,19 @@
             activeTab: 0, // 0: Novedades, 1: Realizados, 2: Terminados
             showImportantOnly: false,
             searchTerm: "",
-            loading: true
+            loading: true,
+            // Flags para control de carga inicial
+            loadedFlags: {
+                users: false,
+                novedades: false
+            }
         };
 
         // DOM ELEMENTS CACHE
         const dom = {
             loader: document.getElementById('loader'),
+            loaderText: document.getElementById('loader-text'),
+            errorMessage: document.getElementById('error-message'),
             loginScreen: document.getElementById('login-screen'),
             appScreen: document.getElementById('app-screen'),
             loginForm: document.getElementById('login-form'),
@@ -258,6 +281,14 @@
         };
 
         // --- FUNCIONES DE RENDERIZADO ---
+
+        function checkLoadingState() {
+            // Solo terminamos la carga si ambos (novedades y usuarios) respondieron (con datos o error)
+            if (state.loadedFlags.users && state.loadedFlags.novedades) {
+                state.loading = false;
+                render();
+            }
+        }
 
         function render() {
             if (state.loading) {
@@ -454,13 +485,21 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (err) { console.error("Auth error", err); }
+            } catch (err) { 
+                console.error("Auth error", err); 
+                dom.loaderText.textContent = "Error de Autenticación";
+                dom.errorMessage.textContent = err.message;
+                dom.errorMessage.classList.remove('hidden');
+            }
         })();
 
         onAuthStateChanged(auth, (user) => {
             state.firebaseUser = user;
             if (user) {
                 initDataListeners();
+            } else {
+                // Si no hay usuario (raro, pero posible si falla auth anónimo)
+                // Podríamos intentar loguear de nuevo o mostrar error
             }
         });
 
@@ -469,11 +508,18 @@
             const qNovedades = collection(db, 'artifacts', appId, 'public', 'data', 'novedades');
             onSnapshot(qNovedades, (snapshot) => {
                 const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                // Ordenar: mas reciente primero
                 docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 state.novedades = docs;
-                state.loading = false;
-                render();
+                
+                state.loadedFlags.novedades = true;
+                checkLoadingState();
+            }, (error) => {
+                console.error("Error cargando novedades:", error);
+                dom.errorMessage.textContent = "Error conectando a Novedades: " + error.message;
+                dom.errorMessage.classList.remove('hidden');
+                // Marcamos como cargado (aunque sea error) para que la app no se trabe
+                state.loadedFlags.novedades = true;
+                checkLoadingState();
             });
 
             // Usuarios
@@ -482,27 +528,46 @@
                 const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 state.usersList = docs;
                 
-                // Semilla inicial
-                const master = docs.find(u => u.username === 'YULI');
-                if (!master && state.firebaseUser) {
+                // Semilla inicial segura
+                if (docs.length === 0 && state.firebaseUser) {
                     addDoc(qUsers, {
                         username: 'YULI',
                         password: 'PREVIYU25',
                         role: 'master',
                         createdAt: serverTimestamp()
-                    });
-                }
-                
-                // Si el usuario actual fue borrado o modificado, actualizar sesión
-                if (state.appUser) {
-                    const current = docs.find(u => u.username === state.appUser.username);
-                    if (!current) { // Fue borrado
-                        window.app.logout();
-                    } else {
-                        state.appUser = current; // Actualizar datos
+                    }).catch(console.error);
+                } else {
+                    // Solo intentar crear seed si NO existe ya (lógica mejorada arriba checkeando length)
+                    const master = docs.find(u => u.username === 'YULI');
+                    if (!master && state.firebaseUser) {
+                         // Double check para evitar duplicados en race condition
+                         // (En producción real usaríamos transacciones, aquí simplificado)
+                         addDoc(qUsers, {
+                            username: 'YULI',
+                            password: 'PREVIYU25',
+                            role: 'master',
+                            createdAt: serverTimestamp()
+                        }).catch(e => console.log("Master user creation handled:", e));
                     }
                 }
-                render();
+                
+                if (state.appUser) {
+                    const current = docs.find(u => u.username === state.appUser.username);
+                    if (!current) { 
+                        window.app.logout();
+                    } else {
+                        state.appUser = current; 
+                    }
+                }
+                
+                state.loadedFlags.users = true;
+                checkLoadingState();
+            }, (error) => {
+                console.error("Error cargando usuarios:", error);
+                dom.errorMessage.textContent = "Error conectando a Usuarios: " + error.message;
+                dom.errorMessage.classList.remove('hidden');
+                state.loadedFlags.users = true;
+                checkLoadingState();
             });
         }
 
@@ -561,7 +626,7 @@
                         createdAt: serverTimestamp()
                     });
                     document.getElementById('new-novedad-text').value = '';
-                } catch(err) { console.error(err); }
+                } catch(err) { console.error(err); alert("Error al crear novedad: " + err.message); }
             },
             updateStatus: async (id, status) => {
                 if (state.appUser.role !== 'master') return;
@@ -569,7 +634,7 @@
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'novedades', id), {
                         status: status
                     });
-                } catch(err) { console.error(err); }
+                } catch(err) { console.error(err); alert("Error al actualizar: " + err.message); }
             },
             toggleUserModal: (show) => {
                 if (show) dom.userModal.classList.remove('hidden');
@@ -592,25 +657,31 @@
                     return;
                 }
 
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'app_users'), {
-                    username: name,
-                    password: pass,
-                    role: role,
-                    createdAt: serverTimestamp()
-                });
-                document.getElementById('new-user-name').value = '';
-                document.getElementById('new-user-pass').value = '';
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'app_users'), {
+                        username: name,
+                        password: pass,
+                        role: role,
+                        createdAt: serverTimestamp()
+                    });
+                    document.getElementById('new-user-name').value = '';
+                    document.getElementById('new-user-pass').value = '';
+                } catch(err) { console.error(err); alert("Error al crear usuario: " + err.message); }
             },
             deleteUser: async (id) => {
                 if (confirm('¿Seguro que desea eliminar este usuario?')) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', id));
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', id));
+                    } catch(err) { console.error(err); alert("Error al eliminar: " + err.message); }
                 }
             },
             changeUserPass: async (id, newVal, oldVal) => {
                 if (newVal === oldVal) return;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', id), {
-                    password: newVal
-                });
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', id), {
+                        password: newVal
+                    });
+                } catch(err) { console.error(err); alert("Error al cambiar contraseña: " + err.message); }
             }
         };
 
