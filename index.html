@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Novedades Previsional</title>
-    <!-- Tailwind CSS para diseño rápido y estético -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para iconos -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         
         /* Animación del reloj de arena */
         @keyframes tilt-shaking {
@@ -22,224 +22,318 @@
             75% { transform: rotate(-5deg); }
             100% { transform: rotate(0deg); }
         }
-        .hourglass-spin {
-            animation: tilt-shaking 1s infinite;
-        }
+        .hourglass-spin { animation: tilt-shaking 1s infinite; }
 
-        /* Colores de Importancia */
-        .imp-Alta { border-left: 5px solid #ef4444; background-color: #fef2f2; }
-        .imp-Media { border-left: 5px solid #f59e0b; background-color: #fffbeb; }
-        .imp-Baja { border-left: 5px solid #10b981; background-color: #ecfdf5; }
+        /* Estilos de Importancia (Modernizados) */
+        .imp-Alta { border-left: 4px solid #ef4444; background: linear-gradient(to right, #fef2f2, #fff); }
+        .imp-Media { border-left: 4px solid #f59e0b; background: linear-gradient(to right, #fffbeb, #fff); }
+        .imp-Baja { border-left: 4px solid #10b981; background: linear-gradient(to right, #ecfdf5, #fff); }
 
-        /* Scrollbar personalizada */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* Scrollbar fina y elegante */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Glassmorphism para modales */
+        .glass-modal {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
-<body class="text-gray-800 h-screen flex flex-col overflow-hidden">
+<body class="text-slate-800 h-screen w-screen overflow-hidden flex bg-slate-50">
 
-    <!-- ================= VISTA DE LOGIN ================= -->
-    <div id="loginView" class="fixed inset-0 z-50 bg-gray-900 flex items-center justify-center bg-opacity-95">
-        <div class="bg-white p-8 rounded-lg shadow-2xl w-96">
-            <div class="text-center mb-6">
-                <i class="fas fa-landmark text-5xl text-blue-800 mb-2"></i>
-                <h2 class="text-2xl font-bold text-gray-800">Sistema Previsional</h2>
-                <p class="text-gray-500 text-sm">Ingreso de Usuarios</p>
+    <!-- ================= VISTA LOGIN (Sin cambios funcionales, solo estilo) ================= -->
+    <div id="loginView" class="fixed inset-0 z-[60] bg-slate-900 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-96 border border-slate-700">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <i class="fas fa-landmark text-4xl text-white"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Sistema Previsional</h2>
+                <p class="text-slate-500 text-sm mt-1">Acceso Seguro</p>
             </div>
-            <form id="loginForm" class="space-y-4">
+            <form id="loginForm" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Usuario</label>
-                    <input type="text" id="loginUser" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 uppercase" required>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Usuario</label>
+                    <input type="text" id="loginUser" class="block w-full rounded-lg border-slate-300 bg-slate-50 focus:border-blue-500 focus:ring-blue-500 border p-2.5 transition uppercase font-medium" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-                    <input type="password" id="loginPass" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2" required>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Contraseña</label>
+                    <input type="password" id="loginPass" class="block w-full rounded-lg border-slate-300 bg-slate-50 focus:border-blue-500 focus:ring-blue-500 border p-2.5 transition" required>
                 </div>
-                <div id="loginError" class="text-red-500 text-sm hidden">Usuario o contraseña incorrectos.</div>
-                <button type="submit" class="w-full bg-blue-800 text-white py-2 px-4 rounded-md hover:bg-blue-900 transition duration-200">INGRESAR</button>
+                <div id="loginError" class="text-red-500 text-sm text-center hidden bg-red-50 p-2 rounded border border-red-100">
+                    <i class="fas fa-exclamation-circle mr-1"></i> Credenciales incorrectas.
+                </div>
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition duration-200 transform hover:-translate-y-0.5">
+                    INGRESAR
+                </button>
             </form>
-            <div class="mt-4 text-center text-xs text-gray-400">
-                Sistema interno v1.0
+            <div class="mt-6 text-center text-xs text-slate-400">
+                &copy; 2024 Sistema Interno
             </div>
         </div>
     </div>
 
-    <!-- ================= VISTA PRINCIPAL (DASHBOARD) ================= -->
-    <div id="mainApp" class="hidden flex flex-col h-full">
+    <!-- ================= APP PRINCIPAL ================= -->
+    <div id="mainApp" class="hidden flex w-full h-full">
         
-        <!-- HEADER / BANNER -->
-        <header class="bg-gradient-to-r from-blue-900 to-slate-800 text-white shadow-lg shrink-0">
-            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-university text-3xl"></i>
-                    <div>
-                        <h1 class="text-xl font-bold tracking-wider">SISTEMA PREVISIONAL</h1>
-                        <p class="text-xs text-blue-200" id="currentDateDisplay">Cargando fecha...</p>
+        <!-- SIDEBAR (Navegación Izquierda) -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 hidden md:flex">
+            <!-- Logo Area -->
+            <div class="p-6 border-b border-slate-800 flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                    <i class="fas fa-university text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Previsional</h1>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Dashboard</p>
+                </div>
+            </div>
+
+            <!-- Menú -->
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-2 px-2">Menú Principal</div>
+                
+                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-blue-800/50 text-blue-100 rounded-lg border border-blue-700/50 shadow-sm">
+                    <i class="fas fa-columns w-5 text-center"></i>
+                    <span class="font-medium">Tablero</span>
+                </a>
+
+                <!-- Botón Usuarios (Solo Maestro) -->
+                <button id="btnManageUsers" class="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition hidden text-left">
+                    <i class="fas fa-users-cog w-5 text-center"></i>
+                    <span class="font-medium">Usuarios</span>
+                </button>
+
+                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6 px-2">Resumen</div>
+                <!-- Stats en Sidebar -->
+                <div class="px-2 space-y-3">
+                    <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+                        <div class="text-xs text-slate-400">Pendientes</div>
+                        <div class="text-2xl font-bold text-white" id="sbCountNovedades">0</div>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+                        <div class="text-xs text-slate-400">Terminados</div>
+                        <div class="text-2xl font-bold text-green-400" id="sbCountTerminados">0</div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- User Profile Bottom -->
+            <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-lg shadow">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-white truncate" id="displayUserName">Usuario</p>
+                        <p class="text-xs text-slate-400 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> En línea
+                        </p>
+                    </div>
+                </div>
+                <button id="btnLogout" class="w-full py-2 px-4 bg-slate-800 hover:bg-red-900/80 hover:text-red-100 text-slate-300 text-xs rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+            
+            <!-- Footer Sidebar -->
+            <div class="p-2 text-center border-t border-slate-800">
+                <button id="authorBtn" class="text-[10px] text-slate-600 hover:text-blue-400 transition font-mono">
+                    <i class="fas fa-code"></i> Powered by JA
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50 relative">
+            
+            <!-- TOP HEADER -->
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm shrink-0 z-10">
+                <!-- Fecha y Título Móvil -->
+                <div class="flex items-center gap-4">
+                    <div class="md:hidden text-blue-800 font-bold text-lg"><i class="fas fa-university"></i></div>
+                    <div class="hidden md:block">
+                        <h2 class="text-lg font-bold text-slate-700">Tablero de Control</h2>
+                        <p class="text-xs text-slate-400 capitalize" id="currentDateDisplay">Cargando fecha...</p>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-6">
-                    <!-- Buscador -->
-                    <div class="hidden md:flex bg-blue-800 rounded-lg p-1">
-                        <input type="text" id="globalSearch" placeholder="Buscar expediente..." class="bg-transparent text-white placeholder-blue-300 px-3 py-1 outline-none text-sm w-64">
-                        <button class="text-blue-300 px-2"><i class="fas fa-search"></i></button>
+                <!-- Barra de Búsqueda Central -->
+                <div class="flex-1 max-w-2xl mx-6">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-slate-400 group-focus-within:text-blue-500 transition"></i>
+                        </div>
+                        <input type="text" id="globalSearch" 
+                            class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-full leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition sm:text-sm" 
+                            placeholder="Buscar en todo el sistema (Pendientes, Realizados, Terminados)...">
+                    </div>
+                </div>
+
+                <!-- Herramientas Derecha -->
+                <div class="flex items-center gap-4">
+                    <!-- Filtro Fecha -->
+                    <div class="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
+                        <input type="date" id="dateFilter" class="bg-transparent text-xs text-slate-600 border-none focus:ring-0 p-1 outline-none">
+                        <button id="btnResetFilter" class="px-2 text-slate-400 hover:text-red-500" title="Limpiar fecha"><i class="fas fa-times"></i></button>
                     </div>
 
-                    <!-- Botón Usuarios (Solo Maestro) -->
-                    <button id="btnManageUsers" class="hidden hover:bg-blue-700 p-2 rounded transition" title="Gestionar Usuarios">
-                        <i class="fas fa-users-cog"></i>
+                    <!-- Botón Prioridad -->
+                    <button id="btnShowHighPriority" class="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition border border-transparent hover:border-red-100 relative" title="Solo Importantes">
+                        <i class="fas fa-exclamation-triangle"></i>
                     </button>
 
-                    <!-- Reloj de Arena (Notificaciones) -->
-                    <div class="relative cursor-pointer group" id="btnImportantAlert">
-                        <i id="hourglassIcon" class="fas fa-hourglass-half text-2xl text-yellow-400"></i>
-                        <span id="alertBadge" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    <!-- Notificaciones -->
+                    <div class="relative cursor-pointer" id="btnImportantAlert">
+                        <div class="p-2 rounded-lg hover:bg-slate-100 transition text-slate-400 hover:text-blue-600 relative">
+                            <i id="hourglassIcon" class="fas fa-hourglass-start text-xl"></i>
+                            <span id="alertBadge" class="absolute top-1 right-1 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white hidden">0</span>
+                        </div>
                         
-                        <!-- Tooltip de Importantes -->
-                        <div class="absolute right-0 mt-2 w-64 bg-white text-gray-800 rounded shadow-xl border border-gray-200 hidden group-hover:block z-50 p-3">
-                            <h4 class="font-bold text-sm text-red-600 mb-2 border-b pb-1">Pendientes Importantes</h4>
-                            <ul id="alertList" class="text-xs space-y-1 max-h-40 overflow-y-auto">
-                                <!-- Lista dinámica -->
+                        <!-- Dropdown Notificaciones -->
+                        <div class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-slate-100 hidden hover:block z-50 overflow-hidden ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all" id="notifDropdown">
+                            <div class="px-4 py-3 bg-slate-50 border-b border-slate-100">
+                                <h3 class="text-sm font-bold text-red-600">Atención Requerida</h3>
+                            </div>
+                            <ul id="alertList" class="max-h-60 overflow-y-auto py-2">
+                                <!-- Items -->
                             </ul>
                         </div>
                     </div>
-
-                    <!-- Usuario -->
-                    <div class="flex items-center space-x-2 border-l border-blue-700 pl-4">
-                        <div class="text-right">
-                            <p class="text-sm font-semibold" id="displayUserName">Usuario</p>
-                            <button id="btnLogout" class="text-xs text-red-300 hover:text-white">Salir</button>
-                        </div>
-                        <i class="fas fa-user-circle text-2xl"></i>
-                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <!-- FILTROS Y CONTROLES -->
-        <div class="bg-white border-b border-gray-200 p-3 shrink-0">
-            <div class="container mx-auto flex flex-wrap gap-4 items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <span class="text-gray-500 text-sm"><i class="fas fa-filter"></i> Filtrar fecha:</span>
-                    <input type="date" id="dateFilter" class="border rounded px-2 py-1 text-sm text-gray-600">
-                    <button id="btnResetFilter" class="text-sm text-blue-600 hover:underline">Limpiar</button>
-                </div>
-                <div class="flex space-x-2">
-                    <button id="btnShowHighPriority" class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium border border-red-200 hover:bg-red-200 transition">
-                        <i class="fas fa-exclamation-circle"></i> Solo Importantes
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONTENIDO PRINCIPAL (3 BLOQUES) -->
-        <main class="flex-1 overflow-x-auto overflow-y-hidden p-4">
-            <div class="container mx-auto h-full grid grid-cols-1 md:grid-cols-3 gap-6 min-w-[1000px]">
-                
-                <!-- BLOQUE 1: NOVEDADES -->
-                <section class="flex flex-col bg-white rounded-lg shadow-md border border-gray-200 h-full">
-                    <div class="p-3 border-b border-gray-100 bg-gray-50 rounded-t-lg flex justify-between items-center">
-                        <h2 class="font-bold text-gray-700"><i class="fas fa-clipboard-list text-blue-600 mr-2"></i> Novedades</h2>
-                        <span id="countNovedades" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded">0</span>
-                    </div>
+            <!-- KANBAN BOARD -->
+            <div class="flex-1 overflow-x-auto overflow-y-hidden p-6">
+                <div class="h-full flex flex-col md:flex-row gap-6 min-w-[1000px] md:min-w-0">
                     
-                    <!-- Formulario de carga rápida -->
-                    <div class="p-3 bg-blue-50 border-b border-blue-100">
-                        <textarea id="newNovedadText" rows="2" placeholder="Detalle de la novedad..." class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-400 outline-none resize-none"></textarea>
-                        <div class="flex justify-between items-center mt-2">
-                            <select id="newNovedadPriority" class="text-sm border rounded p-1">
-                                <option value="Baja">Baja</option>
-                                <option value="Media">Media</option>
-                                <option value="Alta">Alta</option>
-                            </select>
-                            <button onclick="addNovedad()" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700 shadow">Registrar</button>
+                    <!-- COLUMNA 1: NOVEDADES -->
+                    <section class="flex-1 flex flex-col bg-white rounded-xl shadow border border-slate-200 h-full overflow-hidden">
+                        <!-- Header Columna -->
+                        <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                                <h3 class="font-bold text-slate-700">Novedades</h3>
+                            </div>
+                            <span id="countNovedades" class="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-100">0</span>
                         </div>
-                    </div>
 
-                    <!-- Lista Bloque 1 -->
-                    <div id="listBlock1" class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-50/50">
-                        <!-- Items se insertan aquí -->
-                    </div>
-                </section>
+                        <!-- Input Rápido -->
+                        <div class="p-4 bg-slate-50 border-b border-slate-200">
+                            <div class="relative">
+                                <textarea id="newNovedadText" rows="2" placeholder="Escriba una nueva novedad aquí..." 
+                                    class="w-full text-sm p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white shadow-sm"></textarea>
+                                <div class="absolute bottom-2 right-2 flex gap-2">
+                                    <select id="newNovedadPriority" class="text-xs border-none bg-slate-100 rounded text-slate-600 focus:ring-0 cursor-pointer hover:bg-slate-200 px-2 py-1">
+                                        <option value="Baja">Baja</option>
+                                        <option value="Media">Media</option>
+                                        <option value="Alta">Alta</option>
+                                    </select>
+                                    <button onclick="addNovedad()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition shadow-sm">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
-                <!-- BLOQUE 2: REALIZADOS -->
-                <section class="flex flex-col bg-white rounded-lg shadow-md border border-gray-200 h-full">
-                    <div class="p-3 border-b border-gray-100 bg-gray-50 rounded-t-lg flex justify-between items-center">
-                        <h2 class="font-bold text-gray-700"><i class="fas fa-check-circle text-green-600 mr-2"></i> Realizados</h2>
-                        <span id="countRealizados" class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded">0</span>
-                    </div>
-                    <div id="listBlock2" class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-50/50">
-                        <!-- Items se insertan aquí -->
-                    </div>
-                </section>
+                        <!-- Lista Scrollable -->
+                        <div id="listBlock1" class="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-50/50 scroll-smooth">
+                            <!-- Cards -->
+                        </div>
+                    </section>
 
-                <!-- BLOQUE 3: TERMINADOS -->
-                <section class="flex flex-col bg-white rounded-lg shadow-md border border-gray-200 h-full">
-                    <div class="p-3 border-b border-gray-100 bg-gray-50 rounded-t-lg flex justify-between items-center">
-                        <h2 class="font-bold text-gray-700"><i class="fas fa-archive text-gray-600 mr-2"></i> Expedientes Terminados</h2>
-                        <span id="countTerminados" class="bg-gray-200 text-gray-800 text-xs font-bold px-2 py-0.5 rounded">0</span>
-                    </div>
-                    <div id="listBlock3" class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-50/50 opacity-75">
-                        <!-- Items se insertan aquí -->
-                    </div>
-                </section>
+                    <!-- COLUMNA 2: REALIZADOS -->
+                    <section class="flex-1 flex flex-col bg-white rounded-xl shadow border border-slate-200 h-full overflow-hidden">
+                        <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                                <h3 class="font-bold text-slate-700">Realizados</h3>
+                            </div>
+                            <span id="countRealizados" class="bg-green-50 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full border border-green-100">0</span>
+                        </div>
+                        <div id="listBlock2" class="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-50/50 scroll-smooth">
+                            <!-- Cards -->
+                        </div>
+                    </section>
 
+                    <!-- COLUMNA 3: TERMINADOS -->
+                    <section class="flex-1 flex flex-col bg-white rounded-xl shadow border border-slate-200 h-full overflow-hidden opacity-90">
+                        <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-slate-500"></span>
+                                <h3 class="font-bold text-slate-700">Archivo Final</h3>
+                            </div>
+                            <span id="countTerminados" class="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-200">0</span>
+                        </div>
+                        <div id="listBlock3" class="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-100/50 scroll-smooth">
+                            <!-- Cards -->
+                        </div>
+                    </section>
+
+                </div>
             </div>
         </main>
-
-        <!-- FOOTER -->
-        <footer class="bg-white border-t border-gray-200 py-2 px-4 shrink-0 flex justify-end">
-            <button id="authorBtn" class="text-xs text-gray-400 hover:text-blue-600 transition flex items-center gap-1 font-mono">
-                <i class="fas fa-code"></i> Powered by JA
-            </button>
-        </footer>
     </div>
 
-    <!-- ================= MODALES ================= -->
+    <!-- ================= MODALES (Glassmorphism) ================= -->
 
-    <!-- Modal Gestión de Usuarios -->
-    <div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold">Gestión de Usuarios</h3>
-                <button onclick="closeModal('userModal')" class="text-gray-500 hover:text-red-500"><i class="fas fa-times"></i></button>
+    <!-- Modal Usuarios -->
+    <div id="userModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
+        <div class="glass-modal p-6 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800">Gestión de Equipo</h3>
+                <button onclick="closeModal('userModal')" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-500 transition"><i class="fas fa-times"></i></button>
             </div>
             
-            <div class="bg-gray-100 p-3 rounded mb-4">
-                <h4 class="text-xs font-bold text-gray-500 mb-2 uppercase">Agregar / Editar Usuario</h4>
-                <div class="flex gap-2 mb-2">
-                    <input type="text" id="manageUserName" placeholder="Nombre" class="w-1/2 p-2 text-sm border rounded uppercase">
-                    <input type="text" id="manageUserPass" placeholder="Contraseña" class="w-1/2 p-2 text-sm border rounded">
+            <div class="bg-slate-50 p-4 rounded-xl mb-4 border border-slate-100">
+                <h4 class="text-xs font-bold text-blue-600 mb-3 uppercase tracking-wider">Nuevo Usuario</h4>
+                <div class="flex flex-col gap-3">
+                    <input type="text" id="manageUserName" placeholder="NOMBRE DE USUARIO" class="w-full p-2.5 text-sm border border-slate-200 rounded-lg uppercase focus:ring-1 focus:ring-blue-500 outline-none">
+                    <div class="flex gap-2">
+                        <input type="text" id="manageUserPass" placeholder="Contraseña" class="w-full p-2.5 text-sm border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                        <button onclick="saveUser()" class="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-700 transition shadow"><i class="fas fa-save"></i></button>
+                    </div>
                 </div>
-                <button onclick="saveUser()" class="w-full bg-blue-600 text-white text-sm py-1.5 rounded hover:bg-blue-700">Guardar Usuario</button>
             </div>
 
-            <h4 class="text-xs font-bold text-gray-500 mb-2 uppercase">Usuarios Existentes</h4>
-            <div id="usersListContainer" class="max-h-60 overflow-y-auto border rounded divide-y">
-                <!-- Lista de usuarios -->
+            <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider px-1">Directorio de Usuarios</h4>
+            <div id="usersListContainer" class="max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
+                <!-- Lista -->
             </div>
         </div>
     </div>
 
     <!-- Modal Autor -->
-    <div id="authorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-xl w-96 p-6 text-center">
-            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-robot text-2xl text-blue-600"></i>
+    <div id="authorModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-80 overflow-hidden transform transition-all scale-100">
+            <div class="h-24 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
+            <div class="px-6 pb-6 relative">
+                <div class="w-20 h-20 bg-white p-1 rounded-full absolute -top-10 left-1/2 transform -translate-x-1/2 shadow-lg">
+                    <div class="w-full h-full bg-slate-100 rounded-full flex items-center justify-center text-3xl text-slate-600">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+                <div class="mt-12 text-center">
+                    <h3 class="text-xl font-bold text-slate-800">Javier Amado</h3>
+                    <p class="text-sm text-blue-600 font-medium">Desarrollador Full Stack</p>
+                    
+                    <div class="mt-6 space-y-3">
+                        <a href="mailto:javieramado91@gmail.com" class="flex items-center justify-center gap-2 text-sm text-slate-600 hover:text-blue-600 transition p-2 bg-slate-50 rounded-lg">
+                            <i class="fas fa-envelope"></i> javieramado91@gmail.com
+                        </a>
+                        <p class="text-xs text-slate-400 italic">"Espero que funcione todo, si no, avísame."</p>
+                    </div>
+
+                    <button onclick="closeModal('authorModal')" class="mt-6 w-full py-2 bg-slate-800 text-white rounded-lg hover:bg-black transition text-sm font-medium">Cerrar</button>
+                </div>
             </div>
-            <h3 class="text-xl font-bold text-gray-800">Javier Amado</h3>
-            <p class="text-sm text-gray-500 mb-4">Desarrollador</p>
-            <div class="bg-gray-50 p-3 rounded text-left text-sm space-y-2 mb-4">
-                <p><i class="fas fa-envelope text-gray-400 w-6"></i> javieramado91@gmail.com</p>
-                <p class="italic text-gray-600">"Espero que funcione todo, si no, avísame."</p>
-            </div>
-            <button onclick="closeModal('authorModal')" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-black">Cerrar</button>
         </div>
     </div>
 
-    <!-- ================= LOGICA ================= -->
+    <!-- ================= LOGICA (Firebase + App) ================= -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
@@ -256,7 +350,6 @@
             measurementId: "G-XTTXQ7M3GD"
         };
 
-        // Inicializar
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
@@ -268,35 +361,35 @@
         let showOnlyHigh = false;
         let dateFilterValue = null;
 
-        // --- Referencias DOM ---
+        // --- DOM Elements ---
         const views = { login: document.getElementById('loginView'), app: document.getElementById('mainApp') };
         const lists = { block1: document.getElementById('listBlock1'), block2: document.getElementById('listBlock2'), block3: document.getElementById('listBlock3') };
-        const counters = { c1: document.getElementById('countNovedades'), c2: document.getElementById('countRealizados'), c3: document.getElementById('countTerminados') };
+        // Counters Main + Sidebar
+        const counters = { 
+            c1: document.getElementById('countNovedades'), 
+            c2: document.getElementById('countRealizados'), 
+            c3: document.getElementById('countTerminados'),
+            sb1: document.getElementById('sbCountNovedades'),
+            sb3: document.getElementById('sbCountTerminados')
+        };
 
-        // --- Funciones de Fecha ---
+        // --- Fecha Header ---
         function updateHeaderDate() {
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('currentDateDisplay').textContent = now.toLocaleDateString('es-AR', options).charAt(0).toUpperCase() + now.toLocaleDateString('es-AR', options).slice(1);
+            const dateStr = now.toLocaleDateString('es-AR', options);
+            document.getElementById('currentDateDisplay').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
         }
-        setInterval(updateHeaderDate, 60000); // Actualizar cada minuto
+        setInterval(updateHeaderDate, 60000);
         updateHeaderDate();
 
-        // --- Autenticación Personalizada ---
-        
-        // Función seed para asegurar que YULI existe
+        // --- Autenticación ---
         async function ensureMasterUser() {
             const usersRef = collection(db, "app_users");
             const q = query(usersRef, where("username", "==", "YULI"));
             const querySnapshot = await getDocs(q);
-            
             if (querySnapshot.empty) {
-                console.log("Creando usuario maestro por defecto...");
-                await addDoc(usersRef, {
-                    username: "YULI",
-                    password: "PREVIYU25",
-                    role: "master"
-                });
+                await addDoc(usersRef, { username: "YULI", password: "PREVIYU25", role: "master" });
             }
         }
 
@@ -307,7 +400,6 @@
             const errorMsg = document.getElementById('loginError');
 
             try {
-                // Verificar contra Firestore
                 const usersRef = collection(db, "app_users");
                 const q = query(usersRef, where("username", "==", userIn), where("password", "==", passIn));
                 const snapshot = await getDocs(q);
@@ -320,17 +412,16 @@
                     errorMsg.classList.remove('hidden');
                 }
             } catch (error) {
-                console.error("Error login:", error);
-                errorMsg.textContent = "Error de conexión.";
+                console.error("Login Error:", error);
+                errorMsg.textContent = "Error de conexión. Intente nuevamente.";
                 errorMsg.classList.remove('hidden');
             }
         });
 
         function loginSuccess(user) {
             currentUser = user;
-            isMaster = (user.role === 'master' || user.username === 'YULI'); // Doble check
+            isMaster = (user.role === 'master' || user.username === 'YULI');
             
-            // UI Update
             document.getElementById('displayUserName').textContent = user.username;
             views.login.classList.add('hidden');
             views.app.classList.remove('hidden');
@@ -338,17 +429,12 @@
             if (isMaster) {
                 document.getElementById('btnManageUsers').classList.remove('hidden');
             }
-
-            // Iniciar Listeners de Datos
             loadNovedades();
         }
 
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            location.reload();
-        });
+        document.getElementById('btnLogout').addEventListener('click', () => location.reload());
 
-        // --- Lógica de Novedades (Firestore) ---
-
+        // --- Data Logic ---
         function loadNovedades() {
             const q = query(collection(db, "novedades"), orderBy("fecha", "desc"));
             onSnapshot(q, (snapshot) => {
@@ -371,69 +457,65 @@
                 await addDoc(collection(db, "novedades"), {
                     detalle: text,
                     importancia: priority,
-                    estado: 'pendiente', // pendiente, realizado, terminado
+                    estado: 'pendiente',
                     autor: currentUser.username,
                     fecha: serverTimestamp()
                 });
-                document.getElementById('newNovedadText').value = ""; // Limpiar
+                document.getElementById('newNovedadText').value = "";
             } catch (e) {
                 console.error("Error adding:", e);
                 alert("Error al guardar.");
             }
         }
 
-        // Acciones Globales (expuestas a window para onclick en HTML generado)
         window.markRealizado = async (id) => {
-            if (!isMaster) return alert("Solo el Usuario Maestro puede marcar como realizado.");
-            try {
-                const docRef = doc(db, "novedades", id);
-                await updateDoc(docRef, { estado: "realizado" });
-            } catch (e) { alert("Error al actualizar"); }
+            if (!isMaster) return alert("Acceso denegado: Solo Usuario Maestro.");
+            try { await updateDoc(doc(db, "novedades", id), { estado: "realizado" }); } catch (e) { alert("Error al actualizar"); }
         }
 
         window.markTerminado = async (id) => {
-            if (!isMaster) return alert("Solo el Usuario Maestro puede terminar expedientes.");
-            try {
-                const docRef = doc(db, "novedades", id);
-                await updateDoc(docRef, { estado: "terminado" });
-            } catch (e) { alert("Error al actualizar"); }
+            if (!isMaster) return alert("Acceso denegado: Solo Usuario Maestro.");
+            try { await updateDoc(doc(db, "novedades", id), { estado: "terminado" }); } catch (e) { alert("Error al actualizar"); }
         }
 
         window.deleteNovedad = async (id) => {
-            if (!isMaster) return alert("Solo el Usuario Maestro puede eliminar.");
-            if(!confirm("¿Eliminar definitivamente?")) return;
-            try {
-                await deleteDoc(doc(db, "novedades", id));
-            } catch (e) { alert("Error al eliminar"); }
+            if (!isMaster) return alert("Acceso denegado: Solo Usuario Maestro.");
+            if(!confirm("¿Está seguro de eliminar este registro permanentemente?")) return;
+            try { await deleteDoc(doc(db, "novedades", id)); } catch (e) { alert("Error al eliminar"); }
         }
 
-        // --- Renderizado y UI ---
-
+        // --- Render Engine ---
         function renderApp() {
-            // Limpiar listas
             lists.block1.innerHTML = "";
             lists.block2.innerHTML = "";
             lists.block3.innerHTML = "";
 
             let c1 = 0, c2 = 0, c3 = 0;
             let importantPendingCount = 0;
-            const importantListContainer = document.getElementById('alertList');
-            importantListContainer.innerHTML = "";
+            const alertList = document.getElementById('alertList');
+            alertList.innerHTML = "";
             
-            // Filtros Globales
+            // Búsqueda Global (Busca en todo)
             const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
 
             const filtered = allNovedades.filter(n => {
-                // Filtro texto
-                if (searchTerm && !n.detalle.toLowerCase().includes(searchTerm) && !n.autor.toLowerCase().includes(searchTerm)) return false;
+                // Search: checks detail, author, and date string
+                if (searchTerm) {
+                    const dateStr = n.fechaDate.toLocaleDateString();
+                    if (!n.detalle.toLowerCase().includes(searchTerm) && 
+                        !n.autor.toLowerCase().includes(searchTerm) &&
+                        !dateStr.includes(searchTerm)) {
+                        return false;
+                    }
+                }
                 
-                // Filtro fecha
+                // Date Filter
                 if (dateFilterValue) {
                     const nDate = n.fechaDate.toISOString().split('T')[0];
                     if (nDate !== dateFilterValue) return false;
                 }
 
-                // Filtro solo importantes
+                // Priority Filter
                 if (showOnlyHigh && n.importancia !== 'Alta') return false;
 
                 return true;
@@ -447,10 +529,17 @@
                     c1++;
                     if (n.importancia === 'Alta') {
                         importantPendingCount++;
-                        // Agregar al tooltip
+                        // Add to alert dropdown
                         const li = document.createElement('li');
-                        li.innerHTML = `<span class="font-bold text-gray-700">${n.fechaDate.toLocaleDateString()}:</span> ${n.detalle.substring(0, 30)}...`;
-                        importantListContainer.appendChild(li);
+                        li.className = "px-4 py-2 hover:bg-red-50 cursor-pointer border-b border-slate-50 last:border-0";
+                        li.innerHTML = `
+                            <div class="flex justify-between">
+                                <span class="text-xs font-bold text-red-600">Alta Prioridad</span>
+                                <span class="text-[10px] text-slate-400">${n.fechaDate.toLocaleDateString()}</span>
+                            </div>
+                            <p class="text-xs text-slate-600 truncate">${n.detalle}</p>
+                        `;
+                        alertList.appendChild(li);
                     }
                 } else if (n.estado === 'realizado') {
                     lists.block2.appendChild(card);
@@ -461,72 +550,87 @@
                 }
             });
 
-            // Actualizar contadores
+            // Actualizar Contadores UI
             counters.c1.textContent = c1;
             counters.c2.textContent = c2;
             counters.c3.textContent = c3;
+            // Sidebar counters
+            if(counters.sb1) counters.sb1.textContent = c1;
+            if(counters.sb3) counters.sb3.textContent = c3;
 
-            // Lógica Reloj de Arena
+            // Alert Badge Logic
             const badge = document.getElementById('alertBadge');
             const icon = document.getElementById('hourglassIcon');
+            const notifDropdown = document.getElementById('notifDropdown');
             
             if (importantPendingCount > 0) {
                 badge.textContent = importantPendingCount;
                 badge.classList.remove('hidden');
                 icon.classList.add('hourglass-spin', 'text-red-500');
-                icon.classList.remove('text-yellow-400');
+                
+                // Hover behavior handled by CSS, but icon color changes
+                document.getElementById('btnImportantAlert').classList.add('animate-pulse-slow');
             } else {
                 badge.classList.add('hidden');
                 icon.classList.remove('hourglass-spin', 'text-red-500');
-                icon.classList.add('text-yellow-400');
+                alertList.innerHTML = '<li class="px-4 py-3 text-xs text-slate-400 text-center">No hay pendientes urgentes</li>';
             }
         }
 
         function createCard(data) {
             const div = document.createElement('div');
-            // Clase de importancia
             const impClass = `imp-${data.importancia}`;
             
-            div.className = `bg-white p-3 rounded shadow-sm border border-gray-100 relative group transition hover:shadow-md ${impClass}`;
+            div.className = `bg-white p-4 rounded-lg border border-slate-100 relative group transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${impClass}`;
             
-            // Fecha formato
             const fechaStr = data.fechaDate.toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit' });
 
-            // Botones según estado y rol
+            // Actions
             let actionBtns = "";
-            
             if (data.estado === 'pendiente') {
                 if (isMaster) {
-                    actionBtns = `<button onclick="markRealizado('${data.id}')" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200" title="Marcar Realizado"><i class="fas fa-check"></i> Realizado</button>`;
+                    actionBtns = `<button onclick="markRealizado('${data.id}')" class="flex items-center gap-1 text-[10px] bg-green-50 text-green-700 px-2 py-1.5 rounded-md hover:bg-green-100 transition font-semibold border border-green-200"><i class="fas fa-check"></i> REALIZADO</button>`;
                 } else {
-                    actionBtns = `<span class="text-xs text-gray-400 italic">Pendiente</span>`;
+                    actionBtns = `<span class="text-[10px] text-slate-400 italic bg-slate-50 px-2 py-1 rounded">En espera</span>`;
                 }
             } else if (data.estado === 'realizado') {
                 if (isMaster) {
-                    actionBtns = `<button onclick="markTerminado('${data.id}')" class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300" title="Expediente Terminado"><i class="fas fa-archive"></i> Terminar</button>`;
+                    actionBtns = `<button onclick="markTerminado('${data.id}')" class="flex items-center gap-1 text-[10px] bg-slate-100 text-slate-600 px-2 py-1.5 rounded-md hover:bg-slate-200 transition font-semibold border border-slate-200"><i class="fas fa-archive"></i> ARCHIVAR</button>`;
                 }
             }
 
-            // Botón eliminar solo para maestro
-            const deleteBtn = isMaster ? `<button onclick="deleteNovedad('${data.id}')" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash"></i></button>` : '';
+            const deleteBtn = isMaster ? 
+                `<button onclick="deleteNovedad('${data.id}')" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"><i class="fas fa-trash-alt"></i></button>` : '';
+
+            // Icono Prioridad
+            let iconPrio = '';
+            if(data.importancia === 'Alta') iconPrio = '<i class="fas fa-arrow-up text-red-500 text-[10px]"></i>';
+            if(data.importancia === 'Media') iconPrio = '<i class="fas fa-minus text-orange-400 text-[10px]"></i>';
+            if(data.importancia === 'Baja') iconPrio = '<i class="fas fa-arrow-down text-green-500 text-[10px]"></i>';
 
             div.innerHTML = `
                 ${deleteBtn}
-                <div class="flex justify-between items-start mb-1">
-                    <span class="text-[10px] font-bold uppercase tracking-wide text-gray-500">${data.importancia}</span>
-                    <span class="text-[10px] text-gray-400">${fechaStr}</span>
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex items-center gap-1">
+                        ${iconPrio}
+                        <span class="text-[10px] font-bold uppercase tracking-wide text-slate-500">${data.importancia}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-mono">${fechaStr}</span>
                 </div>
-                <p class="text-sm text-gray-800 mb-2 font-medium leading-tight break-words">${data.detalle}</p>
-                <div class="flex justify-between items-center mt-2 border-t pt-2 border-gray-100">
-                    <span class="text-xs text-blue-600 font-semibold"><i class="fas fa-user-edit text-[10px]"></i> ${data.autor}</span>
+                <p class="text-sm text-slate-800 mb-3 font-medium leading-relaxed break-words text-pretty">${data.detalle}</p>
+                <div class="flex justify-between items-end mt-2 pt-2 border-t border-slate-50 border-dashed">
+                    <div class="flex items-center gap-1 text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-full">
+                        <i class="fas fa-user-circle text-[10px]"></i> ${data.autor}
+                    </div>
                     <div>${actionBtns}</div>
                 </div>
             `;
             return div;
         }
 
-        // --- Listeners de Filtros ---
+        // --- Event Listeners UI ---
         document.getElementById('globalSearch').addEventListener('input', renderApp);
+        
         document.getElementById('dateFilter').addEventListener('change', (e) => {
             dateFilterValue = e.target.value;
             renderApp();
@@ -536,23 +640,31 @@
             dateFilterValue = null;
             renderApp();
         });
+        
         document.getElementById('btnShowHighPriority').addEventListener('click', () => {
             showOnlyHigh = !showOnlyHigh;
             const btn = document.getElementById('btnShowHighPriority');
             if (showOnlyHigh) {
-                btn.classList.add('bg-red-600', 'text-white');
-                btn.classList.remove('bg-red-100', 'text-red-700');
+                btn.classList.add('text-red-600', 'bg-red-50', 'border-red-200');
+                btn.classList.remove('text-slate-400', 'border-transparent');
             } else {
-                btn.classList.remove('bg-red-600', 'text-white');
-                btn.classList.add('bg-red-100', 'text-red-700');
+                btn.classList.remove('text-red-600', 'bg-red-50', 'border-red-200');
+                btn.classList.add('text-slate-400', 'border-transparent');
             }
             renderApp();
         });
 
-        // --- Gestión de Usuarios (Maestro) ---
+        // Hover effect for notification dropdown
+        const alertBtn = document.getElementById('btnImportantAlert');
+        const dropdown = document.getElementById('notifDropdown');
+        alertBtn.addEventListener('mouseenter', () => dropdown.classList.remove('hidden'));
+        alertBtn.addEventListener('mouseleave', () => dropdown.classList.add('hidden'));
+
+        // --- User Management ---
         document.getElementById('btnManageUsers').addEventListener('click', () => {
             loadUsersList();
             document.getElementById('userModal').classList.remove('hidden');
+            document.getElementById('userModal').classList.add('flex');
         });
 
         window.saveUser = async () => {
@@ -561,22 +673,17 @@
             if (!name || !pass) return alert("Completar campos");
 
             try {
-                // Chequear si existe o actualizar (simple: buscar por nombre y borrar anterior o crear nuevo)
-                // Para simplificar en este ejemplo: agregamos uno nuevo siempre, habría que pulir la edición.
-                // Mejor: agregar si no existe.
                 const usersRef = collection(db, "app_users");
                 const q = query(usersRef, where("username", "==", name));
                 const snap = await getDocs(q);
                 
                 if (!snap.empty) {
-                    // Editar
                     const docId = snap.docs[0].id;
                     await updateDoc(doc(db, "app_users", docId), { password: pass });
-                    alert("Contraseña actualizada");
+                    alert("Usuario actualizado exitosamente");
                 } else {
-                    // Crear
                     await addDoc(usersRef, { username: name, password: pass, role: 'user' });
-                    alert("Usuario creado");
+                    alert("Usuario creado exitosamente");
                 }
                 document.getElementById('manageUserName').value = "";
                 document.getElementById('manageUserPass').value = "";
@@ -586,7 +693,7 @@
 
         async function loadUsersList() {
             const container = document.getElementById('usersListContainer');
-            container.innerHTML = "Cargando...";
+            container.innerHTML = '<div class="p-4 text-center text-xs text-slate-400">Cargando...</div>';
             const q = query(collection(db, "app_users"));
             const snap = await getDocs(q);
             container.innerHTML = "";
@@ -594,36 +701,42 @@
             snap.forEach(doc => {
                 const u = doc.data();
                 const div = document.createElement('div');
-                div.className = "flex justify-between items-center p-2 text-sm hover:bg-gray-50";
+                div.className = "flex justify-between items-center p-3 text-sm hover:bg-slate-50 transition";
                 div.innerHTML = `
-                    <div>
-                        <span class="font-bold">${u.username}</span> 
-                        <span class="text-xs text-gray-500">(${u.role || 'user'})</span>
-                        <br><span class="text-xs text-gray-400">Pass: ${u.password}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs">
+                            ${u.username.charAt(0)}
+                        </div>
+                        <div>
+                            <div class="font-bold text-slate-700 leading-none">${u.username}</div>
+                            <div class="text-[10px] text-slate-400 mt-1">Clave: ${u.password}</div>
+                        </div>
                     </div>
-                    ${u.username !== 'YULI' ? `<button onclick="deleteUser('${doc.id}')" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : ''}
+                    ${u.username !== 'YULI' ? `<button onclick="deleteUser('${doc.id}')" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-trash-alt"></i></button>` : '<span class="text-[10px] text-blue-500 font-bold px-2">MASTER</span>'}
                 `;
                 container.appendChild(div);
             });
         }
 
         window.deleteUser = async (id) => {
-            if(!confirm("¿Eliminar usuario?")) return;
+            if(!confirm("¿Eliminar usuario definitivamente?")) return;
             await deleteDoc(doc(db, "app_users", id));
             loadUsersList();
         }
 
-        // --- Modal Autor y Cierre ---
+        // --- Modals ---
         document.getElementById('authorBtn').addEventListener('click', () => {
             document.getElementById('authorModal').classList.remove('hidden');
+            document.getElementById('authorModal').classList.add('flex');
         });
 
         window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
+            const el = document.getElementById(id);
+            el.classList.add('hidden');
+            el.classList.remove('flex');
         }
 
-        // --- Inicialización ---
-        // Verificar existencia del maestro al cargar la página
+        // --- Init ---
         ensureMasterUser();
 
     </script>
