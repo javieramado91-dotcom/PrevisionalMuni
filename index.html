@@ -149,12 +149,21 @@
 
                 <div class="px-3 py-2 mt-6 text-xs font-bold text-slate-400 uppercase tracking-wider">Métricas</div>
                 <div class="grid grid-cols-2 gap-2 px-1">
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
-                        <div class="text-2xl font-bold text-slate-800" id="sbCountNovedades">0</div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase">Pendientes</div>
+                    <!-- Pendientes (Destacado) -->
+                    <div class="col-span-2 bg-red-50 p-3 rounded-xl border border-red-100 text-center mb-1">
+                        <div class="text-2xl font-bold text-red-600" id="sbCountNovedades">0</div>
+                        <div class="text-[10px] font-bold text-red-400 uppercase">Pendientes</div>
                     </div>
+                    
+                    <!-- Realizados (Nuevo) -->
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
-                        <div class="text-2xl font-bold text-green-600" id="sbCountTerminados">0</div>
+                        <div class="text-xl font-bold text-blue-600" id="sbCountRealizados">0</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Realizados</div>
+                    </div>
+
+                    <!-- Finalizados -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
+                        <div class="text-xl font-bold text-green-600" id="sbCountTerminados">0</div>
                         <div class="text-[10px] font-bold text-slate-400 uppercase">Finalizados</div>
                     </div>
                 </div>
@@ -462,6 +471,7 @@
                 c2: document.getElementById('countRealizados'),
                 c3: document.getElementById('countTerminados'),
                 sb1: document.getElementById('sbCountNovedades'),
+                sb2: document.getElementById('sbCountRealizados'), // Added
                 sb3: document.getElementById('sbCountTerminados')
             }
         };
@@ -711,6 +721,7 @@
             dom.counters.c2.textContent = c2;
             dom.counters.c3.textContent = c3;
             dom.counters.sb1.textContent = c1;
+            dom.counters.sb2.textContent = c2; // Update sidebar
             dom.counters.sb3.textContent = c3;
 
             // Notification Visuals
