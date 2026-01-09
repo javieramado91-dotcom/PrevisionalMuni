@@ -585,9 +585,20 @@
         }
 
         // --- EDIT FEATURE ---
-        window.openEditModal = (id, text, priority) => {
-            // Solo maestro o el autor pueden editar (pero aquí simplificamos a maestro según pedido)
-            if (!isMaster) return alert("Solo el usuario maestro puede editar registros.");
+        // Se agregaron 'author' y 'state' a los argumentos para validar permisos
+        window.openEditModal = (id, text, priority, author, state) => {
+            // Regla de permisos:
+            // 1. Maestro: Puede editar TODO.
+            // 2. Usuario Normal: Puede editar SOLO si es SUYO y está en PENDIENTE.
+            
+            const isOwner = author === currentUser.username;
+            const isPending = state === 'pendiente';
+
+            if (!isMaster) {
+                if (!isOwner || !isPending) {
+                    return alert("Solo puedes editar tus registros pendientes.");
+                }
+            }
             
             document.getElementById('editNovedadId').value = id;
             document.getElementById('editNovedadText').value = text;
@@ -621,8 +632,22 @@
             if (!isMaster) return alert("Acceso denegado.");
             try { await updateDoc(doc(db, "novedades", id), { estado: "terminado" }); } catch (e) {}
         }
-        window.deleteNovedad = async (id) => {
-            if (!isMaster) return alert("Acceso denegado.");
+
+        // Se agregaron 'author' y 'state' para validar
+        window.deleteNovedad = async (id, author, state) => {
+            // Regla de permisos para eliminar es igual a editar:
+            // 1. Maestro: Borra TODO.
+            // 2. Usuario Normal: Borra SOLO si es SUYO y PENDIENTE.
+            
+            const isOwner = author === currentUser.username;
+            const isPending = state === 'pendiente';
+
+            if (!isMaster) {
+                if (!isOwner || !isPending) {
+                    return alert("Solo puedes eliminar tus registros pendientes.");
+                }
+            }
+
             if(!confirm("¿Eliminar definitivamente?")) return;
             try { await deleteDoc(doc(db, "novedades", id)); } catch (e) {}
         }
@@ -720,17 +745,39 @@
             if(data.importancia === 'Media') iconPrio = '<span class="bg-orange-100 text-orange-600 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase">Normal</span>';
             if(data.importancia === 'Baja') iconPrio = '<span class="bg-green-100 text-green-600 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase">Baja</span>';
 
-            // Buttons
-            let btns = '';
-            const editBtn = isMaster ? 
-                `<button onclick="openEditModal('${data.id}', '${data.detalle.replace(/'/g, "\\'")}', '${data.importancia}')" class="text-slate-400 hover:text-blue-600 transition p-1.5 hover:bg-blue-50 rounded-lg"><i class="fas fa-pen"></i></button>` : '';
-            const deleteBtn = isMaster ? 
-                `<button onclick="deleteNovedad('${data.id}')" class="text-slate-400 hover:text-red-600 transition p-1.5 hover:bg-red-50 rounded-lg"><i class="fas fa-trash-alt"></i></button>` : '';
+            // --- PERMISSIONS LOGIC FOR BUTTONS ---
+            const isOwner = data.autor === currentUser.username;
+            const isPending = data.estado === 'pendiente'; // Módulo 1
+            
+            // Maestro puede editar todo. 
+            // Usuario puede editar SOLO si es propietario Y está en pendiente.
+            const canEditOrDelete = isMaster || (isOwner && isPending);
 
+            // Action Buttons (Edit / Delete)
+            let actionBtns = '';
+            
+            if (canEditOrDelete) {
+                // Escapamos comillas simples para el string de JS
+                const safeText = data.detalle.replace(/'/g, "\\'");
+                
+                actionBtns += `
+                    <button onclick="openEditModal('${data.id}', '${safeText}', '${data.importancia}', '${data.autor}', '${data.estado}')" 
+                        class="text-slate-400 hover:text-blue-600 transition p-1.5 hover:bg-blue-50 rounded-lg">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button onclick="deleteNovedad('${data.id}', '${data.autor}', '${data.estado}')" 
+                        class="text-slate-400 hover:text-red-600 transition p-1.5 hover:bg-red-50 rounded-lg">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+            }
+
+            // Move Status Buttons (Solo Maestro)
+            let statusBtns = '';
             if (data.estado === 'pendiente') {
-                if(isMaster) btns = `<button onclick="markRealizado('${data.id}')" class="bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1"><i class="fas fa-check"></i> Listo</button>`;
+                if(isMaster) statusBtns = `<button onclick="markRealizado('${data.id}')" class="bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1"><i class="fas fa-check"></i> Listo</button>`;
             } else if (data.estado === 'realizado') {
-                if(isMaster) btns = `<button onclick="markTerminado('${data.id}')" class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-box-archive"></i> Archivar</button>`;
+                if(isMaster) statusBtns = `<button onclick="markTerminado('${data.id}')" class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1"><i class="fas fa-box-archive"></i> Archivar</button>`;
             }
 
             div.innerHTML = `
@@ -740,8 +787,7 @@
                         <span class="text-[10px] text-slate-400 font-semibold tracking-wide">${dateStr}</span>
                     </div>
                     <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        ${editBtn}
-                        ${deleteBtn}
+                        ${actionBtns}
                     </div>
                 </div>
                 <p class="text-sm text-slate-700 mb-4 font-medium leading-relaxed whitespace-pre-wrap">${data.detalle}</p>
@@ -752,12 +798,12 @@
                         </div>
                         <span class="text-[10px] font-bold text-slate-500 uppercase">${data.autor}</span>
                     </div>
-                    <div>${btns}</div>
+                    <div>${statusBtns}</div>
                 </div>
             `;
             
-            // En móvil siempre mostramos los botones de editar/borrar si es maestro, ya que no hay hover
-            if (window.innerWidth < 768 && isMaster) {
+            // En móvil siempre mostramos los botones de editar/borrar si tiene permisos, ya que no hay hover
+            if (window.innerWidth < 768 && canEditOrDelete) {
                 div.querySelector('.group-hover\\:opacity-100').classList.remove('opacity-0');
             }
 
