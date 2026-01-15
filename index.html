@@ -466,18 +466,7 @@
         };
 
         // --- Auth Logic ---
-        async function ensureMasterUser() {
-            const usersRef = collection(db, "app_users");
-            const q = query(usersRef, where("username", "==", "YULI"));
-            const querySnapshot = await getDocs(q);
-            if (querySnapshot.empty) {
-                const qMaster = query(usersRef, where("role", "==", "master"));
-                const snapMaster = await getDocs(qMaster);
-                if (snapMaster.empty) {
-                     await addDoc(usersRef, { username: "YULI", password: "PREVIYU25", role: "master" });
-                }
-            }
-        }
+        // (Función insegura eliminada)
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -934,8 +923,6 @@
            loginSuccess(JSON.parse(sessionUser));
         }
         
-        ensureMasterUser();
-
     </script>
 </body>
 </html>
