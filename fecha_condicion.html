@@ -269,7 +269,7 @@
     </div>
 
     <div id="modalImportar" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[55] backdrop-blur-sm transition-opacity px-4">
-        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 transform scale-100 transition-all max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 transform scale-100 transition-all max-h-[90vh] overflow-hidden flex flex-col relative">
             
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3 shrink-0">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -305,7 +305,7 @@
 
                 <div id="importStatus" class="hidden p-3 rounded-xl text-xs font-bold border shrink-0"></div>
 
-                <div id="previewContainer" class="hidden flex-1 bg-slate-50 rounded-xl border border-slate-200 flex-col overflow-hidden min-h-[200px]">
+                <div id="previewContainer" class="hidden flex-1 bg-slate-50 rounded-xl border border-slate-200 flex-col overflow-hidden min-h-[150px]">
                     
                     <div class="p-2 bg-slate-100 border-b border-slate-200 flex justify-between items-center shrink-0">
                         <span class="text-[10px] font-bold text-slate-500 uppercase ml-2">Previsualización (<span id="previewCount">0</span> reg)</span>
@@ -345,7 +345,6 @@
             </div>
         </div>
     </div>
-
         <div class="h-72 overflow-y-auto custom-scroll p-0">
             <table class="w-full text-left border-collapse">
                 <thead class="text-[9px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-50 shadow-sm z-10">
