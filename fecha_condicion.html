@@ -30,6 +30,15 @@
 
         /* Evitar scroll en body cuando el menú móvil está abierto */
         .overflow-hidden-mobile { overflow: hidden; }
+        
+        /* Animación de carga */
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 2s linear infinite;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
@@ -178,10 +187,17 @@
 
     </main>
 
-    <button onclick="abrirNuevo()" class="fixed bottom-6 right-6 md:left-8 md:right-auto bg-slate-900 text-white w-14 h-14 md:w-auto md:h-auto md:px-6 md:py-3 rounded-full shadow-2xl hover:bg-blue-600 hover:scale-105 transition duration-300 flex items-center justify-center md:justify-start gap-3 z-40 group border-4 border-slate-50">
-        <i class="fas fa-plus text-lg group-hover:rotate-90 transition transform duration-300"></i>
-        <span class="hidden md:inline font-bold tracking-wide uppercase text-xs">Agregar Registro</span>
-    </button>
+    <div class="fixed bottom-6 right-6 md:left-8 md:right-auto z-40 flex flex-col-reverse md:flex-row gap-3 items-end md:items-center">
+        <button onclick="abrirNuevo()" class="bg-slate-900 text-white w-14 h-14 md:w-auto md:h-auto md:px-6 md:py-3 rounded-full shadow-2xl hover:bg-blue-600 hover:scale-105 transition duration-300 flex items-center justify-center md:justify-start gap-3 group border-4 border-slate-50">
+            <i class="fas fa-plus text-lg group-hover:rotate-90 transition transform duration-300"></i>
+            <span class="hidden md:inline font-bold tracking-wide uppercase text-xs">Agregar Registro</span>
+        </button>
+
+        <button onclick="abrirImportar()" class="bg-green-600 text-white w-12 h-12 md:w-auto md:h-auto md:px-5 md:py-3 rounded-full shadow-lg hover:bg-green-500 hover:scale-105 transition duration-300 flex items-center justify-center md:justify-start gap-2 group border-4 border-slate-50" title="Importar Masiva">
+            <i class="fas fa-file-excel text-lg"></i>
+            <span class="hidden md:inline font-bold tracking-wide uppercase text-xs">Importar Excel</span>
+        </button>
+    </div>
 
     <div onclick="abrirAutor()" class="fixed bottom-2 left-2 md:bottom-4 md:right-4 md:left-auto z-40 cursor-pointer group hidden md:block">
         <div class="bg-white/90 backdrop-blur border border-slate-200 shadow-lg rounded-full px-4 py-1.5 flex items-center gap-2 hover:scale-105 transition transform">
@@ -216,6 +232,93 @@
                 </a>
             </div>
             <p class="text-[10px] text-slate-400">© 2026 - Todos los derechos reservados.</p>
+        </div>
+    </div>
+
+    <div id="modalImportar" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center z-[55] backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden relative">
+            
+            <div id="loadingImportar" class="absolute inset-0 bg-white/90 z-20 hidden items-center justify-center flex-col">
+                <div class="w-16 h-16 border-4 border-slate-200 border-t-green-500 rounded-full animate-spin mb-4"></div>
+                <h4 class="text-xl font-black text-slate-800 animate-pulse">Procesando Datos...</h4>
+                <p class="text-sm text-slate-500 mt-2">Por favor espere mientras se guardan los registros.</p>
+            </div>
+
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-file-import text-green-600"></i> Importación Masiva
+                    </h3>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Carga desde Excel</p>
+                </div>
+                <button onclick="cerrarImportar()" class="w-8 h-8 rounded-full hover:bg-red-50 hover:text-red-500 text-slate-400 transition flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto custom-scroll flex-1">
+                
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                    <h4 class="text-xs font-black text-blue-700 uppercase mb-2"><i class="fas fa-info-circle"></i> Estructura Requerida</h4>
+                    <p class="text-xs text-blue-600 mb-2">El archivo debe llamarse estrictamente <span class="font-bold bg-white px-1 rounded border border-blue-200">JUBIS.XLSX</span> y contener las siguientes columnas en orden:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] font-bold text-blue-500 uppercase text-center">
+                        <div class="bg-white p-2 rounded border border-blue-100">1. Legajo (Num)</div>
+                        <div class="bg-white p-2 rounded border border-blue-100">2. Nombre (Texto)</div>
+                        <div class="bg-white p-2 rounded border border-blue-100">3. F. Nacimiento</div>
+                        <div class="bg-white p-2 rounded border border-blue-100">4. F. Ingreso</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block w-full border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 hover:border-slate-400 transition cursor-pointer group relative overflow-hidden" id="dropZone">
+                        <input type="file" id="inpExcel" accept=".xlsx" class="hidden" onchange="procesarArchivoExcel(event)">
+                        <div class="relative z-10">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-slate-300 group-hover:text-blue-500 transition mb-2"></i>
+                            <p class="text-sm font-bold text-slate-500 group-hover:text-slate-700">Click para seleccionar JUBIS.XLSX</p>
+                        </div>
+                    </label>
+                </div>
+
+                <div id="msgError" class="hidden bg-red-50 text-red-600 p-3 rounded-xl border border-red-100 text-xs font-bold items-center gap-2 mb-4 animate-bounce">
+                    <i class="fas fa-times-circle text-lg"></i>
+                    <span id="txtError">El archivo no cumple con los requisitos.</span>
+                </div>
+
+                <div id="msgSuccess" class="hidden bg-green-50 text-green-600 p-3 rounded-xl border border-green-100 text-xs font-bold items-center gap-2 mb-4">
+                    <i class="fas fa-check-circle text-lg"></i>
+                    <div>
+                        <span class="block text-sm">Archivo óptimo para cargar.</span>
+                        <span class="font-normal text-[10px] uppercase text-green-500" id="countImport">0 registros encontrados</span>
+                    </div>
+                </div>
+
+                <div id="previewArea" class="hidden">
+                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Previsualización de Datos</h5>
+                    <div class="border border-slate-200 rounded-xl overflow-hidden max-h-60 overflow-y-auto custom-scroll">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-[9px] font-bold text-slate-500 uppercase sticky top-0">
+                                <tr>
+                                    <th class="p-2">Legajo</th>
+                                    <th class="p-2">Nombre</th>
+                                    <th class="p-2">F. Nac</th>
+                                    <th class="p-2">F. Ing</th>
+                                    <th class="p-2 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewBody" class="text-xs text-slate-700 divide-y divide-slate-100">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
+                <button onclick="cerrarImportar()" class="flex-1 py-3 bg-white border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-100 transition">Cancelar</button>
+                <button id="btnCargarMasivo" onclick="guardarImportacionMasiva()" disabled class="flex-1 py-3 bg-slate-300 text-white font-bold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed transition">
+                    <i class="fas fa-save"></i> Cargar Datos
+                </button>
+            </div>
         </div>
     </div>
 
@@ -452,6 +555,9 @@
 
         // VARIABLE GLOBAL PARA ALMACENAR DATOS PROCESADOS (Para exportación)
         window.datosGlobales = [];
+
+        // VARIABLE GLOBAL PARA IMPORTACION MASIVA
+        window.datosImportacion = [];
 
         // --- LÓGICA DE CALCULO JUBILATORIO & SEMÁFORO ---
         const EDAD_JUBILATORIA = 60;
@@ -725,7 +831,7 @@
             document.getElementById('modalDetalle').classList.remove('flex');
         };
 
-        // --- FUNCIONES EXPORTAR (NUEVAS) ---
+        // --- FUNCIONES EXPORTAR ---
         window.prepararExportacion = (tipo) => {
             document.getElementById('tipoExportacion').value = tipo;
             const texto = tipo === 'todos' ? 'Listado Completo (Activos)' : 'Alertas Próximas a Jubilación';
@@ -739,7 +845,7 @@
             document.getElementById('modalExportar').classList.remove('flex');
         };
         
-        // --- FUNCIONES MODAL AUTOR (NUEVO) ---
+        // --- FUNCIONES MODAL AUTOR ---
         window.abrirAutor = () => {
             document.getElementById('modalAutor').classList.remove('hidden');
             document.getElementById('modalAutor').classList.add('flex');
@@ -841,7 +947,207 @@
             XLSX.writeFile(wb, `reporte_${tipo}.xlsx`);
         }
 
-        // --- ACCIONES FIREBASE ---
+        // --- FUNCIONES IMPORTACIÓN MASIVA (NUEVO) ---
+
+        window.abrirImportar = () => {
+            // Reset UI
+            document.getElementById('inpExcel').value = "";
+            document.getElementById('msgError').classList.add('hidden');
+            document.getElementById('msgError').classList.remove('flex');
+            document.getElementById('msgSuccess').classList.add('hidden');
+            document.getElementById('msgSuccess').classList.remove('flex');
+            document.getElementById('previewArea').classList.add('hidden');
+            document.getElementById('btnCargarMasivo').disabled = true;
+            document.getElementById('btnCargarMasivo').classList.add('bg-slate-300', 'cursor-not-allowed');
+            document.getElementById('btnCargarMasivo').classList.remove('bg-slate-900', 'hover:bg-slate-800', 'active:scale-95');
+            window.datosImportacion = [];
+            
+            document.getElementById('modalImportar').classList.remove('hidden');
+            document.getElementById('modalImportar').classList.add('flex');
+        };
+
+        window.cerrarImportar = () => {
+            document.getElementById('modalImportar').classList.add('hidden');
+            document.getElementById('modalImportar').classList.remove('flex');
+        };
+
+        // Helper para fechas de excel
+        function excelDateToJSDate(serial) {
+           if (!serial) return "";
+           // Si viene como string normal YYYY-MM-DD
+           if (typeof serial === 'string' && serial.includes('-')) return serial;
+           // Si viene como serial de Excel
+           const utc_days  = Math.floor(serial - 25569);
+           const utc_value = utc_days * 86400;                                        
+           const date_info = new Date(utc_value * 1000);
+           
+           // Ajuste de offset para obtener YYYY-MM-DD correcto
+           const year = date_info.getFullYear();
+           const month = String(date_info.getMonth() + 1).padStart(2, '0');
+           const day = String(date_info.getDate() + 1).padStart(2, '0'); // +1 por el ajuste de epoch excel
+           return `${year}-${month}-${day}`;
+        }
+
+        window.procesarArchivoExcel = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const msgError = document.getElementById('msgError');
+            const msgSuccess = document.getElementById('msgSuccess');
+            const btnCargar = document.getElementById('btnCargarMasivo');
+
+            // 1. Validar Nombre
+            if (file.name !== "JUBIS.XLSX") {
+                document.getElementById('txtError').innerText = "El archivo debe llamarse 'JUBIS.XLSX'.";
+                msgError.classList.remove('hidden');
+                msgError.classList.add('flex');
+                msgSuccess.classList.add('hidden');
+                msgSuccess.classList.remove('flex');
+                document.getElementById('previewArea').classList.add('hidden');
+                btnCargar.disabled = true;
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                
+                // Convertir a JSON array
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                
+                // Quitar cabecera si existe (asumimos fila 0 es cabecera)
+                if (jsonData.length > 0) jsonData.shift();
+
+                // Validar estructura básica (tiene datos?)
+                if (jsonData.length === 0) {
+                    document.getElementById('txtError').innerText = "El archivo está vacío.";
+                    msgError.classList.remove('hidden');
+                    msgError.classList.add('flex');
+                    return;
+                }
+
+                // Procesar datos
+                window.datosImportacion = [];
+                let errores = 0;
+
+                jsonData.forEach(row => {
+                    if (row.length >= 4) { // Asegurar columnas mínimas
+                        const legajo = row[0];
+                        const nombre = row[1];
+                        const fNac = excelDateToJSDate(row[2]);
+                        const fIng = excelDateToJSDate(row[3]);
+
+                        if (legajo && nombre && fNac && fIng) {
+                            window.datosImportacion.push({
+                                legajo: legajo,
+                                nombre: String(nombre).toUpperCase(),
+                                fNac: fNac,
+                                fIng: fIng
+                            });
+                        }
+                    }
+                });
+
+                if (window.datosImportacion.length > 0) {
+                    msgError.classList.add('hidden');
+                    msgError.classList.remove('flex');
+                    msgSuccess.classList.remove('hidden');
+                    msgSuccess.classList.add('flex');
+                    document.getElementById('countImport').innerText = `${window.datosImportacion.length} registros listos para cargar`;
+                    
+                    // Activar botón
+                    btnCargar.disabled = false;
+                    btnCargar.classList.remove('bg-slate-300', 'cursor-not-allowed');
+                    btnCargar.classList.add('bg-slate-900', 'hover:bg-slate-800', 'active:scale-95');
+
+                    renderizarPrevisualizacion();
+                } else {
+                    document.getElementById('txtError').innerText = "No se encontraron registros válidos.";
+                    msgError.classList.remove('hidden');
+                    msgError.classList.add('flex');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        window.renderizarPrevisualizacion = () => {
+            const tbody = document.getElementById('previewBody');
+            tbody.innerHTML = "";
+            document.getElementById('previewArea').classList.remove('hidden');
+
+            window.datosImportacion.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 font-mono font-bold">${item.legajo}</td>
+                    <td class="p-2">${item.nombre}</td>
+                    <td class="p-2 text-slate-500">${item.fNac}</td>
+                    <td class="p-2 text-slate-500">${item.fIng}</td>
+                    <td class="p-2 text-right">
+                        <button onclick="eliminarFilaImportacion(${index})" class="text-red-400 hover:text-red-600">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.eliminarFilaImportacion = (index) => {
+            window.datosImportacion.splice(index, 1);
+            renderizarPrevisualizacion();
+            document.getElementById('countImport').innerText = `${window.datosImportacion.length} registros listos para cargar`;
+            
+            if (window.datosImportacion.length === 0) {
+                document.getElementById('btnCargarMasivo').disabled = true;
+                document.getElementById('btnCargarMasivo').classList.add('bg-slate-300', 'cursor-not-allowed');
+                document.getElementById('btnCargarMasivo').classList.remove('bg-slate-900');
+                document.getElementById('msgSuccess').classList.add('hidden');
+                document.getElementById('msgSuccess').classList.remove('flex');
+            }
+        };
+
+        window.guardarImportacionMasiva = async () => {
+            if (!confirm(`¿Está seguro de cargar ${window.datosImportacion.length} registros a la base de datos?`)) return;
+
+            const loading = document.getElementById('loadingImportar');
+            loading.classList.remove('hidden');
+            loading.classList.add('flex');
+
+            try {
+                // Procesamiento por lotes (Batch processing simulation)
+                const promises = window.datosImportacion.map(agente => {
+                    return addDoc(collection(db, "agentes_jubilacion"), {
+                        legajo: agente.legajo,
+                        nombre: agente.nombre,
+                        cuil: "", // Excel no provee CUIL según spec
+                        fNac: agente.fNac,
+                        fIng: agente.fIng,
+                        estado: 'activo',
+                        timestamp: serverTimestamp()
+                    });
+                });
+
+                await Promise.all(promises);
+
+                // Fin carga
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                    loading.classList.remove('flex');
+                    alert("Carga finalizada con éxito");
+                    cerrarImportar();
+                }, 1500); // Pequeño delay para apreciar la animación
+                
+            } catch (err) {
+                console.error(err);
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                alert("Hubo un error al procesar algunos registros.");
+            }
+        };
+
+        // --- ACCIONES FIREBASE (EXISTENTES) ---
         document.getElementById('calcForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
