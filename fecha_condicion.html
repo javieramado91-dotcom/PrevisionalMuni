@@ -283,36 +283,36 @@
                 </ul>
             </div>
 
-            <div class="space-y-4 flex-1 flex flex-col overflow-hidden">
-                <div class="flex items-center gap-3 shrink-0">
-                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
-                    <button onclick="document.getElementById('fileInput').click()" class="flex-1 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl p-4 text-slate-500 font-bold hover:bg-slate-50 hover:border-blue-400 hover:text-blue-500 transition text-center text-xs uppercase tracking-wide">
-                        <i class="fas fa-upload text-xl mb-1 block"></i> Seleccionar Archivo
-                    </button>
-                </div>
+           <div class="space-y-4 flex-1 flex flex-col overflow-y-auto custom-scroll min-h-0">
+    <div class="flex items-center gap-3 shrink-0">
+        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
+        <button onclick="document.getElementById('fileInput').click()" class="flex-1 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl p-4 text-slate-500 font-bold hover:bg-slate-50 hover:border-blue-400 hover:text-blue-500 transition text-center text-xs uppercase tracking-wide">
+            <i class="fas fa-upload text-xl mb-1 block"></i> Seleccionar Archivo
+        </button>
+    </div>
 
-                <div id="importStatus" class="hidden p-3 rounded-xl text-xs font-bold border shrink-0"></div>
+    <div id="importStatus" class="hidden p-3 rounded-xl text-xs font-bold border shrink-0"></div>
 
-                <div id="previewContainer" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50 rounded-xl border border-slate-200">
-                    <div class="p-2 bg-slate-100 border-b border-slate-200 flex justify-between items-center shrink-0">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase">Previsualización (<span id="previewCount">0</span> reg)</span>
-                    </div>
-                    <div class="h-64 overflow-y-auto custom-scroll p-2">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="text-[9px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-50">
-                                <tr>
-                                    <th class="p-2">Legajo</th>
-                                    <th class="p-2">Nombre</th>
-                                    <th class="p-2">F. Nac</th>
-                                    <th class="p-2">F. Ing</th>
-                                    <th class="p-2 text-right"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="previewBody" class="text-xs text-slate-600 font-medium"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div id="previewContainer" class="hidden w-full bg-slate-50 rounded-xl border border-slate-200 flex flex-col mt-2 shrink-0">
+        <div class="p-3 bg-slate-100 border-b border-slate-200 flex justify-between items-center shrink-0 rounded-t-xl">
+            <span class="text-[10px] font-bold text-slate-500 uppercase">Previsualización (<span id="previewCount">0</span> reg)</span>
+        </div>
+        <div class="h-72 overflow-y-auto custom-scroll p-2">
+            <table class="w-full text-left border-collapse">
+                <thead class="text-[9px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-50 shadow-sm z-10">
+                    <tr>
+                        <th class="p-2">Legajo</th>
+                        <th class="p-2">Nombre</th>
+                        <th class="p-2">F. Nac</th>
+                        <th class="p-2">F. Ing</th>
+                        <th class="p-2 text-right"></th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody" class="text-xs text-slate-600 font-medium bg-white"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
             <div class="pt-4 mt-auto flex gap-3 shrink-0">
                 <button onclick="cerrarImportar()" class="flex-1 py-2 bg-white border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition text-xs uppercase">Cancelar</button>
@@ -1157,4 +1157,3 @@
     </script>
 </body>
 </html>
-
