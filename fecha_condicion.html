@@ -132,18 +132,18 @@
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
                  
-				 <div class="flex gap-1 justify-between sm:justify-start items-center">
-    <button id="btnBorrarMasivo" onclick="borrarMasivoDB()" class="hidden px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 items-center justify-center gap-2 mr-2 animate-pulse">
-        <i class="fas fa-trash-alt"></i> Borrar (<span id="countBorrar">0</span>)
-    </button>
+                 <div class="flex gap-1 justify-between sm:justify-start items-center">
+                    <button id="btnBorrarMasivo" onclick="borrarMasivoDB()" class="hidden px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 items-center justify-center gap-2 mr-2 animate-pulse">
+                        <i class="fas fa-trash-alt"></i> Borrar (<span id="countBorrar">0</span>)
+                    </button>
 
-    <button onclick="prepararExportacion('todos')" class="flex-1 sm:flex-none px-3 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-700 transition shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
-        <i class="fas fa-print"></i> Todos
-    </button>
-    <button onclick="prepararExportacion('proximos')" class="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 flex items-center justify-center gap-2">
-        <i class="fas fa-print"></i> Próximos
-    </button>
-</div>
+                    <button onclick="prepararExportacion('todos')" class="flex-1 sm:flex-none px-3 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-700 transition shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
+                        <i class="fas fa-print"></i> Todos
+                    </button>
+                    <button onclick="prepararExportacion('proximos')" class="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 flex items-center justify-center gap-2">
+                        <i class="fas fa-print"></i> Próximos
+                    </button>
+                </div>
 
                     <div class="relative w-full sm:w-64">
                         <input type="text" id="searchTable" placeholder="Buscar..." class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition">
@@ -156,22 +156,22 @@
                 <div class="overflow-auto custom-scroll flex-1 touch-pan-x">
                     <table class="w-full text-left border-collapse min-w-[600px] md:min-w-0">
                       
-					  <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm border-b border-slate-100">
-    <tr>
-        <th class="p-3 md:p-4 w-10 text-center">
-            <input type="checkbox" id="checkAllMain" onchange="toggleSelectAllMain(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4">
-        </th>
+                      <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm border-b border-slate-100">
+                        <tr>
+                            <th class="p-3 md:p-4 w-10 text-center">
+                                <input type="checkbox" id="checkAllMain" onchange="toggleSelectAllMain(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4">
+                            </th>
 
-        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Legajo</th>
-        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Agente</th>
-        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Edad / Serv.</th>
-        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-blue-600 uppercase tracking-wider bg-blue-50/30">Retiro</th>
-        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Falta</th>
-        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Estado</th>
-        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-right">Acciones</th>
-    </tr>
-</thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-50 text-sm"></tbody>
+                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Legajo</th>
+                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Agente</th>
+                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Edad / Serv.</th>
+                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-blue-600 uppercase tracking-wider bg-blue-50/30">Retiro</th>
+                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Falta</th>
+                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Estado</th>
+                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-50 text-sm"></tbody>
                     </table>
                 </div>
             </div>
@@ -530,9 +530,14 @@
 
         // SESION
         const storedUser = localStorage.getItem('usuarioActivo');
-        if (!storedUser) window.location.href = 'index.html';
-        const currentUser = JSON.parse(storedUser);
-        document.getElementById('userNameDisplay').textContent = currentUser.username;
+        if (!storedUser) {
+            window.location.href = 'index.html';
+        } else {
+            const currentUser = JSON.parse(storedUser);
+            // Aseguramos que el elemento exista antes de asignar
+            const userDisplay = document.getElementById('userNameDisplay');
+            if(userDisplay) userDisplay.textContent = currentUser.username;
+        }
 
         // UI HELPERS
         window.toggleSidebar = () => {
@@ -652,10 +657,8 @@
         // --- FIREBASE LISTENER ---
         const q = query(collection(db, "agentes_jubilacion"), orderBy("legajo", "asc"));
         
-       // --- ESCUCHADOR EN TIEMPO REAL (CORREGIDO Y CERRADO) ---
+       // --- ESCUCHADOR EN TIEMPO REAL ---
         onSnapshot(q, (snapshot) => {
-            // NOTA: Asegúrate que tu HTML tenga id="tablaBody" o "tableBody". 
-            // Aquí probamos ambos por seguridad.
             const tbody = document.getElementById('tablaBody') || document.getElementById('tableBody');
             if(!tbody) { console.error("No se encontró el cuerpo de la tabla"); return; }
             
@@ -668,7 +671,7 @@
                 const data = docSnap.data();
                 const id = docSnap.id;
                 
-                // Calcular previsión (asegurando que existe la función)
+                // Calcular previsión
                 const prev = (typeof calcularPrevision === 'function') 
                     ? calcularPrevision(data.fNac, data.fIng, data.genero || 'M') 
                     : { edad:0, antiguedad:0, semaforo:'verde', tipo:'Normal', fpj: new Date() };
@@ -706,17 +709,18 @@
                 let faltaTexto = '';
                 if(esJubilado) faltaTexto = '<span class="text-slate-400 font-mono">-</span>';
                 else {
-                    const anios = Math.floor(prev.aniosRestantes || 0); // corrección por si es undefined
+                    const anios = Math.floor(prev.aniosRestantes || 0);
                     if (anios < 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap">¡VENCIDO!</span>`;
                     else if (anios === 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap"> < 1 Año</span>`;
-                    else faltaTexto = `<span class="whitespace-nowrap font-mono text-slate-500">${prev.faltaAnios}a ${prev.faltaMeses}m</span>`;
+                    else faltaTexto = `<span class="whitespace-nowrap font-mono text-slate-500">${prev.faltaAnios || anios}a ${prev.faltaMeses || ''}m</span>`;
                 }
 
                 // --- DIBUJAR FILA ---
                 const tr = document.createElement('tr');
                 tr.className = `border-b border-slate-50 group hover:bg-slate-50 transition ${esJubilado ? 'bg-slate-50/30' : ''}`;
+                tr.dataset.filtro = esJubilado ? 'jubilado' : prev.semaforo;
+                tr.dataset.tipo = prev.tipo.toLowerCase();
                 
-                // AQUÍ ESTÁ LA MAGIA DEL CHECKBOX Y LA SINTAXIS CORREGIDA
                 tr.innerHTML = `
                     <td class="p-3 md:p-4 text-center bg-slate-50/50">
                         <input type="checkbox" class="chk-main-item rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4" value="${id}" onchange="verificarSeleccionMain()">
@@ -776,13 +780,13 @@
             if(document.getElementById('countAmarillo')) document.getElementById('countAmarillo').innerText = counts.amarillo;
             if(document.getElementById('countVerde')) document.getElementById('countVerde').innerText = counts.verde;
             
-            // Re-aplicar filtros si existe la función
+            // Re-aplicar filtros
             if(typeof aplicarFiltrosDOM === 'function') aplicarFiltrosDOM(); 
         });
 
-        // Evento para el buscador (si existe el input)
+        // Evento para el buscador
         const inputSearch = document.getElementById('searchTable');
-        if(inputSearch && typeof aplicarFiltrosDOM === 'function') {
+        if(inputSearch) {
             inputSearch.addEventListener('input', aplicarFiltrosDOM);
         }
 
@@ -880,6 +884,7 @@
                 btnConfirmar.disabled = true;
                 btnConfirmar.classList.add('cursor-not-allowed', 'bg-slate-300');
                 btnConfirmar.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'shadow-lg');
+                btnConfirmar.innerHTML = `<i class="fas fa-check"></i> Confirmar Carga (<span id="previewCountBtn">0</span>)`;
             }
             
             // Ocultar botón de borrado masivo
@@ -899,7 +904,7 @@
             document.getElementById('modalImportar').classList.remove('flex');
         };
 
-        // Función INTELIGENTE para fechas (Corrige "NaAños", formatos invertidos y Excel)
+        // Función INTELIGENTE para fechas
         function excelDateToJSDate(serial) {
             if(!serial) return "";
             if (typeof serial === 'string') {
@@ -911,28 +916,21 @@
                     let p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]);
                     let day, month, year;
 
-                    // Detectar dónde está el año (número > 31)
                     if (p1 > 31) { 
                         year = p1; 
-                        // Detectar mes/día
                         if (p2 > 12) { month = p3; day = p2; } else { month = p2; day = p3; } 
                     } else { 
                         year = p3; 
-                        // Detectar si viene Mes/Día (formato gringo)
                         if (p2 > 12 && p1 <= 12) { month = p1; day = p2; } else { month = p2; day = p1; } 
                     }
 
-                    // Corregir años cortos (ej: 87 -> 1987)
                     if (year < 100) year = year > 30 ? 1900 + year : 2000 + year;
-                    
-                    // Última seguridad por si mes/día siguen invertidos
                     if (month > 12 && day <= 12) { let temp = month; month = day; day = temp; }
 
                     return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                 }
                 return s; 
             }
-            // Si es número de Excel
             try {
                 const utc_days  = Math.floor(serial - 25569);
                 const utc_value = utc_days * 86400;                                        
@@ -962,7 +960,6 @@
                         if (!row || row.length === 0) continue;
                         
                         const legajoRaw = row[0];
-                        // Filtrar encabezados
                         if(!legajoRaw || String(legajoRaw).toUpperCase().includes("LEG")) continue;
 
                         try {
@@ -1007,23 +1004,20 @@
             reader.readAsArrayBuffer(file);
         };
 
-     // --- FUNCIONES VISUALES (Renderizado y Borrado en Importación) ---
+        // --- FUNCIONES VISUALES IMPORTACION ---
 
         window.renderPreview = function() {
             const tbody = document.getElementById('previewBody');
             if(!tbody) return;
             tbody.innerHTML = "";
             
-            // CORRECCIÓN: Busca el contador dentro del botón
             const btnContador = document.getElementById('previewCountBtn');
             if(btnContador) btnContador.innerText = datosImportar.length;
 
-            // Si no hay datos, desmarcar check general
             if(datosImportar.length === 0 && document.getElementById('checkAll')) {
                 document.getElementById('checkAll').checked = false;
             }
             
-            // Actualizar estado del botón borrar (si existe la función)
             if(typeof verificarSeleccion === 'function') verificarSeleccion();
 
             for(let i=0; i < datosImportar.length; i++) {
@@ -1046,6 +1040,11 @@
             }
         };
 
+        window.eliminarFilaImport = (index) => {
+            datosImportar.splice(index, 1);
+            renderPreview();
+        };
+
         window.toggleSelectAll = (source) => {
             const checkboxes = document.querySelectorAll('.chk-item');
             checkboxes.forEach(cb => cb.checked = source.checked);
@@ -1066,7 +1065,62 @@
                 }
             }
         };
+
+        window.borrarSeleccionados = () => {
+             const checks = document.querySelectorAll('.chk-item:checked');
+             // Obtener índices inversos para borrar sin afectar el orden
+             const indices = Array.from(checks).map(c => parseInt(c.dataset.index)).sort((a,b) => b-a);
+             
+             indices.forEach(idx => {
+                 datosImportar.splice(idx, 1);
+             });
+             
+             document.getElementById('checkAll').checked = false;
+             renderPreview();
         };
+
+        // --- PROCESAR CARGA MASIVA A FIREBASE ---
+        window.procesarImportacionMasiva = async () => {
+            if(datosImportar.length === 0) return;
+
+            const btn = document.getElementById('btnConfirmarImport');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Cargando...`;
+
+            try {
+                const batch = writeBatch(db);
+                
+                // Firestore tiene limite de 500 operaciones por batch.
+                // Aquí asumimos < 500 para simplificar, si son más, habría que dividir arrays.
+                
+                datosImportar.forEach(d => {
+                    const ref = doc(collection(db, "agentes_jubilacion"));
+                    batch.set(ref, {
+                        legajo: d.legajo,
+                        nombre: d.nombre,
+                        cuil: '', // No viene en el excel básico
+                        fNac: d.fNac,
+                        fIng: d.fIng,
+                        estado: 'activo',
+                        timestamp: serverTimestamp()
+                    });
+                });
+
+                await batch.commit();
+
+                // Éxito
+                cerrarImportar();
+                document.getElementById('successOverlay').classList.remove('hidden');
+                document.getElementById('successOverlay').classList.add('flex');
+
+            } catch(e) {
+                console.error(e);
+                alert("Error en la carga masiva: " + e.message);
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-check"></i> Confirmar Carga`;
+            }
+        };
+
         // --- FUNCIONES EXPORTACION ---
         window.procesarDescarga = (formato) => {
             const tipo = document.getElementById('tipoExportacion').value;
@@ -1238,8 +1292,9 @@
                 alert("❌ Error al eliminar: " + e.message);
             }
         };
+        
+        console.log("Sistema Cargado Correctamente");
 
     </script>
 </body>
 </html>
-
