@@ -270,13 +270,13 @@
             <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 shrink-0 overflow-y-auto max-h-40 custom-scroll text-sm">
                 <h4 class="font-bold text-blue-700 mb-2 text-xs uppercase"><i class="fas fa-info-circle"></i> Instructivo Obligatorio</h4>
                 <ul class="list-disc pl-4 text-slate-600 space-y-1 text-xs">
-                    <li>El archivo <strong>DEBE</strong> llamarse <span class="font-mono bg-white px-1 rounded border border-blue-200 text-blue-600">JUBIS.xlsx</span></li>
-                    <li><strong>Estructura de Columnas:</strong>
+                    <li>El archivo debe contener la información de los agentes.</li>
+                    <li><strong>Estructura de Columnas (Orden exacto):</strong>
                         <ul class="list-decimal pl-4 mt-1">
-                            <li>Col 1: <strong>Legajo</strong> (Numérico)</li>
-                            <li>Col 2: <strong>Nombre y Apellido</strong> (Texto)</li>
-                            <li>Col 3: <strong>Fecha Nacimiento</strong> (Fecha)</li>
-                            <li>Col 4: <strong>Fecha Ingreso</strong> (Fecha)</li>
+                            <li>Col 1: <strong>Legajo</strong></li>
+                            <li>Col 2: <strong>Nombre y Apellido</strong></li>
+                            <li>Col 3: <strong>Fecha Nacimiento</strong> (Formato DD/MM/AAAA o AAAA-MM-DD)</li>
+                            <li>Col 4: <strong>Fecha Ingreso</strong> (Formato DD/MM/AAAA o AAAA-MM-DD)</li>
                         </ul>
                     </li>
                     <li>La primera fila se considera encabezado y <strong>no se importa</strong>.</li>
@@ -285,7 +285,7 @@
 
             <div class="space-y-4 flex-1 flex flex-col overflow-hidden">
                 <div class="flex items-center gap-3 shrink-0">
-                    <input type="file" id="fileInput" accept=".xlsx" class="hidden" onchange="handleFileUpload(event)">
+                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
                     <button onclick="document.getElementById('fileInput').click()" class="flex-1 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl p-4 text-slate-500 font-bold hover:bg-slate-50 hover:border-blue-400 hover:text-blue-500 transition text-center text-xs uppercase tracking-wide">
                         <i class="fas fa-upload text-xl mb-1 block"></i> Seleccionar Archivo
                     </button>
@@ -827,16 +827,23 @@
             document.getElementById('modalImportar').classList.remove('flex');
         };
 
-        // Función robusta para fechas
+        // Función robusta para fechas y strings
         function excelDateToJSDate(serial) {
             if(!serial) return "";
-            if(typeof serial === 'string') {
+            
+            // Caso: Fecha ya en formato string ISO o con guiones (tu archivo CSV)
+            if (typeof serial === 'string') {
+                if(serial.match(/^\d{4}-\d{2}-\d{2}$/)) return serial; // Formato YYYY-MM-DD directo
+                
+                // Formato DD/MM/AAAA
                 if(serial.includes('/')) {
                     const parts = serial.split('/');
                     if(parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
                 }
-                return serial;
+                return serial; 
             }
+            
+            // Caso: Número serial de Excel
             try {
                 const utc_days  = Math.floor(serial - 25569);
                 const utc_value = utc_days * 86400;                                        
@@ -861,14 +868,12 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
-                    // CORRECCION CRITICA: Borrar rango prefijado
-                    delete firstSheet['!ref'];
-
+                    // Convertimos todo a JSON
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet, { 
                         header: 1, 
                         defval: "", 
                         blankrows: false,
-                        raw: false
+                        raw: false // Importante para que lea tal cual está en el CSV/Excel
                     });
 
                     if (jsonData.length < 2) {
@@ -884,21 +889,26 @@
 
                         const legajoRaw = row[0];
                         if(!legajoRaw) continue;
-                        if(String(legajoRaw).toUpperCase().includes("LEGAJO")) continue;
+                        
+                        // CORRECCIÓN: Filtrar si es el encabezado "LEG" o "LEGAJO"
+                        if(String(legajoRaw).toUpperCase().includes("LEG")) continue;
 
                         try {
                             const nombre = row[1] ? String(row[1]).toUpperCase().trim() : "SIN NOMBRE";
                             
+                            // COLUMNAS: 0=LEG, 1=NOMBRE, 2=NAC, 3=ING
                             let fNac = excelDateToJSDate(row[2]);
                             let fIng = excelDateToJSDate(row[3]);
 
-                            procesados.push({
-                                id: i, 
-                                legajo: String(legajoRaw).trim(),
-                                nombre: nombre,
-                                fNac: fNac,
-                                fIng: fIng
-                            });
+                            if(fNac && fIng) {
+                                procesados.push({
+                                    id: i, 
+                                    legajo: String(legajoRaw).trim(),
+                                    nombre: nombre,
+                                    fNac: fNac,
+                                    fIng: fIng
+                                });
+                            }
                         } catch (errFila) {
                             console.warn("Error leyendo fila " + i, errFila);
                         }
@@ -908,12 +918,12 @@
 
                     if (datosImportar.length === 0) {
                         statusDiv.className = "p-3 rounded-xl text-xs font-bold border shrink-0 bg-amber-50 border-amber-200 text-amber-600 flex items-center gap-2";
-                        statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-lg"></i> No se encontraron registros válidos. Revise el formato.`;
+                        statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-lg"></i> No se encontraron registros válidos. Revise que las columnas sean: Legajo, Nombre, F.Nac, F.Ing.`;
                     } else {
                         statusDiv.className = "p-3 rounded-xl text-xs font-bold border shrink-0 bg-green-50 border-green-200 text-green-600 flex items-center gap-2";
                         statusDiv.innerHTML = `<i class="fas fa-check-circle text-lg"></i> Archivo válido. Registros listos: ${datosImportar.length}`;
                         
-                        // FIX VISUAL
+                        // Mostrar Preview
                         document.getElementById('previewContainer').classList.remove('hidden');
                         document.getElementById('previewContainer').classList.add('flex');
 
@@ -997,7 +1007,7 @@
                         batch.set(newRef, {
                             legajo: String(registro.legajo),
                             nombre: registro.nombre,
-                            cuil: "", 
+                            cuil: "", // El CSV no trae CUIL
                             fNac: registro.fNac,
                             fIng: registro.fIng,
                             estado: 'activo',
