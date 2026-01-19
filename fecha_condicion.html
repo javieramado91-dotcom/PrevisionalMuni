@@ -305,16 +305,16 @@
 
                 <div id="importStatus" class="hidden p-3 rounded-xl text-xs font-bold border shrink-0"></div>
 
-             <div id="previewContainer" class="hidden flex-1 bg-slate-50 rounded-xl border border-slate-200 flex-col overflow-hidden min-h-[150px]">
+            <div id="previewContainer" class="hidden w-full bg-slate-50 rounded-xl border border-slate-200 flex-col mt-2 shrink-0">
                     
-                    <div class="p-2 bg-slate-100 border-b border-slate-200 flex justify-between items-center shrink-0">
+                    <div class="p-2 bg-slate-100 border-b border-slate-200 flex justify-between items-center shrink-0 rounded-t-xl">
                         <span class="text-[10px] font-bold text-slate-500 uppercase ml-2">Previsualización (<span id="previewCount">0</span> reg)</span>
                         <button id="btnBorrarSeleccionados" onclick="borrarSeleccionados()" class="hidden px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-[10px] font-bold uppercase hover:bg-red-200 transition shadow-sm border border-red-200">
                             <i class="fas fa-trash-alt mr-1"></i> Borrar Seleccionados
                         </button>
                     </div>
 
-                    <div class="h-64 overflow-y-auto custom-scroll p-0 relative bg-white">
+                    <div class="overflow-y-auto custom-scroll p-0 relative bg-white" style="height: 250px;">
                         <table class="w-full text-left border-collapse">
                             <thead class="text-[9px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-50 shadow-sm z-10">
                                 <tr>
