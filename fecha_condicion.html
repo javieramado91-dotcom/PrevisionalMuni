@@ -565,18 +565,22 @@
         const APORTE_AVANZADA = 10;
 
         function calcularPrevision(fechaNac, fechaIng) {
-            if(!fechaNac || !fechaIng) return { edad: 0, antiguedad: 0, fpj: new Date(), tipo: 'Error Datos', semaforo: 'rojo', aniosRestantes: -99 };
+            // 1. Validar datos
+            if(!fechaNac || !fechaIng) return { edad: 0, antiguedad: 0, fpj: new Date(), tipo: 'Error Datos', semaforo: 'rojo', aniosRestantes: -99, faltaAnios: 0, faltaMeses: 0 };
 
             const nac = new Date(fechaNac + "T00:00:00");
             const ing = new Date(fechaIng + "T00:00:00");
             const hoy = new Date(); 
 
+            // 2. Calcular Edad Actual
             let edad = hoy.getFullYear() - nac.getFullYear();
             if (new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate()) > hoy) edad--;
 
+            // 3. Calcular Antigüedad
             let antiguedad = hoy.getFullYear() - ing.getFullYear();
             if (new Date(hoy.getFullYear(), ing.getMonth(), ing.getDate()) > hoy) antiguedad--;
 
+            // 4. Determinar Fecha de Retiro (FPJ)
             const metaEdad = new Date(nac); metaEdad.setFullYear(nac.getFullYear() + EDAD_JUBILATORIA);
             const metaServicio = new Date(ing); metaServicio.setFullYear(ing.getFullYear() + ANIOS_APORTE);
             let fpjOrd = (metaEdad > metaServicio) ? metaEdad : metaServicio;
@@ -593,6 +597,22 @@
                 tipo = "Edad Avanzada";
             }
 
+            // 5. CÁLCULO PRECISO (AÑOS Y MESES RESTANTES)
+            let faltaAnios = fechaRetiro.getFullYear() - hoy.getFullYear();
+            let faltaMeses = fechaRetiro.getMonth() - hoy.getMonth();
+
+            // Ajuste fino por día del mes
+            if (fechaRetiro.getDate() < hoy.getDate()) {
+                faltaMeses--;
+            }
+
+            // Ajuste si los meses dan negativo (pedimos prestado un año)
+            if (faltaMeses < 0) {
+                faltaAnios--;
+                faltaMeses += 12;
+            }
+
+            // 6. Semáforo (Lógica visual)
             const diffTime = fechaRetiro - hoy;
             const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25);
             
@@ -601,7 +621,16 @@
             else if (diffYears <= 5) semaforo = 'amarillo';
             if (diffYears < 0) semaforo = 'rojo';
 
-            return { edad, antiguedad, fpj: fechaRetiro, tipo, semaforo, aniosRestantes: diffYears };
+            return { 
+                edad, 
+                antiguedad, 
+                fpj: fechaRetiro, 
+                tipo, 
+                semaforo, 
+                aniosRestantes: diffYears, // Para ordenamiento interno
+                faltaAnios: faltaAnios,    // Para mostrar en pantalla
+                faltaMeses: faltaMeses     // Para mostrar en pantalla
+            };
         }
 
         // --- GESTION DE UI Y FILTROS ---
