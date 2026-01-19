@@ -6,7 +6,1359 @@
     <title>Fecha y Condición</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%231e40af' d='M243.4 2.6l-224 96c-14 6-21.8 21-18.7 35.8S16.8 160 32 160v8c0 13.3 10.7 24 24 24h400c13.3 0 24-10.7 24-24v-8c15.2 0 28.3-10.7 31.3-25.6s-4.8-29.9-18.7-35.8l-224-96c-8-3.4-17.2-3.4-25.2 0zM128 224H64V416H128V224zM256 224H192V416H256V224zM384 224H320V416H384V224zM448 224V416h64V224H448zM64 448H448c35.3 0 64 28.7 64 64h-512c0-35.3 28.7-64 64-64z'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https:/<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fecha y Condición</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%231e40af' d='M243.4 2.6l-224 96c-14 6-21.8 21-18.7 35.8S16.8 160 32 160v8c0 13.3 10.7 24 24 24h400c13.3 0 24-10.7 24-24v-8c15.2 0 28.3-10.7 31.3-25.6s-4.8-29.9-18.7-35.8l-224-96c-8-3.4-17.2-3.4-25.2 0zM128 224H64V416H128V224zM256 224H192V416H256V224zM384 224H320V416H384V224zM448 224V416h64V224H448zM64 448H448c35.3 0 64 28.7 64 64h-512c0-35.3 28.7-64 64-64z'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .row-rojo { border-left: 4px solid #ef4444; background: linear-gradient(to right, #fef2f2, white); }
+        .row-amarillo { border-left: 4px solid #f59e0b; background: linear-gradient(to right, #fffbeb, white); }
+        .row-verde { border-left: 4px solid #10b981; background: white; }
+        .row-jubilado { border-left: 4px solid #6366f1; background: #f8fafc; opacity: 0.75; }
+        tr { transition: all 0.3s ease; }
+        .overflow-hidden-mobile { overflow: hidden; }
+        
+        /* Animación de carga */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .loader-ring { animation: pulse-ring 2s infinite; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <header class="bg-white border-b border-slate-200 h-16 shrink-0 flex items-center justify-between px-4 md:px-6 shadow-sm z-30 relative">
+        <div class="flex items-center gap-3 md:gap-4">
+            <button onclick="toggleSidebar()" class="md:hidden w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 border border-slate-200 active:scale-95 transition">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="index.html" class="hidden md:flex w-9 h-9 rounded-xl bg-slate-50 items-center justify-center text-slate-500 hover:bg-slate-100 transition border border-slate-200">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="overflow-hidden">
+                <h1 class="font-extrabold text-base md:text-lg text-slate-800 leading-none tracking-tight truncate">Fecha y Condición</h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 truncate">Control de Gestión & Alertas</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex flex-col items-end">
+                <span class="text-xs font-bold text-slate-700 hidden md:block" id="userNameDisplay">Usuario</span>
+                <span class="text-[9px] md:text-[10px] text-emerald-500 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> <span class="hidden sm:inline">Sistema </span>Activo</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden relative">
+        <div id="mobileOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-30 hidden backdrop-blur-sm transition-opacity md:hidden"></div>
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 flex flex-col z-40 shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-[4px_0_24px_rgba(0,0,0,0.02)] md:w-80 md:z-20">
+            <div class="p-4 md:p-5 bg-slate-50/50 h-full overflow-y-auto custom-scroll">
+                <div class="flex justify-between items-center md:hidden mb-4">
+                    <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Tablero</h3>
+                    <button onclick="toggleSidebar()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <h3 class="hidden md:block text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">Tablero de Control</h3>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Activos</span>
+                        <div class="text-2xl font-black text-slate-700 mt-1" id="countTotal">0</div>
+                    </div>
+                    <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 shadow-sm flex flex-col justify-between">
+                        <span class="text-[10px] font-bold text-indigo-400 uppercase">Jubilados</span>
+                        <div class="text-2xl font-black text-indigo-600 mt-1" id="countJubilados">0</div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-red-50 p-3 rounded-xl border border-red-100 flex items-center justify-between cursor-pointer hover:bg-red-100 transition group" onclick="filtrarTabla('rojo'); toggleSidebarIfMobile()">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-200 group-hover:scale-110 transition">
+                                <i class="fas fa-exclamation-triangle text-xs"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-red-800">Urgente</div>
+                                <div class="text-[10px] text-red-500 font-medium">Menos de 2 años</div>
+                            </div>
+                        </div>
+                        <div class="text-xl font-black text-red-600" id="countRojo">0</div>
+                    </div>
+                    <div class="bg-amber-50 p-3 rounded-xl border border-amber-100 flex items-center justify-between cursor-pointer hover:bg-amber-100 transition group" onclick="filtrarTabla('amarillo'); toggleSidebarIfMobile()">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-amber-400 text-white flex items-center justify-center shadow-lg shadow-amber-200 group-hover:scale-110 transition">
+                                <i class="fas fa-clock text-xs"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-amber-800">Alerta</div>
+                                <div class="text-[10px] text-amber-600 font-medium">2 a 5 años</div>
+                            </div>
+                        </div>
+                        <div class="text-xl font-black text-amber-600" id="countAmarillo">0</div>
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 flex items-center justify-between cursor-pointer hover:bg-emerald-100 transition group" onclick="filtrarTabla('verde'); toggleSidebarIfMobile()">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition">
+                                <i class="fas fa-check text-xs"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-emerald-800">Seguro</div>
+                                <div class="text-[10px] text-emerald-600 font-medium">Más de 5 años</div>
+                            </div>
+                        </div>
+                        <div class="text-xl font-black text-emerald-600" id="countVerde">0</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="flex-1 bg-slate-50/50 p-3 md:p-6 overflow-hidden flex flex-col relative w-full">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 md:mb-6 gap-3 shrink-0">
+                <div class="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200 overflow-x-auto w-full lg:w-auto custom-scroll">
+                    <div class="flex min-w-max">
+                        <button onclick="filtrarTabla('todos')" class="filter-btn active px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition border border-transparent focus:bg-slate-100" data-filter="todos">Todos</button>
+                        <div class="w-px h-6 bg-slate-200 mx-1 my-auto"></div>
+                        <button onclick="filtrarTabla('rojo')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50 transition border border-transparent" data-filter="rojo"><i class="fas fa-fire mr-1"></i> Próximos</button>
+                        <button onclick="filtrarTabla('ordinaria')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-blue-500 hover:bg-blue-50 transition border border-transparent" data-filter="ordinaria">Ordinaria</button>
+                        <button onclick="filtrarTabla('avanzada')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-purple-500 hover:bg-purple-50 transition border border-transparent" data-filter="avanzada">Avanzada</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+                 
+				 <div class="flex gap-1 justify-between sm:justify-start items-center">
+    <button id="btnBorrarMasivo" onclick="borrarMasivoDB()" class="hidden px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 items-center justify-center gap-2 mr-2 animate-pulse">
+        <i class="fas fa-trash-alt"></i> Borrar (<span id="countBorrar">0</span>)
+    </button>
+
+    <button onclick="prepararExportacion('todos')" class="flex-1 sm:flex-none px-3 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-700 transition shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
+        <i class="fas fa-print"></i> Todos
+    </button>
+    <button onclick="prepararExportacion('proximos')" class="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 flex items-center justify-center gap-2">
+        <i class="fas fa-print"></i> Próximos
+    </button>
+</div>
+
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="searchTable" placeholder="Buscar..." class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex-1 overflow-hidden flex flex-col">
+                <div class="overflow-auto custom-scroll flex-1 touch-pan-x">
+                    <table class="w-full text-left border-collapse min-w-[600px] md:min-w-0">
+                      
+					  <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm border-b border-slate-100">
+    <tr>
+        <th class="p-3 md:p-4 w-10 text-center">
+            <input type="checkbox" id="checkAllMain" onchange="toggleSelectAllMain(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4">
+        </th>
+
+        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Legajo</th>
+        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Agente</th>
+        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Edad / Serv.</th>
+        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-blue-600 uppercase tracking-wider bg-blue-50/30">Retiro</th>
+        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Falta</th>
+        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Estado</th>
+        <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-right">Acciones</th>
+    </tr>
+</thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-50 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <button onclick="abrirNuevo()" class="fixed bottom-6 right-6 md:left-8 md:right-auto bg-slate-900 text-white w-14 h-14 md:w-auto md:h-auto md:px-6 md:py-3 rounded-full shadow-2xl hover:bg-blue-600 hover:scale-105 transition duration-300 flex items-center justify-center md:justify-start gap-3 z-40 group border-4 border-slate-50">
+        <i class="fas fa-plus text-lg group-hover:rotate-90 transition transform duration-300"></i>
+        <span class="hidden md:inline font-bold tracking-wide uppercase text-xs">Agregar Registro</span>
+    </button>
+
+    <div onclick="abrirAutor()" class="fixed bottom-2 left-2 md:bottom-4 md:right-4 md:left-auto z-40 cursor-pointer group hidden md:block">
+        <div class="bg-white/90 backdrop-blur border border-slate-200 shadow-lg rounded-full px-4 py-1.5 flex items-center gap-2 hover:scale-105 transition transform">
+            <i class="fas fa-code text-xs text-blue-500"></i>
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-800">Powered by JA</span>
+        </div>
+    </div>
+
+    <div id="modalAutor" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[60] backdrop-blur-sm transition-opacity px-4" onclick="if(event.target === this) cerrarAutor()">
+        <div class="bg-white w-full max-w-xs rounded-2xl shadow-2xl p-6 transform scale-100 transition-all text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-br from-blue-600 to-indigo-600"></div>
+            <button onclick="cerrarAutor()" class="absolute top-3 right-3 text-white/80 hover:text-white transition z-10"><i class="fas fa-times"></i></button>
+            <div class="relative z-10 -mt-2 mb-3">
+                <div class="w-20 h-20 bg-white p-1 rounded-full mx-auto shadow-lg">
+                    <div class="w-full h-full bg-slate-100 rounded-full flex items-center justify-center text-3xl text-slate-400">
+                         <span class="font-black text-slate-800">JA</span>
+                    </div>
+                </div>
+            </div>
+            <h3 class="text-lg font-black text-slate-800 mb-1">Javier Amado</h3>
+            <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-4">Full Stack Developer</p>
+            <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mb-4">
+                <p class="text-xs text-slate-500 mb-1">Contacto</p>
+                <a href="mailto:javieramado91@gmail.com" class="text-sm font-bold text-slate-700 hover:text-blue-600 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-envelope"></i> javieramado91@gmail.com
+                </a>
+            </div>
+            <p class="text-[10px] text-slate-400">© 2026 - Todos los derechos reservados.</p>
+        </div>
+    </div>
+
+    <div id="modalNuevo" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity px-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 md:p-6 transform scale-100 transition-all max-h-[90vh] overflow-y-auto custom-scroll">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3 sticky top-0 bg-white z-10">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-user-plus text-blue-500"></i> Nuevo Agente
+                </h3>
+                <button onclick="cerrarNuevo()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <form id="calcForm" class="space-y-4">
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-500 uppercase">Carga Masiva</span>
+                    <button type="button" onclick="abrirImportar()" class="px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold uppercase hover:bg-green-600 transition shadow-lg shadow-green-100 flex items-center gap-2">
+                        <i class="fas fa-file-excel"></i> Importar Excel
+                    </button>
+                </div>
+                <hr class="border-slate-100">
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Legajo</label>
+                        <input type="number" id="inpLegajo" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="1234" required>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">CUIL</label>
+                        <input type="text" id="inpCuil" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Sin guiones">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Apellido y Nombre</label>
+                    <input type="text" id="inpNombre" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold uppercase focus:ring-2 focus:ring-blue-500 outline-none" placeholder="PEREZ JUAN" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">F. Nacimiento</label>
+                        <input type="date" id="inpNacimiento" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold text-slate-600" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">F. Ingreso</label>
+                        <input type="date" id="inpIngreso" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold text-slate-600" required>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="cerrarNuevo()" class="flex-1 py-3 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition">Cancelar</button>
+                    <button type="submit" class="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-slate-800 transition transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fas fa-save text-yellow-400"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+ <div id="modalImportar" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[55] backdrop-blur-sm transition-opacity px-4">
+        
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col h-[85vh] md:h-[90vh] overflow-hidden relative transition-all">
+            
+            <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-20 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 shadow-sm">
+                        <i class="fas fa-file-excel text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800 leading-none">Importación Masiva</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Carga de Agentes</p>
+                    </div>
+                </div>
+
+                <div id="toolbarImport" class="hidden items-center gap-2 mr-4">
+                     <button onclick="toggleInstrucciones()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition" title="Ver/Ocultar Ayuda">
+                        <i class="fas fa-info-circle"></i> <span class="hidden sm:inline">Ayuda</span>
+                    </button>
+                    <button onclick="document.getElementById('fileInput').click()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-bold transition border border-blue-200">
+                        <i class="fas fa-sync-alt mr-1"></i> Cambiar Archivo
+                    </button>
+                </div>
+
+                <button onclick="cerrarImportar()" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-hidden flex flex-col bg-slate-50 relative">
+                
+                <div id="panelInstrucciones" class="bg-blue-50/80 border-b border-blue-100 p-4 transition-all duration-300 shrink-0">
+                    <div class="flex gap-4">
+                        <div class="shrink-0 text-blue-500"><i class="fas fa-info-circle text-xl"></i></div>
+                        <div class="text-xs text-slate-600 space-y-1">
+                            <p class="font-bold text-blue-800 uppercase mb-1">Estructura Requerida del Excel:</p>
+                            <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-4">
+                                <li>Col 1: <strong>Legajo</strong> (Obligatorio)</li>
+                                <li>Col 2: <strong>Nombre y Apellido</strong></li>
+                                <li>Col 3: <strong>Fecha Nacimiento</strong> (DD/MM/AAAA)</li>
+                                <li>Col 4: <strong>Fecha Ingreso</strong> (DD/MM/AAAA)</li>
+                            </ul>
+                            <p class="text-[10px] text-blue-600 mt-2 font-semibold">* La primera fila se ignora (encabezados).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dropZone" class="flex-1 flex flex-col items-center justify-center p-8 transition-all">
+                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
+                    
+                    <div onclick="document.getElementById('fileInput').click()" class="group cursor-pointer text-center w-full max-w-lg border-2 border-dashed border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/30 rounded-3xl p-10 transition-all duration-300">
+                        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:text-blue-500 group-hover:scale-110 transition mx-auto mb-4 shadow-sm border border-slate-100">
+                            <i class="fas fa-cloud-upload-alt text-4xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-700 mb-1 group-hover:text-blue-600 transition">Seleccionar Archivo Excel</h4>
+                        <p class="text-xs text-slate-400 font-medium">Arrastra o haz clic para buscar .xlsx o .csv</p>
+                    </div>
+                </div>
+
+                <div id="importStatus" class="hidden px-4 py-2 bg-white border-b border-slate-200 shrink-0 items-center justify-between text-xs">
+                    <span id="statusText" class="font-bold"></span>
+                    <button id="btnBorrarSeleccionados" onclick="borrarSeleccionados()" class="hidden text-red-500 hover:text-red-700 font-bold uppercase tracking-wider text-[10px] items-center gap-1 transition">
+                        <i class="fas fa-trash-alt"></i> Borrar Seleccionados
+                    </button>
+                </div>
+
+                <div id="previewContainer" class="hidden flex-1 overflow-hidden bg-white relative flex-col">
+                    <div class="flex-1 overflow-y-auto custom-scroll">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="text-[10px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-50 shadow-sm z-10 tracking-wider">
+                                <tr>
+                                    <th class="p-3 text-center w-10 bg-slate-50 border-b border-slate-200">
+                                        <input type="checkbox" id="checkAll" onchange="toggleSelectAll(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-3.5 h-3.5">
+                                    </th>
+                                    <th class="p-3 bg-slate-50 border-b border-slate-200">Legajo</th>
+                                    <th class="p-3 bg-slate-50 border-b border-slate-200">Nombre del Agente</th>
+                                    <th class="p-3 bg-slate-50 border-b border-slate-200 text-center">F. Nacimiento</th>
+                                    <th class="p-3 bg-slate-50 border-b border-slate-200 text-center">F. Ingreso</th>
+                                    <th class="p-3 text-right bg-slate-50 border-b border-slate-200">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewBody" class="text-xs text-slate-600 divide-y divide-slate-50">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-white border-t border-slate-100 flex gap-3 shrink-0 z-20">
+                <button onclick="cerrarImportar()" class="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 font-bold rounded-xl transition text-xs uppercase border border-slate-200">
+                    Cancelar Operación
+                </button>
+                <button id="btnConfirmarImport" onclick="procesarImportacionMasiva()" disabled class="flex-1 py-3 bg-slate-200 text-white font-bold rounded-xl shadow-none transition text-xs uppercase flex items-center justify-center gap-2 cursor-not-allowed">
+                    <i class="fas fa-check"></i> Confirmar Carga (<span id="previewCountBtn">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="successOverlay" class="fixed inset-0 bg-emerald-600 z-[75] hidden flex-col items-center justify-center text-white transition-all">
+        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-emerald-600 text-4xl shadow-2xl mb-4 animate-bounce">
+            <i class="fas fa-check"></i>
+        </div>
+        <h2 class="text-3xl font-black mb-2">¡Carga Exitosa!</h2>
+        <p class="text-white/80 text-sm font-bold">Los datos han sido actualizados correctamente.</p>
+        <button onclick="location.reload()" class="mt-8 px-6 py-2 bg-white text-emerald-700 font-bold rounded-full hover:scale-105 transition shadow-lg uppercase text-xs tracking-wider">Continuar</button>
+    </div>
+
+    <div id="modalEdit" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Editar Agente</h3>
+            <form id="editForm" class="space-y-3">
+                <input type="hidden" id="editId">
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-1">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Legajo</label>
+                        <input type="number" id="editLegajo" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-sm">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">CUIL</label>
+                        <input type="text" id="editCuil" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-mono text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[9px] font-bold text-slate-400 uppercase">Nombre</label>
+                    <input type="text" id="editNombre" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-sm uppercase">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">F. Nacimiento</label>
+                        <input type="date" id="editNacimiento" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">F. Ingreso</label>
+                        <input type="date" id="editIngreso" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-4">
+                    <button type="button" onclick="cerrarModal()" class="flex-1 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 font-bold hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" class="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-lg shadow-blue-200">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalJubilar" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 text-3xl mx-auto mb-4 animate-bounce">
+                <i class="fas fa-medal"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">¡Hora de celebrar!</h3>
+            <p class="text-sm text-slate-500 mb-6">¿Confirmas que el agente ha iniciado su retiro efectivo? Pasará a la lista de Jubilados.</p>
+            <input type="hidden" id="jubilarId">
+            <div class="flex gap-2">
+                <button onclick="cerrarJubilar()" class="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-xl">Cancelar</button>
+                <button onclick="confirmarJubilacion()" class="flex-1 bg-green-500 text-white font-bold py-2 rounded-xl hover:bg-green-600 shadow-lg shadow-green-200">Sí, Jubilar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalDetalle" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="bg-slate-50 border-b border-slate-200 p-6 flex justify-between items-start shrink-0">
+                <div class="overflow-hidden pr-2">
+                    <div class="inline-flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2 py-1 mb-2">
+                        <i class="fas fa-id-card text-slate-400 text-xs"></i>
+                        <span class="text-xs font-mono font-bold text-slate-600" id="detLegajo">0000</span>
+                    </div>
+                    <h3 class="text-lg md:text-xl font-black text-slate-800 uppercase leading-tight truncate" id="detNombre">NOMBRE APELLIDO</h3>
+                    <p class="text-xs text-slate-400 font-mono mt-1" id="detCuil">CUIL: 00-00000000-0</p>
+                </div>
+                <button onclick="cerrarDetalle()" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition shrink-0">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto custom-scroll">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Fecha Nacimiento</label>
+                        <div class="font-bold text-slate-700 flex items-center gap-2">
+                            <i class="fas fa-birthday-cake text-purple-400"></i>
+                            <span id="detNac">00/00/0000</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Fecha Ingreso</label>
+                        <div class="font-bold text-slate-700 flex items-center gap-2">
+                            <i class="fas fa-briefcase text-blue-400"></i>
+                            <span id="detIng">00/00/0000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
+                            <span class="block text-[9px] font-bold text-slate-400 uppercase">Edad Actual</span>
+                            <span class="block text-lg font-black text-slate-700" id="detEdad">0</span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
+                            <span class="block text-[9px] font-bold text-slate-400 uppercase">Antigüedad</span>
+                            <span class="block text-lg font-black text-slate-700" id="detAnt">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50/50 rounded-xl p-3 border border-blue-100">
+                        <label class="text-[9px] font-bold text-blue-400 uppercase tracking-widest block mb-1 text-center">Fecha Estimada de Retiro</label>
+                        <div class="text-center">
+                            <div class="text-xl font-black text-blue-600" id="detRetiro">00/00/0000</div>
+                            <span class="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-white border border-blue-100 text-blue-500" id="detTipo">TIPO</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-slate-50 p-4 border-t border-slate-200 text-center shrink-0">
+                <button onclick="cerrarDetalle()" class="bg-white border border-slate-300 text-slate-600 font-bold py-2 px-6 rounded-xl hover:bg-slate-100 transition text-xs uppercase tracking-wide">
+                    Cerrar Ficha
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalExportar" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Descargar Reporte</h3>
+            <p class="text-sm text-slate-500 mb-6" id="txtExportar">Seleccione el formato de descarga:</p>
+            <input type="hidden" id="tipoExportacion"> 
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="procesarDescarga('pdf')" class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 border-slate-100 hover:border-red-500 hover:bg-red-50 transition group">
+                    <i class="fas fa-file-pdf text-3xl text-red-500 group-hover:scale-110 transition"></i>
+                    <span class="text-xs font-bold text-slate-600 group-hover:text-red-700">PDF</span>
+                </button>
+                <button onclick="procesarDescarga('excel')" class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 border-slate-100 hover:border-green-500 hover:bg-green-50 transition group">
+                    <i class="fas fa-file-excel text-3xl text-green-600 group-hover:scale-110 transition"></i>
+                    <span class="text-xs font-bold text-slate-600 group-hover:text-green-700">Excel</span>
+                </button>
+            </div>
+            <button onclick="cerrarExportar()" class="w-full mt-4 py-2 text-sm font-bold text-slate-400 hover:text-slate-600 transition">Cancelar</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc, doc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyA515UUFT5b8jfl6KHz6nXij8m_coX8x7M",
+            authDomain: "previsional-muni.firebaseapp.com",
+            projectId: "previsional-muni",
+            storageBucket: "previsional-muni.firebasestorage.app",
+            messagingSenderId: "674183319744",
+            appId: "1:674183319744:web:a5df8d0bb9da774ae95d25",
+            measurementId: "G-XTTXQ7M3GD"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // SESION
+        const storedUser = localStorage.getItem('usuarioActivo');
+        if (!storedUser) window.location.href = 'index.html';
+        const currentUser = JSON.parse(storedUser);
+        document.getElementById('userNameDisplay').textContent = currentUser.username;
+
+        // UI HELPERS
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        };
+
+        window.toggleSidebarIfMobile = () => {
+             const overlay = document.getElementById('mobileOverlay');
+             if(!overlay.classList.contains('hidden')) toggleSidebar();
+        }
+
+        window.datosGlobales = [];
+
+        // LÓGICA DE CALCULO JUBILATORIO
+        const EDAD_JUBILATORIA = 60;
+        const ANIOS_APORTE = 35;
+        const EDAD_AVANZADA = 65;
+        const APORTE_AVANZADA = 10;
+
+        function calcularPrevision(fechaNac, fechaIng) {
+            if(!fechaNac || !fechaIng) return { edad: 0, antiguedad: 0, fpj: new Date(), tipo: 'Error Datos', semaforo: 'rojo', aniosRestantes: -99 };
+
+            const nac = new Date(fechaNac + "T00:00:00");
+            const ing = new Date(fechaIng + "T00:00:00");
+            const hoy = new Date(); 
+
+            let edad = hoy.getFullYear() - nac.getFullYear();
+            if (new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate()) > hoy) edad--;
+
+            let antiguedad = hoy.getFullYear() - ing.getFullYear();
+            if (new Date(hoy.getFullYear(), ing.getMonth(), ing.getDate()) > hoy) antiguedad--;
+
+            const metaEdad = new Date(nac); metaEdad.setFullYear(nac.getFullYear() + EDAD_JUBILATORIA);
+            const metaServicio = new Date(ing); metaServicio.setFullYear(ing.getFullYear() + ANIOS_APORTE);
+            let fpjOrd = (metaEdad > metaServicio) ? metaEdad : metaServicio;
+
+            const metaEdadAdv = new Date(nac); metaEdadAdv.setFullYear(nac.getFullYear() + EDAD_AVANZADA);
+            const metaServicioAdv = new Date(ing); metaServicioAdv.setFullYear(ing.getFullYear() + APORTE_AVANZADA);
+            let fpjAdv = (metaEdadAdv > metaServicioAdv) ? metaEdadAdv : metaServicioAdv;
+
+            let fechaRetiro = fpjOrd;
+            let tipo = "Jub. Ordinaria";
+            
+            if (fpjOrd > fpjAdv) {
+                fechaRetiro = fpjAdv;
+                tipo = "Edad Avanzada";
+            }
+
+            const diffTime = fechaRetiro - hoy;
+            const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25);
+            
+            let semaforo = 'verde'; 
+            if (diffYears <= 2) semaforo = 'rojo';
+            else if (diffYears <= 5) semaforo = 'amarillo';
+            if (diffYears < 0) semaforo = 'rojo';
+
+            return { edad, antiguedad, fpj: fechaRetiro, tipo, semaforo, aniosRestantes: diffYears };
+        }
+
+        // --- GESTION DE UI Y FILTROS ---
+        let filtroActual = 'todos';
+        window.filtrarTabla = (filtro) => {
+            filtroActual = filtro;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === filtro) {
+                    btn.classList.add('bg-slate-100', 'ring-2', 'ring-slate-200');
+                } else {
+                    btn.classList.remove('bg-slate-100', 'ring-2', 'ring-slate-200');
+                }
+            });
+            aplicarFiltrosDOM();
+        };
+
+        function aplicarFiltrosDOM() {
+            const filas = document.getElementById('tableBody').children;
+            const term = document.getElementById('searchTable').value.toLowerCase();
+            Array.from(filas).forEach(row => {
+                const dataFilter = row.dataset.filtro;
+                const dataTipo = row.dataset.tipo;
+                const texto = row.innerText.toLowerCase();
+                let mostrar = true;
+
+                if (term && !texto.includes(term)) mostrar = false;
+
+                if (mostrar) {
+                    if (filtroActual === 'todos') {
+                        if (dataFilter === 'jubilado') mostrar = false;
+                    }
+                    else if (filtroActual === 'jubilado') {
+                        if (dataFilter !== 'jubilado') mostrar = false;
+                    }
+                    else if (filtroActual === 'rojo') {
+                        if (dataFilter !== 'rojo') mostrar = false;
+                    }
+                    else if (filtroActual === 'ordinaria') {
+                        if (dataFilter === 'jubilado' || !dataTipo.includes('ordinaria')) mostrar = false;
+                    }
+                    else if (filtroActual === 'avanzada') {
+                         if (dataFilter === 'jubilado' || !dataTipo.includes('avanzada')) mostrar = false;
+                    }
+                    else if (['amarillo', 'verde'].includes(filtroActual)) {
+                         if (dataFilter !== filtroActual) mostrar = false;
+                    }
+                }
+                row.style.display = mostrar ? '' : 'none';
+            });
+        }
+
+        // --- FIREBASE LISTENER ---
+        const q = query(collection(db, "agentes_jubilacion"), orderBy("legajo", "asc"));
+        
+       // --- ESCUCHADOR EN TIEMPO REAL (CORREGIDO Y CERRADO) ---
+        onSnapshot(q, (snapshot) => {
+            // NOTA: Asegúrate que tu HTML tenga id="tablaBody" o "tableBody". 
+            // Aquí probamos ambos por seguridad.
+            const tbody = document.getElementById('tablaBody') || document.getElementById('tableBody');
+            if(!tbody) { console.error("No se encontró el cuerpo de la tabla"); return; }
+            
+            tbody.innerHTML = "";
+            
+            let counts = { total: 0, jubilados: 0, rojo: 0, amarillo: 0, verde: 0 };
+            window.datosGlobales = []; // Para el buscador
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const id = docSnap.id;
+                
+                // Calcular previsión (asegurando que existe la función)
+                const prev = (typeof calcularPrevision === 'function') 
+                    ? calcularPrevision(data.fNac, data.fIng, data.genero || 'M') 
+                    : { edad:0, antiguedad:0, semaforo:'verde', tipo:'Normal', fpj: new Date() };
+                
+                const esJubilado = (data.estado === 'jubilado');
+
+                // Guardar para buscador
+                window.datosGlobales.push({
+                    legajo: data.legajo,
+                    nombre: data.nombre,
+                    cuil: data.cuil,
+                    edad: prev.edad,
+                    antiguedad: prev.antiguedad,
+                    fechaRetiro: prev.fpj,
+                    tipo: prev.tipo,
+                    semaforo: prev.semaforo,
+                    estado: data.estado
+                });
+
+                // Contadores
+                if (esJubilado) counts.jubilados++;
+                else {
+                    counts.total++;
+                    if(counts[prev.semaforo] !== undefined) counts[prev.semaforo]++;
+                }
+
+                // Formatos de fecha
+                const fmtNac = data.fNac ? new Date(data.fNac + "T00:00:00").toLocaleDateString('es-AR') : '-';
+                const fmtIng = data.fIng ? new Date(data.fIng + "T00:00:00").toLocaleDateString('es-AR') : '-';
+                const fmtRetiro = prev.fpj ? prev.fpj.toLocaleDateString('es-AR') : '-';
+
+                // Badges y Textos
+                const badgeColor = prev.tipo.includes('Jub') ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
+                
+                let faltaTexto = '';
+                if(esJubilado) faltaTexto = '<span class="text-slate-400 font-mono">-</span>';
+                else {
+                    const anios = Math.floor(prev.aniosRestantes || 0); // corrección por si es undefined
+                    if (anios < 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap">¡VENCIDO!</span>`;
+                    else if (anios === 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap"> < 1 Año</span>`;
+                    else faltaTexto = `<span class="whitespace-nowrap font-mono text-slate-500">${prev.faltaAnios}a ${prev.faltaMeses}m</span>`;
+                }
+
+                // --- DIBUJAR FILA ---
+                const tr = document.createElement('tr');
+                tr.className = `border-b border-slate-50 group hover:bg-slate-50 transition ${esJubilado ? 'bg-slate-50/30' : ''}`;
+                
+                // AQUÍ ESTÁ LA MAGIA DEL CHECKBOX Y LA SINTAXIS CORREGIDA
+                tr.innerHTML = `
+                    <td class="p-3 md:p-4 text-center bg-slate-50/50">
+                        <input type="checkbox" class="chk-main-item rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4" value="${id}" onchange="verificarSeleccionMain()">
+                    </td>
+
+                    <td class="p-3 md:p-4 font-mono font-bold text-slate-600">${data.legajo}</td>
+                    <td class="p-3 md:p-4">
+                        <div class="font-bold text-slate-800 text-sm md:text-base">${data.nombre}</div>
+                        <div class="text-[9px] md:text-[10px] text-slate-400 font-mono">${data.cuil || '-'}</div>
+                    </td>
+                    <td class="p-3 md:p-4 text-center">
+                        <div class="font-bold text-slate-700 text-xs">${prev.edad} años</div>
+                        <div class="text-[9px] md:text-[10px] text-slate-400 whitespace-nowrap">${prev.antiguedad} serv.</div>
+                    </td>
+                    <td class="p-3 md:p-4 bg-blue-50/10">
+                        <div class="text-xs font-bold text-slate-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-slate-300 mr-1"></i> ${fmtRetiro}</div>
+                        <span class="${badgeColor} px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-transparent bg-opacity-70 whitespace-nowrap">${prev.tipo}</span>
+                    </td>
+                    <td class="p-3 md:p-4 text-center font-bold text-slate-600 text-xs">
+                        ${faltaTexto}
+                    </td>
+                    <td class="p-3 md:p-4 text-center">
+                         ${esJubilado 
+                            ? '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>'
+                            : `<span class="inline-flex w-3 h-3 rounded-full bg-${prev.semaforo === 'rojo' ? 'red' : prev.semaforo === 'amarillo' ? 'amber' : 'emerald'}-500 shadow-sm"></span>`
+                         }
+                    </td>
+                    <td class="p-3 md:p-4 text-right">
+                        <div class="flex justify-end gap-1 opacity-100 md:opacity-80 hover:opacity-100">
+                             <button onclick="verDetalle('${data.legajo}', '${data.nombre}', '${data.cuil}', '${fmtNac}', '${fmtIng}', '${prev.edad}', '${prev.antiguedad}', '${prev.tipo}', '${fmtRetiro}')" 
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 transition" title="Ver Ficha">
+                                <i class="fas fa-eye text-xs"></i>
+                            </button>
+                             <button onclick="abrirEditar('${id}', '${data.legajo}', '${data.nombre}', '${data.cuil}', '${data.fNac}', '${data.fIng}')" 
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Editar">
+                                <i class="fas fa-pen text-xs"></i>
+                            </button>
+                            ${!esJubilado ? `
+                            <button onclick="abrirJubilar('${id}')" 
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-yellow-500 hover:bg-yellow-50 transition" title="Jubilar">
+                                <i class="fas fa-medal text-xs"></i>
+                            </button>` : ''}
+                            <button onclick="borrarAgente('${id}')" 
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition" title="Eliminar">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Actualizar contadores del DOM si existen los elementos
+            if(document.getElementById('countTotal')) document.getElementById('countTotal').innerText = counts.total;
+            if(document.getElementById('countJubilados')) document.getElementById('countJubilados').innerText = counts.jubilados;
+            if(document.getElementById('countRojo')) document.getElementById('countRojo').innerText = counts.rojo;
+            if(document.getElementById('countAmarillo')) document.getElementById('countAmarillo').innerText = counts.amarillo;
+            if(document.getElementById('countVerde')) document.getElementById('countVerde').innerText = counts.verde;
+            
+            // Re-aplicar filtros si existe la función
+            if(typeof aplicarFiltrosDOM === 'function') aplicarFiltrosDOM(); 
+        });
+
+        // Evento para el buscador (si existe el input)
+        const inputSearch = document.getElementById('searchTable');
+        if(inputSearch && typeof aplicarFiltrosDOM === 'function') {
+            inputSearch.addEventListener('input', aplicarFiltrosDOM);
+        }
+
+        // --- FUNCIONES MODALES GLOBALES ---
+        window.abrirNuevo = () => {
+            document.getElementById('calcForm').reset();
+            document.getElementById('modalNuevo').classList.remove('hidden');
+            document.getElementById('modalNuevo').classList.add('flex');
+        };
+        window.cerrarNuevo = () => {
+            document.getElementById('modalNuevo').classList.add('hidden');
+            document.getElementById('modalNuevo').classList.remove('flex');
+        };
+        window.abrirEditar = (id, legajo, nombre, cuil, fNac, fIng) => {
+            document.getElementById('editId').value = id;
+            document.getElementById('editLegajo').value = legajo;
+            document.getElementById('editNombre').value = nombre;
+            document.getElementById('editCuil').value = cuil;
+            document.getElementById('editNacimiento').value = fNac;
+            document.getElementById('editIngreso').value = fIng;
+            document.getElementById('modalEdit').classList.remove('hidden');
+            document.getElementById('modalEdit').classList.add('flex');
+        };
+        window.cerrarModal = () => {
+            document.getElementById('modalEdit').classList.add('hidden');
+            document.getElementById('modalEdit').classList.remove('flex');
+        };
+        window.abrirJubilar = (id) => {
+            document.getElementById('jubilarId').value = id;
+            document.getElementById('modalJubilar').classList.remove('hidden');
+            document.getElementById('modalJubilar').classList.add('flex');
+        };
+        window.cerrarJubilar = () => {
+            document.getElementById('modalJubilar').classList.add('hidden');
+            document.getElementById('modalJubilar').classList.remove('flex');
+        };
+        window.verDetalle = (legajo, nombre, cuil, fnac, fing, edad, ant, tipo, fretiro) => {
+            document.getElementById('detLegajo').innerText = legajo;
+            document.getElementById('detNombre').innerText = nombre;
+            document.getElementById('detCuil').innerText = 'CUIL: ' + (cuil || 'No especificado');
+            document.getElementById('detNac').innerText = fnac;
+            document.getElementById('detIng').innerText = fing;
+            document.getElementById('detEdad').innerText = edad + ' años';
+            document.getElementById('detAnt').innerText = ant + ' años';
+            document.getElementById('detTipo').innerText = tipo;
+            document.getElementById('detRetiro').innerText = fretiro;
+            document.getElementById('modalDetalle').classList.remove('hidden');
+            document.getElementById('modalDetalle').classList.add('flex');
+        };
+        window.cerrarDetalle = () => {
+            document.getElementById('modalDetalle').classList.add('hidden');
+            document.getElementById('modalDetalle').classList.remove('flex');
+        };
+        window.prepararExportacion = (tipo) => {
+            document.getElementById('tipoExportacion').value = tipo;
+            const texto = tipo === 'todos' ? 'Listado Completo (Activos)' : 'Alertas Próximas a Jubilación';
+            document.getElementById('txtExportar').innerHTML = `Vas a descargar: <strong>${texto}</strong>.<br>Elige el formato:`;
+            document.getElementById('modalExportar').classList.remove('hidden');
+            document.getElementById('modalExportar').classList.add('flex');
+        };
+        window.cerrarExportar = () => {
+            document.getElementById('modalExportar').classList.add('hidden');
+            document.getElementById('modalExportar').classList.remove('flex');
+        };
+        window.abrirAutor = () => {
+            document.getElementById('modalAutor').classList.remove('hidden');
+            document.getElementById('modalAutor').classList.add('flex');
+        };
+        window.cerrarAutor = () => {
+            document.getElementById('modalAutor').classList.add('hidden');
+            document.getElementById('modalAutor').classList.remove('flex');
+        };
+
+// ============================================================
+        // === LÓGICA DE IMPORTACIÓN MASIVA (COMPLETA Y DEFINITIVA) ===
+        // ============================================================
+        
+        let datosImportar = [];
+
+        window.abrirImportar = () => {
+            datosImportar = [];
+            document.getElementById('fileInput').value = "";
+            
+            // Resetear estados visuales
+            const statusDiv = document.getElementById('importStatus');
+            if(statusDiv) {
+                statusDiv.className = "hidden p-3 rounded-xl text-xs font-bold border shrink-0";
+                statusDiv.innerHTML = "";
+            }
+            
+            document.getElementById('previewContainer').classList.add('hidden');
+            
+            const btnConfirmar = document.getElementById('btnConfirmarImport');
+            if(btnConfirmar) {
+                btnConfirmar.disabled = true;
+                btnConfirmar.classList.add('cursor-not-allowed', 'bg-slate-300');
+                btnConfirmar.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'shadow-lg');
+            }
+            
+            // Ocultar botón de borrado masivo
+            const btnBorrarSel = document.getElementById('btnBorrarSeleccionados');
+            if(btnBorrarSel) btnBorrarSel.classList.add('hidden');
+            
+            // Desmarcar check general
+            if(document.getElementById('checkAll')) document.getElementById('checkAll').checked = false;
+
+            cerrarNuevo();
+            document.getElementById('modalImportar').classList.remove('hidden');
+            document.getElementById('modalImportar').classList.add('flex');
+        };
+
+        window.cerrarImportar = () => {
+            document.getElementById('modalImportar').classList.add('hidden');
+            document.getElementById('modalImportar').classList.remove('flex');
+        };
+
+        // Función INTELIGENTE para fechas (Corrige "NaAños", formatos invertidos y Excel)
+        function excelDateToJSDate(serial) {
+            if(!serial) return "";
+            if (typeof serial === 'string') {
+                const s = serial.trim();
+                if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s; // Ya es YYYY-MM-DD
+                
+                const parts = s.split(/[\/\-]/); 
+                if (parts.length === 3) {
+                    let p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]);
+                    let day, month, year;
+
+                    // Detectar dónde está el año (número > 31)
+                    if (p1 > 31) { 
+                        year = p1; 
+                        // Detectar mes/día
+                        if (p2 > 12) { month = p3; day = p2; } else { month = p2; day = p3; } 
+                    } else { 
+                        year = p3; 
+                        // Detectar si viene Mes/Día (formato gringo)
+                        if (p2 > 12 && p1 <= 12) { month = p1; day = p2; } else { month = p2; day = p1; } 
+                    }
+
+                    // Corregir años cortos (ej: 87 -> 1987)
+                    if (year < 100) year = year > 30 ? 1900 + year : 2000 + year;
+                    
+                    // Última seguridad por si mes/día siguen invertidos
+                    if (month > 12 && day <= 12) { let temp = month; month = day; day = temp; }
+
+                    return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                }
+                return s; 
+            }
+            // Si es número de Excel
+            try {
+                const utc_days  = Math.floor(serial - 25569);
+                const utc_value = utc_days * 86400;                                        
+                const date_info = new Date(utc_value * 1000);
+                return date_info.toISOString().split('T')[0];
+            } catch (e) { return ""; }
+        }
+
+        window.handleFileUpload = (e) => {
+            const file = e.target.files[0];
+            const statusDiv = document.getElementById('importStatus');
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "", blankrows: false, raw: false });
+
+                    if (jsonData.length < 2) throw new Error("Archivo vacío.");
+
+                    const procesados = [];
+                    for (let i = 0; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0) continue;
+                        
+                        const legajoRaw = row[0];
+                        // Filtrar encabezados
+                        if(!legajoRaw || String(legajoRaw).toUpperCase().includes("LEG")) continue;
+
+                        try {
+                            const nombre = row[1] ? String(row[1]).toUpperCase().trim() : "SIN NOMBRE";
+                            let fNac = excelDateToJSDate(row[2]);
+                            let fIng = excelDateToJSDate(row[3]);
+
+                            if(fNac && fIng) {
+                                procesados.push({ id: i, legajo: String(legajoRaw).trim(), nombre: nombre, fNac: fNac, fIng: fIng });
+                            }
+                        } catch (errFila) { console.warn("Error fila " + i); }
+                    }
+
+                    datosImportar = procesados;
+
+                    if (datosImportar.length === 0) {
+                        statusDiv.className = "p-3 rounded-xl text-xs font-bold border shrink-0 bg-amber-50 border-amber-200 text-amber-600 flex items-center gap-2";
+                        statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-lg"></i> No se encontraron registros válidos.`;
+                    } else {
+                        statusDiv.className = "p-3 rounded-xl text-xs font-bold border shrink-0 bg-green-50 border-green-200 text-green-600 flex items-center gap-2";
+                        statusDiv.innerHTML = `<i class="fas fa-check-circle text-lg"></i> Archivo procesado. Registros listos: ${datosImportar.length}`;
+                        
+                        document.getElementById('previewContainer').classList.remove('hidden');
+                        document.getElementById('previewContainer').classList.add('flex');
+                        
+                        const btnConfirmar = document.getElementById('btnConfirmarImport');
+                        btnConfirmar.disabled = false;
+                        btnConfirmar.classList.remove('cursor-not-allowed', 'bg-slate-300');
+                        btnConfirmar.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-lg');
+                        
+                        renderPreview();
+                    }
+                    statusDiv.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error(error);
+                    statusDiv.className = "p-3 rounded-xl text-xs font-bold border shrink-0 bg-red-50 border-red-200 text-red-600 flex items-center gap-2";
+                    statusDiv.innerHTML = `<i class="fas fa-times-circle text-lg"></i> Error: ${error.message}`;
+                    statusDiv.classList.remove('hidden');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+       // --- FUNCIONES VISUALES (Renderizado y Borrado en Importación) ---
+
+        window.renderPreview = function() {
+            const tbody = document.getElementById('previewBody');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+
+            // 1. CORRECCIÓN PRINCIPAL: Usamos el ID nuevo del botón (previewCountBtn)
+            const btnCount = document.getElementById('previewCountBtn');
+            if(btnCount) btnCount.innerText = datosImportar.length;
+
+            // 2. Si no hay datos, desmarcar check general
+            if(datosImportar.length === 0 && document.getElementById('checkAll')) {
+                document.getElementById('checkAll').checked = false;
+            }
+
+            // 3. Verificar estado del botón borrar
+            if(typeof verificarSeleccion === 'function') verificarSeleccion();
+
+            // 4. Renderizar filas (Diseño ajustado al nuevo modal)
+            for(let i=0; i < datosImportar.length; i++) {
+                const item = datosImportar[i];
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-50 hover:bg-slate-50 transition group";
+                tr.innerHTML = `
+                    <td class="p-3 text-center w-10">
+                        <input type="checkbox" class="chk-item rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-3.5 h-3.5" onchange="verificarSeleccion()" data-index="${i}">
+                    </td>
+                    <td class="p-3 font-mono text-slate-500 text-xs">${item.legajo}</td>
+                    <td class="p-3 font-bold text-slate-700 text-xs uppercase">${item.nombre}</td>
+                    <td class="p-3 text-center text-xs text-slate-500">${item.fNac}</td>
+                    <td class="p-3 text-center text-xs text-slate-500">${item.fIng}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="eliminarFilaImport(${i})" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-times"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        };
+
+        window.toggleSelectAll = (source) => {
+            const checkboxes = document.querySelectorAll('.chk-item');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            verificarSeleccion();
+        };
+
+        window.verificarSeleccion = () => {
+            const count = document.querySelectorAll('.chk-item:checked').length;
+            const btn = document.getElementById('btnBorrarSeleccionados');
+            if(btn) {
+                if(count > 0) {
+                    btn.classList.remove('hidden');
+                    btn.classList.add('flex');
+                    btn.innerHTML = `<i class="fas fa-trash-alt mr-1"></i> Borrar Seleccionados (${count})`;
+                } else {
+                    btn.classList.add('hidden');
+                    btn.classList.remove('flex');
+                }
+            }
+        };
+
+        // Lógica unificada para actualizar la UI tras borrar
+        function actualizarInterfazTrasBorrado() {
+            if(datosImportar.length === 0) {
+                // SI SE VACÍA LA LISTA: RESETEAR A PANTALLA DE CARGA
+                document.getElementById('dropZone').classList.remove('hidden');
+                document.getElementById('dropZone').classList.add('flex');
+                
+                document.getElementById('panelInstrucciones').classList.remove('hidden'); // Mostrar ayuda de nuevo
+
+                document.getElementById('previewContainer').classList.add('hidden');
+                document.getElementById('previewContainer').classList.remove('flex');
+                
+                document.getElementById('toolbarImport').classList.add('hidden');
+                document.getElementById('toolbarImport').classList.remove('flex');
+                
+                document.getElementById('importStatus').classList.add('hidden');
+                document.getElementById('importStatus').classList.remove('flex');
+
+                // Resetear botones y contadores
+                const btnConf = document.getElementById('btnConfirmarImport');
+                if(btnConf) {
+                    btnConf.disabled = true;
+                    btnConf.className = "flex-1 py-3 bg-slate-200 text-white font-bold rounded-xl shadow-none transition text-xs uppercase flex items-center justify-center gap-2 cursor-not-allowed";
+                    const countBtn = document.getElementById('previewCountBtn');
+                    if(countBtn) countBtn.innerText = "0";
+                }
+                
+                if(document.getElementById('checkAll')) document.getElementById('checkAll').checked = false;
+                document.getElementById('fileInput').value = ""; // Permitir recargar el mismo archivo
+            } else {
+                // SI AÚN QUEDAN DATOS: ACTUALIZAR TEXTOS
+                const statusTxt = document.getElementById('statusText');
+                if(statusTxt) statusTxt.innerHTML = `<span class="text-slate-600">Registros en lista: <strong>${datosImportar.length}</strong></span>`;
+                renderPreview();
+            }
+        }
+
+        window.borrarSeleccionados = () => {
+            const checkboxes = document.querySelectorAll('.chk-item:checked');
+            if(checkboxes.length === 0) return;
+            
+            if(!confirm(`¿Eliminar los ${checkboxes.length} registros seleccionados?`)) return;
+
+            // Borramos de atrás para adelante para no alterar índices
+            const indices = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index)).sort((a,b) => b-a);
+            
+            indices.forEach(idx => {
+                datosImportar.splice(idx, 1);
+            });
+
+            actualizarInterfazTrasBorrado();
+        };
+
+        window.eliminarFilaImport = (index) => {
+            datosImportar.splice(index, 1);
+            actualizarInterfazTrasBorrado();
+        };
+
+        window.procesarImportacionMasiva = async () => {
+            if(!confirm(`¿Estás seguro de importar ${datosImportar.length} registros?`)) return;
+            
+            cerrarImportar();
+            const overlay = document.getElementById('successOverlay'); // Reutilizamos overlay de éxito o crea uno de carga si prefieres
+            // Aquí puedes mostrar un spinner simple si tienes uno, o usar el overlay existente
+            
+            const batchSize = 450; 
+            const totalBatches = Math.ceil(datosImportar.length / batchSize);
+            
+            try {
+                for (let i = 0; i < totalBatches; i++) {
+                    const batch = writeBatch(db);
+                    const chunk = datosImportar.slice(i * batchSize, Math.min((i + 1) * batchSize, datosImportar.length));
+                    
+                    chunk.forEach(r => {
+                        const newRef = doc(collection(db, "agentes_jubilacion"));
+                        batch.set(newRef, {
+                            legajo: String(r.legajo), 
+                            nombre: r.nombre, 
+                            cuil: "", 
+                            fNac: r.fNac, 
+                            fIng: r.fIng, 
+                            estado: 'activo', 
+                            timestamp: serverTimestamp()
+                        });
+                    });
+                    
+                    await batch.commit();
+                }
+                
+                // Mostrar éxito
+                if(document.getElementById('successOverlay')) {
+                    document.getElementById('successOverlay').classList.remove('hidden'); 
+                    document.getElementById('successOverlay').classList.add('flex');
+                } else {
+                    alert("Importación completada con éxito");
+                    location.reload();
+                }
+                
+            } catch (error) { 
+                console.error(error); 
+                alert("Error en carga masiva: " + error.message); 
+                location.reload(); 
+            }
+        };
+            }
+        };
+        // --- FUNCIONES EXPORTACION ---
+        window.procesarDescarga = (formato) => {
+            const tipo = document.getElementById('tipoExportacion').value;
+            let dataFiltrada = [];
+            
+            if (tipo === 'todos') {
+                dataFiltrada = window.datosGlobales.filter(d => d.estado !== 'jubilado');
+            } else if (tipo === 'proximos') {
+                dataFiltrada = window.datosGlobales.filter(d => d.semaforo === 'rojo' && d.estado !== 'jubilado');
+            }
+            dataFiltrada.sort((a,b) => a.fechaRetiro - b.fechaRetiro);
+
+            if (formato === 'pdf') generarPDF(dataFiltrada, tipo);
+            else if (formato === 'excel') generarExcel(dataFiltrada, tipo);
+
+            cerrarExportar();
+        };
+
+        function generarPDF(data, tipo) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const titulo = tipo === 'todos' ? 'NÓMINA GENERAL - SISTEMA PREVISIONAL' : 'ALERTAS DE JUBILACIÓN INMINENTE';
+            
+            doc.setFontSize(14);
+            doc.text(titulo, 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, 14, 22);
+
+            const tableColumn = ["Legajo", "Nombre", "CUIL", "Edad", "Antig.", "Fecha Retiro", "Tipo"];
+            const tableRows = [];
+
+            data.forEach(item => {
+                const row = [
+                    item.legajo,
+                    item.nombre,
+                    item.cuil,
+                    item.edad,
+                    item.antiguedad,
+                    item.fechaRetiro.toLocaleDateString('es-AR'),
+                    item.tipo
+                ];
+                tableRows.push(row);
+            });
+
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 28,
+                theme: 'grid',
+                headStyles: { fillColor: [30, 41, 59] },
+            });
+            doc.save(`reporte_${tipo}.pdf`);
+        }
+
+        function generarExcel(data, tipo) {
+            const exportData = data.map(item => ({
+                Legajo: item.legajo,
+                Nombre: item.nombre,
+                CUIL: item.cuil,
+                Edad: item.edad,
+                Antiguedad: item.antiguedad,
+                Fecha_Retiro: item.fechaRetiro.toLocaleDateString('es-AR'),
+                Tipo_Jubilacion: item.tipo
+            }));
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wscols = [{wch: 10}, {wch: 30}, {wch: 15}, {wch: 8}, {wch: 8}, {wch: 15}, {wch: 20}];
+            ws['!cols'] = wscols;
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+            XLSX.writeFile(wb, `reporte_${tipo}.xlsx`);
+        }
+
+        // --- ACCIONES FIREBASE MANUALES ---
+        document.getElementById('calcForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(collection(db, "agentes_jubilacion"), {
+                    legajo: document.getElementById('inpLegajo').value,
+                    nombre: document.getElementById('inpNombre').value.toUpperCase(),
+                    cuil: document.getElementById('inpCuil').value,
+                    fNac: document.getElementById('inpNacimiento').value,
+                    fIng: document.getElementById('inpIngreso').value,
+                    estado: 'activo',
+                    timestamp: serverTimestamp()
+                });
+                cerrarNuevo();
+            } catch (err) { alert("Error al guardar"); console.error(err); }
+        });
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await updateDoc(doc(db, "agentes_jubilacion", document.getElementById('editId').value), {
+                    legajo: document.getElementById('editLegajo').value,
+                    nombre: document.getElementById('editNombre').value.toUpperCase(),
+                    cuil: document.getElementById('editCuil').value,
+                    fNac: document.getElementById('editNacimiento').value,
+                    fIng: document.getElementById('editIngreso').value
+                });
+                cerrarModal();
+            } catch (err) { alert("Error al editar"); }
+        });
+
+        window.confirmarJubilacion = async () => {
+            try {
+                await updateDoc(doc(db, "agentes_jubilacion", document.getElementById('jubilarId').value), {
+                    estado: 'jubilado',
+                    fechaJubilacionReal: serverTimestamp()
+                });
+                cerrarJubilar();
+            } catch (err) { alert("Error al jubilar"); }
+        };
+
+        window.borrarAgente = async (id) => {
+            if(confirm("¿Eliminar agente permanentemente?")) await deleteDoc(doc(db, "agentes_jubilacion", id));
+        };
+		
+		// --- LÓGICA DE BORRADO MASIVO (BASE DE DATOS) ---
+
+        // 1. Marcar/Desmarcar todos los checkboxes
+        window.toggleSelectAllMain = (source) => {
+            const checkboxes = document.querySelectorAll('.chk-main-item');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            verificarSeleccionMain();
+        };
+
+        // 2. Verificar si hay seleccionados para mostrar el botón rojo
+        window.verificarSeleccionMain = () => {
+            const count = document.querySelectorAll('.chk-main-item:checked').length;
+            const btn = document.getElementById('btnBorrarMasivo');
+            const span = document.getElementById('countBorrar');
+            
+            if(count > 0) {
+                btn.classList.remove('hidden');
+                btn.classList.add('flex'); // Se muestra
+                span.innerText = count;
+            } else {
+                btn.classList.add('hidden'); // Se oculta
+                btn.classList.remove('flex');
+            }
+        };
+
+        // 3. Ejecutar el borrado real en Firebase
+        window.borrarMasivoDB = async () => {
+            const checked = document.querySelectorAll('.chk-main-item:checked');
+            if(checked.length === 0) return;
+            
+            // PREGUNTA DE SEGURIDAD
+            if(!confirm(`⚠️ ATENCIÓN: Vas a eliminar ${checked.length} registros de la base de datos.\n\n¿Estás seguro? Esta acción no se puede deshacer.`)) return;
+
+            const batch = writeBatch(db);
+            checked.forEach(cb => {
+                // El value del checkbox tiene el ID del documento
+                const docRef = doc(db, "agentes_jubilacion", cb.value);
+                batch.delete(docRef);
+            });
+
+            try {
+                await batch.commit();
+                
+                // Limpiar la selección visual
+                document.getElementById('checkAllMain').checked = false;
+                document.getElementById('btnBorrarMasivo').classList.add('hidden');
+                
+                alert("✅ Registros eliminados correctamente.");
+            } catch(e) {
+                console.error(e);
+                alert("❌ Error al eliminar: " + e.message);
+            }
+        };
+
+    </script>
+</body>
+</html>
+
+/cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -1324,4 +2676,5 @@
     </script>
 </body>
 </html>
+
 
