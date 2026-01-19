@@ -345,36 +345,6 @@
             </div>
         </div>
     </div>
-        <div class="h-72 overflow-y-auto custom-scroll p-0">
-            <table class="w-full text-left border-collapse">
-                <thead class="text-[9px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-50 shadow-sm z-10">
-                    <tr>
-                        <th class="p-2 text-center w-8 bg-slate-50">
-                            <input type="checkbox" id="checkAll" onchange="toggleSelectAll(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" title="Seleccionar
-</div>
-
-            <div class="pt-4 mt-auto flex gap-3 shrink-0">
-                <button onclick="cerrarImportar()" class="flex-1 py-2 bg-white border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition text-xs uppercase">Cancelar</button>
-                <button id="btnConfirmarImport" onclick="procesarImportacionMasiva()" disabled class="flex-1 py-2 bg-slate-300 text-white font-bold rounded-xl shadow-none transition text-xs uppercase flex items-center justify-center gap-2 cursor-not-allowed">
-                    <i class="fas fa-check"></i> Confirmar Carga
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900 z-[70] hidden flex-col items-center justify-center text-white transition-opacity">
-        <div class="w-24 h-24 rounded-full bg-blue-500/20 loader-ring flex items-center justify-center mb-6">
-            <i class="fas fa-database text-4xl text-blue-400"></i>
-        </div>
-        <h2 class="text-2xl font-black mb-2 tracking-tight">Procesando Datos</h2>
-        <p class="text-slate-400 text-sm font-medium mb-6" id="loadingText">Por favor espere, no cierre la ventana...</p>
-        
-        <div class="w-64 h-2 bg-slate-800 rounded-full overflow-hidden">
-            <div id="progressBar" class="h-full bg-blue-500 transition-all duration-300 w-0"></div>
-        </div>
-        <p class="mt-2 text-xs font-mono text-blue-400" id="progressText">0%</p>
-    </div>
-
     <div id="successOverlay" class="fixed inset-0 bg-emerald-600 z-[75] hidden flex-col items-center justify-center text-white transition-all">
         <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-emerald-600 text-4xl shadow-2xl mb-4 animate-bounce">
             <i class="fas fa-check"></i>
