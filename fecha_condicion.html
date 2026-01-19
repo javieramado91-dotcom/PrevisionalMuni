@@ -270,6 +270,7 @@
 
     <div id="modalImportar" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[55] backdrop-blur-sm transition-opacity px-4">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 transform scale-100 transition-all max-h-[90vh] overflow-hidden flex flex-col">
+            
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3 shrink-0">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <i class="fas fa-file-import text-green-500"></i> Importación Masiva
@@ -277,7 +278,7 @@
                 <button onclick="cerrarImportar()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
             </div>
 
-            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 shrink-0 overflow-y-auto max-h-40 custom-scroll text-sm">
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 shrink-0 overflow-y-auto max-h-32 custom-scroll text-sm">
                 <h4 class="font-bold text-blue-700 mb-2 text-xs uppercase"><i class="fas fa-info-circle"></i> Instructivo Obligatorio</h4>
                 <ul class="list-disc pl-4 text-slate-600 space-y-1 text-xs">
                     <li>El archivo debe contener la información de los agentes.</li>
@@ -285,32 +286,65 @@
                         <ul class="list-decimal pl-4 mt-1">
                             <li>Col 1: <strong>Legajo</strong></li>
                             <li>Col 2: <strong>Nombre y Apellido</strong></li>
-                            <li>Col 3: <strong>Fecha Nacimiento</strong> (Formato DD/MM/AAAA o AAAA-MM-DD)</li>
-                            <li>Col 4: <strong>Fecha Ingreso</strong> (Formato DD/MM/AAAA o AAAA-MM-DD)</li>
+                            <li>Col 3: <strong>Fecha Nacimiento</strong> (DD/MM/AAAA)</li>
+                            <li>Col 4: <strong>Fecha Ingreso</strong> (DD/MM/AAAA)</li>
                         </ul>
                     </li>
                     <li>La primera fila se considera encabezado y <strong>no se importa</strong>.</li>
                 </ul>
             </div>
 
- <div class="space-y-4 flex-1 flex flex-col overflow-y-auto custom-scroll min-h-0">
-    <div class="flex items-center gap-3 shrink-0">
-        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
-        <button onclick="document.getElementById('fileInput').click()" class="flex-1 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl p-4 text-slate-500 font-bold hover:bg-slate-50 hover:border-blue-400 hover:text-blue-500 transition text-center text-xs uppercase tracking-wide">
-            <i class="fas fa-upload text-xl mb-1 block"></i> Seleccionar Archivo
-        </button>
-    </div>
+            <div class="flex-1 flex flex-col overflow-hidden min-h-0 space-y-4">
+                
+                <div class="flex items-center gap-3 shrink-0">
+                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
+                    <button onclick="document.getElementById('fileInput').click()" class="flex-1 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl p-4 text-slate-500 font-bold hover:bg-slate-50 hover:border-blue-400 hover:text-blue-500 transition text-center text-xs uppercase tracking-wide">
+                        <i class="fas fa-upload text-xl mb-1 block"></i> Seleccionar Archivo
+                    </button>
+                </div>
 
-    <div id="importStatus" class="hidden p-3 rounded-xl text-xs font-bold border shrink-0"></div>
+                <div id="importStatus" class="hidden p-3 rounded-xl text-xs font-bold border shrink-0"></div>
 
-   <div id="previewContainer" class="hidden w-full bg-slate-50 rounded-xl border border-slate-200 flex flex-col mt-2 shrink-0">
-        <div class="p-2 bg-slate-100 border-b border-slate-200 flex justify-between items-center shrink-0 rounded-t-xl">
-            <span class="text-[10px] font-bold text-slate-500 uppercase ml-2">Previsualización (<span id="previewCount">0</span> reg)</span>
-            
-            <button id="btnBorrarSeleccionados" onclick="borrarSeleccionados()" class="hidden px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-[10px] font-bold uppercase hover:bg-red-200 transition shadow-sm border border-red-200">
-                <i class="fas fa-trash-alt mr-1"></i> Borrar Seleccionados
-            </button>
+                <div id="previewContainer" class="hidden flex-1 bg-slate-50 rounded-xl border border-slate-200 flex-col overflow-hidden min-h-[200px]">
+                    
+                    <div class="p-2 bg-slate-100 border-b border-slate-200 flex justify-between items-center shrink-0">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase ml-2">Previsualización (<span id="previewCount">0</span> reg)</span>
+                        <button id="btnBorrarSeleccionados" onclick="borrarSeleccionados()" class="hidden px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-[10px] font-bold uppercase hover:bg-red-200 transition shadow-sm border border-red-200">
+                            <i class="fas fa-trash-alt mr-1"></i> Borrar Seleccionados
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto custom-scroll p-0 relative bg-white">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="text-[9px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-50 shadow-sm z-10">
+                                <tr>
+                                    <th class="p-2 text-center w-8 bg-slate-50 border-b border-slate-200">
+                                        <input type="checkbox" id="checkAll" onchange="toggleSelectAll(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-3 h-3" title="Seleccionar Todo">
+                                    </th>
+                                    <th class="p-2 bg-slate-50 border-b border-slate-200">Legajo</th>
+                                    <th class="p-2 bg-slate-50 border-b border-slate-200">Nombre</th>
+                                    <th class="p-2 bg-slate-50 border-b border-slate-200">F. Nac</th>
+                                    <th class="p-2 bg-slate-50 border-b border-slate-200">F. Ing</th>
+                                    <th class="p-2 text-right bg-slate-50 border-b border-slate-200">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewBody" class="text-xs text-slate-600 divide-y divide-slate-50">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 mt-4 border-t border-slate-100 flex gap-3 shrink-0">
+                <button onclick="cerrarImportar()" class="flex-1 py-3 bg-white border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition text-xs uppercase">
+                    Cancelar
+                </button>
+                <button id="btnConfirmarImport" onclick="procesarImportacionMasiva()" disabled class="flex-1 py-3 bg-slate-300 text-white font-bold rounded-xl shadow-none transition text-xs uppercase flex items-center justify-center gap-2 cursor-not-allowed">
+                    <i class="fas fa-check"></i> Confirmar Carga
+                </button>
+            </div>
         </div>
+    </div>
 
         <div class="h-72 overflow-y-auto custom-scroll p-0">
             <table class="w-full text-left border-collapse">
@@ -1300,3 +1334,4 @@
     </script>
 </body>
 </html>
+
