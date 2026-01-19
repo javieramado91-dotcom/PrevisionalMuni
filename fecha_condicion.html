@@ -803,7 +803,7 @@
             document.getElementById('modalAutor').classList.remove('flex');
         };
 
-        // --- LÓGICA DE IMPORTACIÓN MASIVA CORREGIDA ---
+       // --- LÓGICA DE IMPORTACIÓN MASIVA CORREGIDA (VERSIÓN DEFINITIVA) ---
         
         let datosImportar = [];
 
@@ -965,13 +965,6 @@
                     </td>
                 `;
                 tbody.appendChild(tr);
-            }
-        }
-            
-            if(datosImportar.length > 100) {
-                 const trInfo = document.createElement('tr');
-                 trInfo.innerHTML = `<td colspan="5" class="p-2 text-center text-xs text-slate-400 font-bold italic">... y ${datosImportar.length - 100} registros más ...</td>`;
-                 tbody.appendChild(trInfo);
             }
         }
 
