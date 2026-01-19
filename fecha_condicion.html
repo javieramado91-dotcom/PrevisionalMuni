@@ -27,16 +27,14 @@
         .row-jubilado { border-left: 4px solid #6366f1; background: #f8fafc; opacity: 0.75; }
 
         tr { transition: all 0.3s ease; }
-
-        /* Evitar scroll en body cuando el menú móvil está abierto */
         .overflow-hidden-mobile { overflow: hidden; }
-        
+
         /* Animación de carga */
         @keyframes spin-slow {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .animate-spin-slow {
+        .loader-circle {
             animation: spin-slow 2s linear infinite;
         }
     </style>
@@ -187,17 +185,10 @@
 
     </main>
 
-    <div class="fixed bottom-6 right-6 md:left-8 md:right-auto z-40 flex flex-col-reverse gap-3 items-end md:items-start">
-        <button onclick="abrirNuevo()" class="bg-slate-900 text-white w-14 h-14 md:w-auto md:h-auto md:px-6 md:py-3 rounded-full shadow-2xl hover:bg-blue-600 hover:scale-105 transition duration-300 flex items-center justify-center md:justify-start gap-3 group border-4 border-slate-50">
-            <i class="fas fa-plus text-lg group-hover:rotate-90 transition transform duration-300"></i>
-            <span class="hidden md:inline font-bold tracking-wide uppercase text-xs">Agregar Registro</span>
-        </button>
-
-        <button onclick="abrirImportar()" class="bg-green-600 text-white w-12 h-12 md:w-auto md:h-auto md:px-5 md:py-3 rounded-full shadow-lg hover:bg-green-500 hover:scale-105 transition duration-300 flex items-center justify-center md:justify-start gap-2 group border-4 border-slate-50" title="Importar Masiva">
-            <i class="fas fa-file-excel text-lg"></i>
-            <span class="hidden md:inline font-bold tracking-wide uppercase text-xs">Importar Excel</span>
-        </button>
-    </div>
+    <button onclick="abrirNuevo()" class="fixed bottom-6 right-6 md:left-8 md:right-auto bg-slate-900 text-white w-14 h-14 md:w-auto md:h-auto md:px-6 md:py-3 rounded-full shadow-2xl hover:bg-blue-600 hover:scale-105 transition duration-300 flex items-center justify-center md:justify-start gap-3 z-40 group border-4 border-slate-50">
+        <i class="fas fa-plus text-lg group-hover:rotate-90 transition transform duration-300"></i>
+        <span class="hidden md:inline font-bold tracking-wide uppercase text-xs">Agregar Registro</span>
+    </button>
 
     <div onclick="abrirAutor()" class="fixed bottom-2 left-2 md:bottom-4 md:right-4 md:left-auto z-40 cursor-pointer group hidden md:block">
         <div class="bg-white/90 backdrop-blur border border-slate-200 shadow-lg rounded-full px-4 py-1.5 flex items-center gap-2 hover:scale-105 transition transform">
@@ -209,11 +200,7 @@
     <div id="modalAutor" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[60] backdrop-blur-sm transition-opacity px-4" onclick="if(event.target === this) cerrarAutor()">
         <div class="bg-white w-full max-w-xs rounded-2xl shadow-2xl p-6 transform scale-100 transition-all text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-br from-blue-600 to-indigo-600"></div>
-            
-            <button onclick="cerrarAutor()" class="absolute top-3 right-3 text-white/80 hover:text-white transition z-10">
-                <i class="fas fa-times"></i>
-            </button>
-
+            <button onclick="cerrarAutor()" class="absolute top-3 right-3 text-white/80 hover:text-white transition z-10"><i class="fas fa-times"></i></button>
             <div class="relative z-10 -mt-2 mb-3">
                 <div class="w-20 h-20 bg-white p-1 rounded-full mx-auto shadow-lg">
                     <div class="w-full h-full bg-slate-100 rounded-full flex items-center justify-center text-3xl text-slate-400">
@@ -221,114 +208,35 @@
                     </div>
                 </div>
             </div>
-
             <h3 class="text-lg font-black text-slate-800 mb-1">Javier Amado</h3>
             <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-4">Full Stack Developer</p>
-            
             <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mb-4">
                 <p class="text-xs text-slate-500 mb-1">Contacto</p>
-                <a href="mailto:javieramado91@gmail.com" class="text-sm font-bold text-slate-700 hover:text-blue-600 transition flex items-center justify-center gap-2">
-                    <i class="fas fa-envelope"></i> javieramado91@gmail.com
-                </a>
+                <a href="mailto:javieramado91@gmail.com" class="text-sm font-bold text-slate-700 hover:text-blue-600 transition flex items-center justify-center gap-2"><i class="fas fa-envelope"></i> javieramado91@gmail.com</a>
             </div>
             <p class="text-[10px] text-slate-400">© 2026 - Todos los derechos reservados.</p>
         </div>
     </div>
 
-    <div id="modalImportar" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center z-[55] backdrop-blur-sm px-4">
-        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden relative">
-            
-            <div id="loadingImportar" class="absolute inset-0 bg-white/90 z-20 hidden items-center justify-center flex-col">
-                <div class="w-16 h-16 border-4 border-slate-200 border-t-green-500 rounded-full animate-spin mb-4"></div>
-                <h4 class="text-xl font-black text-slate-800 animate-pulse">Procesando Datos...</h4>
-                <p class="text-sm text-slate-500 mt-2">Por favor espere mientras se guardan los registros.</p>
-            </div>
-
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <div>
-                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fas fa-file-import text-green-600"></i> Importación Masiva
-                    </h3>
-                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Carga desde Excel</p>
-                </div>
-                <button onclick="cerrarImportar()" class="w-8 h-8 rounded-full hover:bg-red-50 hover:text-red-500 text-slate-400 transition flex items-center justify-center">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <div class="p-6 overflow-y-auto custom-scroll flex-1">
-                
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
-                    <h4 class="text-xs font-black text-blue-700 uppercase mb-2"><i class="fas fa-info-circle"></i> Estructura Requerida</h4>
-                    <p class="text-xs text-blue-600 mb-2">El archivo debe llamarse estrictamente <span class="font-bold bg-white px-1 rounded border border-blue-200">JUBIS.XLSX</span> y contener las siguientes columnas en orden:</p>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] font-bold text-blue-500 uppercase text-center">
-                        <div class="bg-white p-2 rounded border border-blue-100">1. Legajo (Num)</div>
-                        <div class="bg-white p-2 rounded border border-blue-100">2. Nombre (Texto)</div>
-                        <div class="bg-white p-2 rounded border border-blue-100">3. F. Nacimiento</div>
-                        <div class="bg-white p-2 rounded border border-blue-100">4. F. Ingreso</div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block w-full border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 hover:border-slate-400 transition cursor-pointer group relative overflow-hidden" id="dropZone">
-                        <input type="file" id="inpExcel" accept=".xlsx" class="hidden" onchange="procesarArchivoExcel(event)">
-                        <div class="relative z-10">
-                            <i class="fas fa-cloud-upload-alt text-4xl text-slate-300 group-hover:text-blue-500 transition mb-2"></i>
-                            <p class="text-sm font-bold text-slate-500 group-hover:text-slate-700">Click para seleccionar JUBIS.XLSX</p>
-                        </div>
-                    </label>
-                </div>
-
-                <div id="msgError" class="hidden bg-red-50 text-red-600 p-3 rounded-xl border border-red-100 text-xs font-bold items-center gap-2 mb-4 animate-bounce">
-                    <i class="fas fa-times-circle text-lg"></i>
-                    <span id="txtError">El archivo no cumple con los requisitos.</span>
-                </div>
-
-                <div id="msgSuccess" class="hidden bg-green-50 text-green-600 p-3 rounded-xl border border-green-100 text-xs font-bold items-center gap-2 mb-4">
-                    <i class="fas fa-check-circle text-lg"></i>
-                    <div>
-                        <span class="block text-sm">Archivo óptimo para cargar.</span>
-                        <span class="font-normal text-[10px] uppercase text-green-500" id="countImport">0 registros encontrados</span>
-                    </div>
-                </div>
-
-                <div id="previewArea" class="hidden">
-                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Previsualización de Datos</h5>
-                    <div class="border border-slate-200 rounded-xl overflow-hidden max-h-60 overflow-y-auto custom-scroll">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50 text-[9px] font-bold text-slate-500 uppercase sticky top-0">
-                                <tr>
-                                    <th class="p-2">Legajo</th>
-                                    <th class="p-2">Nombre</th>
-                                    <th class="p-2">F. Nac</th>
-                                    <th class="p-2">F. Ing</th>
-                                    <th class="p-2 text-right">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="previewBody" class="text-xs text-slate-700 divide-y divide-slate-100">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
-                <button onclick="cerrarImportar()" class="flex-1 py-3 bg-white border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-100 transition">Cancelar</button>
-                <button id="btnCargarMasivo" onclick="guardarImportacionMasiva()" disabled class="flex-1 py-3 bg-slate-300 text-white font-bold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed transition">
-                    <i class="fas fa-save"></i> Cargar Datos
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div id="modalNuevo" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity px-4">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 md:p-6 transform scale-100 transition-all max-h-[90vh] overflow-y-auto custom-scroll">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 md:p-6 transform scale-100 transition-all max-h-[90vh] overflow-y-auto custom-scroll relative">
             <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3 sticky top-0 bg-white z-10">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <i class="fas fa-user-plus text-blue-500"></i> Nuevo Agente
                 </h3>
                 <button onclick="cerrarNuevo()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+
+            <div class="mb-6">
+                <button onclick="abrirImportar()" class="w-full py-3 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 rounded-xl font-bold flex items-center justify-center gap-2 transition group shadow-sm">
+                    <i class="fas fa-file-excel text-xl group-hover:scale-110 transition"></i>
+                    <span>Importar Masivamente desde Excel</span>
+                </button>
+                <div class="flex items-center gap-3 mt-4 mb-2">
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">O carga manual</span>
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                </div>
             </div>
             
             <form id="calcForm" class="space-y-4">
@@ -366,6 +274,97 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="modalImportar" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[55] backdrop-blur-sm transition-opacity px-4">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 h-[85vh] flex flex-col">
+            <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-3 shrink-0">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-file-import text-green-600"></i> Importación Masiva
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Carga múltiples agentes desde un archivo Excel.</p>
+                </div>
+                <button onclick="cerrarImportar()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-4 shrink-0">
+                <h4 class="text-xs font-bold text-blue-700 uppercase mb-2 flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i> Instrucciones Obligatorias
+                </h4>
+                <ul class="text-[11px] text-blue-800 space-y-1 list-disc list-inside">
+                    <li>El archivo <strong>DEBE</strong> llamarse: <span class="font-mono bg-white px-1 py-0.5 rounded border border-blue-200 font-bold text-slate-700">JUBIS.xlsx</span></li>
+                    <li>La <strong>Primera Fila</strong> se ignora (encabezados).</li>
+                    <li>Estructura de Columnas:
+                        <ol class="list-decimal list-inside ml-2 mt-1 text-slate-600 font-medium">
+                            <li>Legajo (Numérico)</li>
+                            <li>Nombre y Apellido (Texto)</li>
+                            <li>Fecha de Nacimiento (Formato Fecha)</li>
+                            <li>Fecha de Ingreso (Formato Fecha)</li>
+                        </ol>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mb-4 shrink-0">
+                <input type="file" id="inputFile" accept=".xlsx" class="hidden" onchange="procesarArchivoExcel()">
+                <label for="inputFile" id="dropZone" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition group">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                        <i class="fas fa-cloud-upload-alt text-2xl text-slate-400 mb-2 group-hover:text-blue-500 transition"></i>
+                        <p class="text-xs text-slate-500"><span class="font-bold">Click para buscar</span> o arrastra el archivo aquí</p>
+                    </div>
+                </label>
+                <div id="msgValidacion" class="mt-2 hidden text-center p-2 rounded-lg text-xs font-bold"></div>
+            </div>
+
+            <div id="previewArea" class="flex-1 border border-slate-200 rounded-xl overflow-hidden flex flex-col hidden bg-slate-50">
+                <div class="bg-slate-100 p-2 border-b border-slate-200 flex justify-between items-center shrink-0">
+                    <span class="text-xs font-bold text-slate-600">Previsualización de Datos</span>
+                    <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-lg font-bold" id="countPreview">0 registros</span>
+                </div>
+                <div class="overflow-y-auto custom-scroll p-0 flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 sticky top-0 shadow-sm text-[10px] font-bold text-slate-400 uppercase">
+                            <tr>
+                                <th class="p-2">Legajo</th>
+                                <th class="p-2">Nombre</th>
+                                <th class="p-2 text-center">Nacimiento</th>
+                                <th class="p-2 text-center">Ingreso</th>
+                                <th class="p-2 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody" class="text-xs text-slate-600 divide-y divide-slate-100 bg-white">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4 flex gap-3 shrink-0">
+                <button onclick="cerrarImportar()" class="flex-1 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition">Cancelar</button>
+                <button id="btnConfirmarImport" onclick="confirmarCargaMasiva()" class="flex-1 py-3 bg-slate-300 text-white font-bold rounded-xl cursor-not-allowed transition flex items-center justify-center gap-2" disabled>
+                    <i class="fas fa-save"></i> Confirmar Carga
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalLoading" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-[70] backdrop-blur-sm">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full loader-circle mx-auto mb-4"></div>
+            <h3 class="text-xl font-bold text-white mb-1">Procesando Datos...</h3>
+            <p class="text-blue-200 text-sm font-mono" id="loadingText">Iniciando carga...</p>
+        </div>
+    </div>
+
+    <div id="modalExito" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-[70] backdrop-blur-sm" onclick="cerrarExito()">
+        <div class="bg-white rounded-2xl p-8 text-center max-w-sm shadow-2xl transform transition-all scale-100">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-4xl text-green-500"></i>
+            </div>
+            <h3 class="text-2xl font-black text-slate-800 mb-2">¡Carga Finalizada!</h3>
+            <p class="text-sm text-slate-500 mb-6">Los datos se han importado correctamente a la base de datos.</p>
+            <button onclick="cerrarExito()" class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-800 transition">Entendido</button>
         </div>
     </div>
 
@@ -436,7 +435,6 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto custom-scroll">
                 <div class="space-y-4">
                     <div>
@@ -454,7 +452,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
@@ -466,7 +463,6 @@
                             <span class="block text-lg font-black text-slate-700" id="detAnt">0</span>
                         </div>
                     </div>
-                    
                     <div class="bg-blue-50/50 rounded-xl p-3 border border-blue-100">
                         <label class="text-[9px] font-bold text-blue-400 uppercase tracking-widest block mb-1 text-center">Fecha Estimada de Retiro</label>
                         <div class="text-center">
@@ -476,7 +472,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="bg-slate-50 p-4 border-t border-slate-200 text-center shrink-0">
                 <button onclick="cerrarDetalle()" class="bg-white border border-slate-300 text-slate-600 font-bold py-2 px-6 rounded-xl hover:bg-slate-100 transition text-xs uppercase tracking-wide">
                     Cerrar Ficha
@@ -499,14 +494,13 @@
                     <span class="text-xs font-bold text-slate-600 group-hover:text-green-700">Excel</span>
                 </button>
             </div>
-            
             <button onclick="cerrarExportar()" class="w-full mt-4 py-2 text-sm font-bold text-slate-400 hover:text-slate-600 transition">Cancelar</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc, doc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // FIREBASE CONFIG
         const firebaseConfig = {
@@ -528,38 +522,27 @@
         const currentUser = JSON.parse(storedUser);
         document.getElementById('userNameDisplay').textContent = currentUser.username;
 
-        // UI HELPERS PARA MOVIL
+        // UI HELPERS
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
-            
             if (sidebar.classList.contains('-translate-x-full')) {
-                // Abrir
                 sidebar.classList.remove('-translate-x-full');
                 overlay.classList.remove('hidden');
             } else {
-                // Cerrar
                 sidebar.classList.add('-translate-x-full');
                 overlay.classList.add('hidden');
             }
         };
 
         window.toggleSidebarIfMobile = () => {
-             // Solo cerrar si estamos en vista movil (overlay visible)
              const overlay = document.getElementById('mobileOverlay');
-             if(!overlay.classList.contains('hidden')){
-                 toggleSidebar();
-             }
+             if(!overlay.classList.contains('hidden')) toggleSidebar();
         }
 
-
-        // VARIABLE GLOBAL PARA ALMACENAR DATOS PROCESADOS (Para exportación)
         window.datosGlobales = [];
 
-        // VARIABLE GLOBAL PARA IMPORTACION MASIVA
-        window.datosImportacion = [];
-
-        // --- LÓGICA DE CALCULO JUBILATORIO & SEMÁFORO ---
+        // LÓGICA DE CALCULO
         const EDAD_JUBILATORIA = 60;
         const ANIOS_APORTE = 35;
         const EDAD_AVANZADA = 65;
@@ -570,14 +553,12 @@
             const ing = new Date(fechaIng + "T00:00:00");
             const hoy = new Date(); 
 
-            // Edad y Antigüedad Exacta
             let edad = hoy.getFullYear() - nac.getFullYear();
             if (new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate()) > hoy) edad--;
 
             let antiguedad = hoy.getFullYear() - ing.getFullYear();
             if (new Date(hoy.getFullYear(), ing.getMonth(), ing.getDate()) > hoy) antiguedad--;
 
-            // Proyección
             const metaEdad = new Date(nac); metaEdad.setFullYear(nac.getFullYear() + EDAD_JUBILATORIA);
             const metaServicio = new Date(ing); metaServicio.setFullYear(ing.getFullYear() + ANIOS_APORTE);
             let fpjOrd = (metaEdad > metaServicio) ? metaEdad : metaServicio;
@@ -594,79 +575,24 @@
                 tipo = "Edad Avanzada";
             }
 
-            // CALCULO DE SEMÁFORO
             const diffTime = fechaRetiro - hoy;
             const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25);
             
             let semaforo = 'verde'; 
             if (diffYears <= 2) semaforo = 'rojo';
             else if (diffYears <= 5) semaforo = 'amarillo';
-            
             if (diffYears < 0) semaforo = 'rojo';
 
             return { edad, antiguedad, fpj: fechaRetiro, tipo, semaforo, aniosRestantes: diffYears };
         }
 
-        // --- GESTION DE UI Y FILTROS ---
-        let filtroActual = 'todos';
-
-        window.filtrarTabla = (filtro) => {
-            filtroActual = filtro;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if(btn.dataset.filter === filtro) {
-                    btn.classList.add('bg-slate-100', 'ring-2', 'ring-slate-200');
-                } else {
-                    btn.classList.remove('bg-slate-100', 'ring-2', 'ring-slate-200');
-                }
-            });
-            aplicarFiltrosDOM();
-        };
-
-        function aplicarFiltrosDOM() {
-            const filas = document.getElementById('tableBody').children;
-            const term = document.getElementById('searchTable').value.toLowerCase();
-
-            Array.from(filas).forEach(row => {
-                const dataFilter = row.dataset.filtro;
-                const dataTipo = row.dataset.tipo;
-                const texto = row.innerText.toLowerCase();
-
-                let mostrar = true;
-
-                if (term && !texto.includes(term)) mostrar = false;
-
-                if (mostrar) {
-                    if (filtroActual === 'todos') {
-                        if (dataFilter === 'jubilado') mostrar = false;
-                    }
-                    else if (filtroActual === 'jubilado') {
-                        if (dataFilter !== 'jubilado') mostrar = false;
-                    }
-                    else if (filtroActual === 'rojo') {
-                        if (dataFilter !== 'rojo') mostrar = false;
-                    }
-                    else if (filtroActual === 'ordinaria') {
-                        if (dataFilter === 'jubilado' || !dataTipo.includes('ordinaria')) mostrar = false;
-                    }
-                    else if (filtroActual === 'avanzada') {
-                         if (dataFilter === 'jubilado' || !dataTipo.includes('avanzada')) mostrar = false;
-                    }
-                    else if (['amarillo', 'verde'].includes(filtroActual)) {
-                         if (dataFilter !== filtroActual) mostrar = false;
-                    }
-                }
-                row.style.display = mostrar ? '' : 'none';
-            });
-        }
-
-        // --- FIREBASE LISTENER ---
+        // FIREBASE SNAPSHOT
         const q = query(collection(db, "agentes_jubilacion"), orderBy("legajo", "asc"));
-        
         onSnapshot(q, (snapshot) => {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = "";
             let counts = { total: 0, jubilados: 0, rojo: 0, amarillo: 0, verde: 0 };
-            window.datosGlobales = []; // Limpiamos caché de datos
+            window.datosGlobales = [];
 
             snapshot.forEach(docSnap => {
                 const data = docSnap.data();
@@ -674,7 +600,6 @@
                 const prev = calcularPrevision(data.fNac, data.fIng);
                 const esJubilado = data.estado === 'jubilado';
 
-                // Guardamos datos procesados para exportación
                 window.datosGlobales.push({
                     legajo: data.legajo,
                     nombre: data.nombre,
@@ -702,15 +627,7 @@
                 tr.dataset.tipo = prev.tipo.toLowerCase();
 
                 const badgeColor = prev.tipo === 'Jub. Ordinaria' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
-                
-                let faltaTexto = '';
-                if(esJubilado) faltaTexto = '-';
-                else {
-                    const anios = Math.floor(prev.aniosRestantes);
-                    if (anios < 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap">¡VENCIDO!</span>`;
-                    else if (anios === 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap"> < 1 Año</span>`;
-                    else faltaTexto = `<span class="whitespace-nowrap">${anios} años</span>`;
-                }
+                let faltaTexto = esJubilado ? '-' : (prev.aniosRestantes < 0 ? '<span class="text-red-600 font-bold whitespace-nowrap">¡VENCIDO!</span>' : (Math.floor(prev.aniosRestantes) === 0 ? '<span class="text-red-600 font-bold whitespace-nowrap"> < 1 Año</span>' : `<span class="whitespace-nowrap">${Math.floor(prev.aniosRestantes)} años</span>`));
 
                 const fmtNac = new Date(data.fNac + "T00:00:00").toLocaleDateString('es-AR');
                 const fmtIng = new Date(data.fIng + "T00:00:00").toLocaleDateString('es-AR');
@@ -730,62 +647,67 @@
                         <div class="text-xs font-bold text-slate-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-slate-300 mr-1"></i> ${fmtRetiro}</div>
                         <span class="${badgeColor} px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-transparent bg-opacity-70 whitespace-nowrap">${prev.tipo}</span>
                     </td>
-                    <td class="p-3 md:p-4 text-center font-bold text-slate-600 text-xs">
-                        ${faltaTexto}
-                    </td>
+                    <td class="p-3 md:p-4 text-center font-bold text-slate-600 text-xs">${faltaTexto}</td>
                     <td class="p-3 md:p-4 text-center">
-                         ${esJubilado 
-                            ? '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>'
-                            : `<span class="inline-flex w-3 h-3 rounded-full bg-${prev.semaforo === 'rojo' ? 'red' : prev.semaforo === 'amarillo' ? 'amber' : 'emerald'}-500 shadow-sm"></span>`
-                         }
+                         ${esJubilado ? '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>' : `<span class="inline-flex w-3 h-3 rounded-full bg-${prev.semaforo === 'rojo' ? 'red' : prev.semaforo === 'amarillo' ? 'amber' : 'emerald'}-500 shadow-sm"></span>`}
                     </td>
                     <td class="p-3 md:p-4 text-right">
                         <div class="flex justify-end gap-1 opacity-100 md:opacity-80 hover:opacity-100">
-                             <button onclick="verDetalle('${data.legajo}', '${data.nombre}', '${data.cuil}', '${fmtNac}', '${fmtIng}', '${prev.edad}', '${prev.antiguedad}', '${prev.tipo}', '${fmtRetiro}')" 
-                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 transition" title="Ver Ficha">
-                                <i class="fas fa-eye text-xs"></i>
-                            </button>
-
-                             <button onclick="abrirEditar('${id}', '${data.legajo}', '${data.nombre}', '${data.cuil}', '${data.fNac}', '${data.fIng}')" 
-                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Editar">
-                                <i class="fas fa-pen text-xs"></i>
-                            </button>
-                            ${!esJubilado ? `
-                            <button onclick="abrirJubilar('${id}')" 
-                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-yellow-500 hover:bg-yellow-50 transition" title="Jubilar">
-                                <i class="fas fa-medal text-xs"></i>
-                            </button>` : ''}
-                            <button onclick="borrarAgente('${id}')" 
-                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition" title="Eliminar">
-                                <i class="fas fa-trash text-xs"></i>
-                            </button>
+                             <button onclick="verDetalle('${data.legajo}', '${data.nombre}', '${data.cuil}', '${fmtNac}', '${fmtIng}', '${prev.edad}', '${prev.antiguedad}', '${prev.tipo}', '${fmtRetiro}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 transition" title="Ver Ficha"><i class="fas fa-eye text-xs"></i></button>
+                             <button onclick="abrirEditar('${id}', '${data.legajo}', '${data.nombre}', '${data.cuil}', '${data.fNac}', '${data.fIng}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Editar"><i class="fas fa-pen text-xs"></i></button>
+                            ${!esJubilado ? `<button onclick="abrirJubilar('${id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-yellow-500 hover:bg-yellow-50 transition" title="Jubilar"><i class="fas fa-medal text-xs"></i></button>` : ''}
+                            <button onclick="borrarAgente('${id}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition" title="Eliminar"><i class="fas fa-trash text-xs"></i></button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-
             document.getElementById('countTotal').innerText = counts.total;
             document.getElementById('countJubilados').innerText = counts.jubilados;
             document.getElementById('countRojo').innerText = counts.rojo;
             document.getElementById('countAmarillo').innerText = counts.amarillo;
             document.getElementById('countVerde').innerText = counts.verde;
-
             aplicarFiltrosDOM(); 
         });
 
+        // FILTROS DOM
+        let filtroActual = 'todos';
+        window.filtrarTabla = (filtro) => {
+            filtroActual = filtro;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('bg-slate-100', btn.dataset.filter === filtro);
+                btn.classList.toggle('ring-2', btn.dataset.filter === filtro);
+                btn.classList.toggle('ring-slate-200', btn.dataset.filter === filtro);
+            });
+            aplicarFiltrosDOM();
+        };
+
+        function aplicarFiltrosDOM() {
+            const filas = document.getElementById('tableBody').children;
+            const term = document.getElementById('searchTable').value.toLowerCase();
+            Array.from(filas).forEach(row => {
+                const dataFilter = row.dataset.filtro;
+                const dataTipo = row.dataset.tipo;
+                const texto = row.innerText.toLowerCase();
+                let mostrar = true;
+                if (term && !texto.includes(term)) mostrar = false;
+                if (mostrar) {
+                    if (filtroActual === 'todos') { if (dataFilter === 'jubilado') mostrar = false; }
+                    else if (filtroActual === 'jubilado') { if (dataFilter !== 'jubilado') mostrar = false; }
+                    else if (filtroActual === 'rojo') { if (dataFilter !== 'rojo') mostrar = false; }
+                    else if (filtroActual === 'ordinaria') { if (dataFilter === 'jubilado' || !dataTipo.includes('ordinaria')) mostrar = false; }
+                    else if (filtroActual === 'avanzada') { if (dataFilter === 'jubilado' || !dataTipo.includes('avanzada')) mostrar = false; }
+                    else if (['amarillo', 'verde'].includes(filtroActual)) { if (dataFilter !== filtroActual) mostrar = false; }
+                }
+                row.style.display = mostrar ? '' : 'none';
+            });
+        }
         document.getElementById('searchTable').addEventListener('input', aplicarFiltrosDOM);
 
-        // --- FUNCIONES MODALES GLOBALES ---
-        window.abrirNuevo = () => {
-            document.getElementById('calcForm').reset();
-            document.getElementById('modalNuevo').classList.remove('hidden');
-            document.getElementById('modalNuevo').classList.add('flex');
-        };
-        window.cerrarNuevo = () => {
-            document.getElementById('modalNuevo').classList.add('hidden');
-            document.getElementById('modalNuevo').classList.remove('flex');
-        };
+        // --- GESTIÓN DE MODALES ---
+        window.abrirNuevo = () => { document.getElementById('calcForm').reset(); document.getElementById('modalNuevo').classList.remove('hidden'); document.getElementById('modalNuevo').classList.add('flex'); };
+        window.cerrarNuevo = () => { document.getElementById('modalNuevo').classList.add('hidden'); document.getElementById('modalNuevo').classList.remove('flex'); };
+        
         window.abrirEditar = (id, legajo, nombre, cuil, fNac, fIng) => {
             document.getElementById('editId').value = id;
             document.getElementById('editLegajo').value = legajo;
@@ -796,21 +718,11 @@
             document.getElementById('modalEdit').classList.remove('hidden');
             document.getElementById('modalEdit').classList.add('flex');
         };
-        window.cerrarModal = () => {
-            document.getElementById('modalEdit').classList.add('hidden');
-            document.getElementById('modalEdit').classList.remove('flex');
-        };
-        window.abrirJubilar = (id) => {
-            document.getElementById('jubilarId').value = id;
-            document.getElementById('modalJubilar').classList.remove('hidden');
-            document.getElementById('modalJubilar').classList.add('flex');
-        };
-        window.cerrarJubilar = () => {
-            document.getElementById('modalJubilar').classList.add('hidden');
-            document.getElementById('modalJubilar').classList.remove('flex');
-        };
+        window.cerrarModal = () => { document.getElementById('modalEdit').classList.add('hidden'); document.getElementById('modalEdit').classList.remove('flex'); };
 
-        // --- FUNCIONES DETALLE ---
+        window.abrirJubilar = (id) => { document.getElementById('jubilarId').value = id; document.getElementById('modalJubilar').classList.remove('hidden'); document.getElementById('modalJubilar').classList.add('flex'); };
+        window.cerrarJubilar = () => { document.getElementById('modalJubilar').classList.add('hidden'); document.getElementById('modalJubilar').classList.remove('flex'); };
+
         window.verDetalle = (legajo, nombre, cuil, fnac, fing, edad, ant, tipo, fretiro) => {
             document.getElementById('detLegajo').innerText = legajo;
             document.getElementById('detNombre').innerText = nombre;
@@ -821,333 +733,285 @@
             document.getElementById('detAnt').innerText = ant + ' años';
             document.getElementById('detTipo').innerText = tipo;
             document.getElementById('detRetiro').innerText = fretiro;
-
-            document.getElementById('modalDetalle').classList.remove('hidden');
-            document.getElementById('modalDetalle').classList.add('flex');
+            document.getElementById('modalDetalle').classList.remove('hidden'); document.getElementById('modalDetalle').classList.add('flex');
         };
+        window.cerrarDetalle = () => { document.getElementById('modalDetalle').classList.add('hidden'); document.getElementById('modalDetalle').classList.remove('flex'); };
+        
+        window.abrirAutor = () => { document.getElementById('modalAutor').classList.remove('hidden'); document.getElementById('modalAutor').classList.add('flex'); };
+        window.cerrarAutor = () => { document.getElementById('modalAutor').classList.add('hidden'); document.getElementById('modalAutor').classList.remove('flex'); };
 
-        window.cerrarDetalle = () => {
-            document.getElementById('modalDetalle').classList.add('hidden');
-            document.getElementById('modalDetalle').classList.remove('flex');
-        };
-
-        // --- FUNCIONES EXPORTAR ---
         window.prepararExportacion = (tipo) => {
             document.getElementById('tipoExportacion').value = tipo;
             const texto = tipo === 'todos' ? 'Listado Completo (Activos)' : 'Alertas Próximas a Jubilación';
             document.getElementById('txtExportar').innerHTML = `Vas a descargar: <strong>${texto}</strong>.<br>Elige el formato:`;
-            document.getElementById('modalExportar').classList.remove('hidden');
-            document.getElementById('modalExportar').classList.add('flex');
+            document.getElementById('modalExportar').classList.remove('hidden'); document.getElementById('modalExportar').classList.add('flex');
         };
+        window.cerrarExportar = () => { document.getElementById('modalExportar').classList.add('hidden'); document.getElementById('modalExportar').classList.remove('flex'); };
 
-        window.cerrarExportar = () => {
-            document.getElementById('modalExportar').classList.add('hidden');
-            document.getElementById('modalExportar').classList.remove('flex');
-        };
-        
-        // --- FUNCIONES MODAL AUTOR ---
-        window.abrirAutor = () => {
-            document.getElementById('modalAutor').classList.remove('hidden');
-            document.getElementById('modalAutor').classList.add('flex');
-        };
+        // --- LÓGICA DE IMPORTACIÓN MASIVA ---
+        window.importDataTemp = []; // Almacena datos parseados antes de guardar
 
-        window.cerrarAutor = () => {
-            document.getElementById('modalAutor').classList.add('hidden');
-            document.getElementById('modalAutor').classList.remove('flex');
-        };
+        window.abrirImportar = () => {
+            cerrarNuevo();
+            document.getElementById('inputFile').value = ''; // Reset
+            document.getElementById('msgValidacion').classList.add('hidden');
+            document.getElementById('previewArea').classList.add('hidden');
+            document.getElementById('btnConfirmarImport').classList.add('cursor-not-allowed', 'bg-slate-300');
+            document.getElementById('btnConfirmarImport').classList.remove('bg-green-600', 'hover:bg-green-700');
+            document.getElementById('btnConfirmarImport').disabled = true;
+            window.importDataTemp = [];
+            document.getElementById('modalImportar').classList.remove('hidden');
+            document.getElementById('modalImportar').classList.add('flex');
+        }
 
-        window.procesarDescarga = (formato) => {
-            const tipo = document.getElementById('tipoExportacion').value;
-            // Filtramos la data global
-            let dataFiltrada = [];
-            
-            if (tipo === 'todos') {
-                // Todos los NO jubilados
-                dataFiltrada = window.datosGlobales.filter(d => d.estado !== 'jubilado');
-            } else if (tipo === 'proximos') {
-                // Solo semáforo ROJO y no jubilados
-                dataFiltrada = window.datosGlobales.filter(d => d.semaforo === 'rojo' && d.estado !== 'jubilado');
+        window.cerrarImportar = () => {
+            document.getElementById('modalImportar').classList.add('hidden');
+            document.getElementById('modalImportar').classList.remove('flex');
+        }
+
+        window.procesarArchivoExcel = async () => {
+            const input = document.getElementById('inputFile');
+            const file = input.files[0];
+            const msg = document.getElementById('msgValidacion');
+
+            if (!file) return;
+
+            // 1. Validar Nombre
+            if (file.name.toUpperCase() !== 'JUBIS.XLSX') {
+                msg.innerHTML = '<i class="fas fa-times-circle"></i> Error: El archivo debe llamarse <strong>JUBIS.xlsx</strong>';
+                msg.className = 'mt-2 text-center p-2 rounded-lg text-xs font-bold bg-red-100 text-red-600 block';
+                return;
             }
 
-            // Ordenamos por fecha de retiro
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // Convertir a JSON array de arrays (header: 1 devuelve matriz cruda)
+                    const rawData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+
+                    // Validar columnas mínimas (al menos 4 columnas en la fila 2)
+                    if (rawData.length < 2 || rawData[1].length < 4) {
+                        throw new Error("Estructura de columnas incorrecta.");
+                    }
+
+                    // Procesar datos (Saltando fila 0 - headers)
+                    window.importDataTemp = [];
+                    // Iteramos desde indice 1 (segunda fila)
+                    for(let i = 1; i < rawData.length; i++) {
+                        const row = rawData[i];
+                        if(row && row.length > 0 && row[0]) { // Verificar que exista legajo
+                            const legajo = row[0];
+                            const nombre = row[1];
+                            const fNac = parseExcelDate(row[2]);
+                            const fIng = parseExcelDate(row[3]);
+
+                            if(legajo && nombre && fNac && fIng) {
+                                window.importDataTemp.push({
+                                    legajo: legajo,
+                                    nombre: String(nombre).toUpperCase(),
+                                    fNac: fNac,
+                                    fIng: fIng
+                                });
+                            }
+                        }
+                    }
+
+                    if(window.importDataTemp.length === 0) {
+                        throw new Error("No se encontraron registros válidos.");
+                    }
+
+                    // ÉXITO: Mostrar verde y habilitar
+                    msg.innerHTML = `<i class="fas fa-check-circle"></i> Archivo Correcto: ${window.importDataTemp.length} registros listos.`;
+                    msg.className = 'mt-2 text-center p-2 rounded-lg text-xs font-bold bg-green-100 text-green-700 block';
+                    
+                    renderizarPreview();
+
+                    const btn = document.getElementById('btnConfirmarImport');
+                    btn.disabled = false;
+                    btn.classList.remove('cursor-not-allowed', 'bg-slate-300');
+                    btn.classList.add('bg-green-600', 'hover:bg-green-700');
+
+                } catch (error) {
+                    msg.innerHTML = `<i class="fas fa-times-circle"></i> Error: ${error.message}`;
+                    msg.className = 'mt-2 text-center p-2 rounded-lg text-xs font-bold bg-red-100 text-red-600 block';
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        // Helper para fechas Excel (puede ser Numero Serial o Texto)
+        function parseExcelDate(value) {
+            if (!value) return null;
+            // Si es número (Serial de Excel)
+            if (typeof value === 'number') {
+                const dateInfo = XLSX.SSF.parse_date_code(value);
+                // Retornar formato YYYY-MM-DD
+                const y = dateInfo.y;
+                const m = String(dateInfo.m).padStart(2, '0');
+                const d = String(dateInfo.d).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+            // Si es texto (asumimos DD/MM/YYYY o YYYY-MM-DD)
+            if (typeof value === 'string') {
+                // Intento simple para DD/MM/YYYY
+                if(value.includes('/')) {
+                    const parts = value.split('/');
+                    if(parts.length === 3) {
+                         // Asumiendo DD/MM/YYYY
+                         return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                    }
+                }
+                return value; // Retornar tal cual si parece ISO
+            }
+            return null;
+        }
+
+        function renderizarPreview() {
+            const container = document.getElementById('previewArea');
+            const tbody = document.getElementById('previewBody');
+            const countLabel = document.getElementById('countPreview');
+            
+            container.classList.remove('hidden');
+            countLabel.innerText = window.importDataTemp.length + " registros";
+            tbody.innerHTML = '';
+
+            // Renderizar (limitamos a primeros 100 para DOM si son muchos, o todos)
+            // Dado que el requisito es borrar "si es necesario", renderizamos todos.
+            // Usamos un fragmento para mejor rendimiento
+            const fragment = document.createDocumentFragment();
+
+            window.importDataTemp.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 font-mono font-bold">${item.legajo}</td>
+                    <td class="p-2">${item.nombre}</td>
+                    <td class="p-2 text-center font-mono">${item.fNac}</td>
+                    <td class="p-2 text-center font-mono">${item.fIng}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="borrarItemImport(${index})" class="text-red-400 hover:text-red-600">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                fragment.appendChild(tr);
+            });
+            tbody.appendChild(fragment);
+        }
+
+        window.borrarItemImport = (index) => {
+            window.importDataTemp.splice(index, 1);
+            if(window.importDataTemp.length === 0) {
+                 // Si borró todo, resetear estado
+                 document.getElementById('msgValidacion').classList.add('hidden');
+                 document.getElementById('previewArea').classList.add('hidden');
+                 document.getElementById('btnConfirmarImport').disabled = true;
+                 document.getElementById('btnConfirmarImport').classList.add('cursor-not-allowed', 'bg-slate-300');
+                 document.getElementById('btnConfirmarImport').classList.remove('bg-green-600');
+            } else {
+                renderizarPreview();
+                // Actualizar mensaje verde
+                document.getElementById('msgValidacion').innerHTML = `<i class="fas fa-check-circle"></i> Archivo Correcto: ${window.importDataTemp.length} registros listos.`;
+            }
+        }
+
+        window.confirmarCargaMasiva = async () => {
+            if(!confirm(`¿Estás seguro de importar ${window.importDataTemp.length} registros a la base de datos?`)) return;
+
+            // Cerrar modal import y mostrar Loading
+            cerrarImportar();
+            document.getElementById('modalLoading').classList.remove('hidden');
+            document.getElementById('modalLoading').classList.add('flex');
+            const loadingText = document.getElementById('loadingText');
+
+            const total = window.importDataTemp.length;
+            const batchSize = 400; // Firebase limite es 500, usamos 400 por seguridad
+            let processed = 0;
+
+            try {
+                // Procesamiento por Lotes (Batches) para optimizar +5000 registros
+                for (let i = 0; i < total; i += batchSize) {
+                    const chunk = window.importDataTemp.slice(i, i + batchSize);
+                    const batch = writeBatch(db);
+
+                    chunk.forEach((item) => {
+                        const newDocRef = doc(collection(db, "agentes_jubilacion"));
+                        batch.set(newDocRef, {
+                            legajo: item.legajo,
+                            nombre: item.nombre,
+                            cuil: '', // No viene en excel segun requisito, vacio por defecto
+                            fNac: item.fNac,
+                            fIng: item.fIng,
+                            estado: 'activo',
+                            timestamp: serverTimestamp()
+                        });
+                    });
+
+                    await batch.commit();
+                    processed += chunk.length;
+                    loadingText.innerText = `Cargando lote: ${processed} de ${total}...`;
+                }
+
+                // Finalizado
+                document.getElementById('modalLoading').classList.add('hidden');
+                document.getElementById('modalLoading').classList.remove('flex');
+                
+                // Mostrar Éxito
+                document.getElementById('modalExito').classList.remove('hidden');
+                document.getElementById('modalExito').classList.add('flex');
+
+            } catch (error) {
+                console.error("Error masivo:", error);
+                alert("Hubo un error en la carga masiva. Revise la consola o intente nuevamente.");
+                document.getElementById('modalLoading').classList.add('hidden');
+                document.getElementById('modalLoading').classList.remove('flex');
+            }
+        };
+
+        window.cerrarExito = () => {
+            document.getElementById('modalExito').classList.add('hidden');
+            document.getElementById('modalExito').classList.remove('flex');
+        }
+
+        // --- EXPORTACIÓN ---
+        window.procesarDescarga = (formato) => {
+            const tipo = document.getElementById('tipoExportacion').value;
+            let dataFiltrada = [];
+            if (tipo === 'todos') dataFiltrada = window.datosGlobales.filter(d => d.estado !== 'jubilado');
+            else if (tipo === 'proximos') dataFiltrada = window.datosGlobales.filter(d => d.semaforo === 'rojo' && d.estado !== 'jubilado');
             dataFiltrada.sort((a,b) => a.fechaRetiro - b.fechaRetiro);
 
             if (formato === 'pdf') generarPDF(dataFiltrada, tipo);
             else if (formato === 'excel') generarExcel(dataFiltrada, tipo);
-
             cerrarExportar();
         };
 
         function generarPDF(data, tipo) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
             const titulo = tipo === 'todos' ? 'NÓMINA GENERAL - SISTEMA PREVISIONAL' : 'ALERTAS DE JUBILACIÓN INMINENTE';
-            
-            doc.setFontSize(14);
-            doc.text(titulo, 14, 15);
-            doc.setFontSize(10);
-            doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, 14, 22);
-
+            doc.setFontSize(14); doc.text(titulo, 14, 15);
+            doc.setFontSize(10); doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, 14, 22);
             const tableColumn = ["Legajo", "Nombre", "CUIL", "Edad", "Antig.", "Fecha Retiro", "Tipo"];
-            const tableRows = [];
-
-            data.forEach(item => {
-                const row = [
-                    item.legajo,
-                    item.nombre,
-                    item.cuil,
-                    item.edad,
-                    item.antiguedad,
-                    item.fechaRetiro.toLocaleDateString('es-AR'),
-                    item.tipo
-                ];
-                tableRows.push(row);
-            });
-
-            doc.autoTable({
-                head: [tableColumn],
-                body: tableRows,
-                startY: 28,
-                theme: 'grid',
-                headStyles: { fillColor: [30, 41, 59] }, // Slate 800
-            });
-
+            const tableRows = data.map(item => [item.legajo, item.nombre, item.cuil, item.edad, item.antiguedad, item.fechaRetiro.toLocaleDateString('es-AR'), item.tipo]);
+            doc.autoTable({ head: [tableColumn], body: tableRows, startY: 28, theme: 'grid', headStyles: { fillColor: [30, 41, 59] } });
             doc.save(`reporte_${tipo}.pdf`);
         }
 
         function generarExcel(data, tipo) {
-            // Preparamos datos simples para Excel
-            const exportData = data.map(item => ({
-                Legajo: item.legajo,
-                Nombre: item.nombre,
-                CUIL: item.cuil,
-                Edad: item.edad,
-                Antiguedad: item.antiguedad,
-                Fecha_Retiro: item.fechaRetiro.toLocaleDateString('es-AR'),
-                Tipo_Jubilacion: item.tipo
-            }));
-
+            const exportData = data.map(item => ({ Legajo: item.legajo, Nombre: item.nombre, CUIL: item.cuil, Edad: item.edad, Antiguedad: item.antiguedad, Fecha_Retiro: item.fechaRetiro.toLocaleDateString('es-AR'), Tipo_Jubilacion: item.tipo }));
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(exportData);
-
-            // Ajuste ancho columnas
-            const wscols = [
-                {wch: 10}, // Legajo
-                {wch: 30}, // Nombre
-                {wch: 15}, // CUIL
-                {wch: 8},  // Edad
-                {wch: 8},  // Ant
-                {wch: 15}, // Fecha
-                {wch: 20}  // Tipo
-            ];
-            ws['!cols'] = wscols;
-
+            ws['!cols'] = [{wch: 10}, {wch: 30}, {wch: 15}, {wch: 8}, {wch: 8}, {wch: 15}, {wch: 20}];
             XLSX.utils.book_append_sheet(wb, ws, "Reporte");
             XLSX.writeFile(wb, `reporte_${tipo}.xlsx`);
         }
 
-        // --- FUNCIONES IMPORTACIÓN MASIVA ---
-
-        window.abrirImportar = () => {
-            // Reset UI
-            document.getElementById('inpExcel').value = "";
-            document.getElementById('msgError').classList.add('hidden');
-            document.getElementById('msgError').classList.remove('flex');
-            document.getElementById('msgSuccess').classList.add('hidden');
-            document.getElementById('msgSuccess').classList.remove('flex');
-            document.getElementById('previewArea').classList.add('hidden');
-            document.getElementById('btnCargarMasivo').disabled = true;
-            document.getElementById('btnCargarMasivo').classList.add('bg-slate-300', 'cursor-not-allowed');
-            document.getElementById('btnCargarMasivo').classList.remove('bg-slate-900', 'hover:bg-slate-800', 'active:scale-95');
-            window.datosImportacion = [];
-            
-            document.getElementById('modalImportar').classList.remove('hidden');
-            document.getElementById('modalImportar').classList.add('flex');
-        };
-
-        window.cerrarImportar = () => {
-            document.getElementById('modalImportar').classList.add('hidden');
-            document.getElementById('modalImportar').classList.remove('flex');
-        };
-
-        // Helper para fechas de excel
-        function excelDateToJSDate(serial) {
-           if (!serial) return "";
-           // Si viene como string normal YYYY-MM-DD
-           if (typeof serial === 'string' && serial.includes('-')) return serial;
-           // Si viene como serial de Excel
-           const utc_days  = Math.floor(serial - 25569);
-           const utc_value = utc_days * 86400;                                        
-           const date_info = new Date(utc_value * 1000);
-           
-           // Ajuste de offset para obtener YYYY-MM-DD correcto
-           const year = date_info.getFullYear();
-           const month = String(date_info.getMonth() + 1).padStart(2, '0');
-           const day = String(date_info.getDate() + 1).padStart(2, '0'); // +1 por el ajuste de epoch excel
-           return `${year}-${month}-${day}`;
-        }
-
-        window.procesarArchivoExcel = (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const msgError = document.getElementById('msgError');
-            const msgSuccess = document.getElementById('msgSuccess');
-            const btnCargar = document.getElementById('btnCargarMasivo');
-
-            // 1. Validar Nombre
-            if (file.name !== "JUBIS.XLSX") {
-                document.getElementById('txtError').innerText = "El archivo debe llamarse 'JUBIS.XLSX'.";
-                msgError.classList.remove('hidden');
-                msgError.classList.add('flex');
-                msgSuccess.classList.add('hidden');
-                msgSuccess.classList.remove('flex');
-                document.getElementById('previewArea').classList.add('hidden');
-                btnCargar.disabled = true;
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                
-                // Convertir a JSON array
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-                
-                // Quitar cabecera si existe (asumimos fila 0 es cabecera)
-                if (jsonData.length > 0) jsonData.shift();
-
-                // Validar estructura básica (tiene datos?)
-                if (jsonData.length === 0) {
-                    document.getElementById('txtError').innerText = "El archivo está vacío.";
-                    msgError.classList.remove('hidden');
-                    msgError.classList.add('flex');
-                    return;
-                }
-
-                // Procesar datos
-                window.datosImportacion = [];
-                let errores = 0;
-
-                jsonData.forEach(row => {
-                    if (row.length >= 4) { // Asegurar columnas mínimas
-                        const legajo = row[0];
-                        const nombre = row[1];
-                        const fNac = excelDateToJSDate(row[2]);
-                        const fIng = excelDateToJSDate(row[3]);
-
-                        if (legajo && nombre && fNac && fIng) {
-                            window.datosImportacion.push({
-                                legajo: legajo,
-                                nombre: String(nombre).toUpperCase(),
-                                fNac: fNac,
-                                fIng: fIng
-                            });
-                        }
-                    }
-                });
-
-                if (window.datosImportacion.length > 0) {
-                    msgError.classList.add('hidden');
-                    msgError.classList.remove('flex');
-                    msgSuccess.classList.remove('hidden');
-                    msgSuccess.classList.add('flex');
-                    document.getElementById('countImport').innerText = `${window.datosImportacion.length} registros listos para cargar`;
-                    
-                    // Activar botón
-                    btnCargar.disabled = false;
-                    btnCargar.classList.remove('bg-slate-300', 'cursor-not-allowed');
-                    btnCargar.classList.add('bg-slate-900', 'hover:bg-slate-800', 'active:scale-95');
-
-                    renderizarPrevisualizacion();
-                } else {
-                    document.getElementById('txtError').innerText = "No se encontraron registros válidos.";
-                    msgError.classList.remove('hidden');
-                    msgError.classList.add('flex');
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        };
-
-        window.renderizarPrevisualizacion = () => {
-            const tbody = document.getElementById('previewBody');
-            tbody.innerHTML = "";
-            document.getElementById('previewArea').classList.remove('hidden');
-
-            window.datosImportacion.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-2 font-mono font-bold">${item.legajo}</td>
-                    <td class="p-2">${item.nombre}</td>
-                    <td class="p-2 text-slate-500">${item.fNac}</td>
-                    <td class="p-2 text-slate-500">${item.fIng}</td>
-                    <td class="p-2 text-right">
-                        <button onclick="eliminarFilaImportacion(${index})" class="text-red-400 hover:text-red-600">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        };
-
-        window.eliminarFilaImportacion = (index) => {
-            window.datosImportacion.splice(index, 1);
-            renderizarPrevisualizacion();
-            document.getElementById('countImport').innerText = `${window.datosImportacion.length} registros listos para cargar`;
-            
-            if (window.datosImportacion.length === 0) {
-                document.getElementById('btnCargarMasivo').disabled = true;
-                document.getElementById('btnCargarMasivo').classList.add('bg-slate-300', 'cursor-not-allowed');
-                document.getElementById('btnCargarMasivo').classList.remove('bg-slate-900');
-                document.getElementById('msgSuccess').classList.add('hidden');
-                document.getElementById('msgSuccess').classList.remove('flex');
-            }
-        };
-
-        window.guardarImportacionMasiva = async () => {
-            if (!confirm(`¿Está seguro de cargar ${window.datosImportacion.length} registros a la base de datos?`)) return;
-
-            const loading = document.getElementById('loadingImportar');
-            loading.classList.remove('hidden');
-            loading.classList.add('flex');
-
-            try {
-                // Procesamiento por lotes (Batch processing simulation)
-                const promises = window.datosImportacion.map(agente => {
-                    return addDoc(collection(db, "agentes_jubilacion"), {
-                        legajo: agente.legajo,
-                        nombre: agente.nombre,
-                        cuil: "", // Excel no provee CUIL según spec
-                        fNac: agente.fNac,
-                        fIng: agente.fIng,
-                        estado: 'activo',
-                        timestamp: serverTimestamp()
-                    });
-                });
-
-                await Promise.all(promises);
-
-                // Fin carga
-                setTimeout(() => {
-                    loading.classList.add('hidden');
-                    loading.classList.remove('flex');
-                    alert("Carga finalizada con éxito");
-                    cerrarImportar();
-                }, 1500); // Pequeño delay para apreciar la animación
-                
-            } catch (err) {
-                console.error(err);
-                loading.classList.add('hidden');
-                loading.classList.remove('flex');
-                alert("Hubo un error al procesar algunos registros.");
-            }
-        };
-
-        // --- ACCIONES FIREBASE (EXISTENTES) ---
+        // --- CRUD BÁSICO ---
         document.getElementById('calcForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
@@ -1191,7 +1055,6 @@
         window.borrarAgente = async (id) => {
             if(confirm("¿Eliminar agente permanentemente?")) await deleteDoc(doc(db, "agentes_jubilacion", id));
         };
-
     </script>
 </body>
 </html>
