@@ -71,10 +71,13 @@
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Activos</span>
                         <div class="text-2xl font-black text-slate-700 mt-1" id="countTotal">0</div>
                     </div>
-                    <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 shadow-sm flex flex-col justify-between">
-                        <span class="text-[10px] font-bold text-indigo-400 uppercase">Jubilados</span>
-                        <div class="text-2xl font-black text-indigo-600 mt-1" id="countJubilados">0</div>
-                    </div>
+                   <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 shadow-sm flex flex-col justify-between cursor-pointer hover:bg-indigo-100 transition group" onclick="filtrarTabla('jubilado'); toggleSidebarIfMobile()">
+    <div class="flex items-center justify-between">
+        <span class="text-[10px] font-bold text-indigo-400 uppercase">Jubilados</span>
+        <i class="fas fa-chevron-right text-indigo-300 text-[10px] group-hover:translate-x-1 transition opacity-0 group-hover:opacity-100"></i>
+    </div>
+    <div class="text-2xl font-black text-indigo-600 mt-1" id="countJubilados">0</div>
+</div>
                 </div>
 
                 <div class="space-y-3">
@@ -121,13 +124,21 @@
         <section class="flex-1 bg-slate-50/50 p-3 md:p-6 overflow-hidden flex flex-col relative w-full">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 md:mb-6 gap-3 shrink-0">
                 <div class="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200 overflow-x-auto w-full lg:w-auto custom-scroll">
-                    <div class="flex min-w-max">
-                        <button onclick="filtrarTabla('todos')" class="filter-btn active px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition border border-transparent focus:bg-slate-100" data-filter="todos">Todos</button>
-                        <div class="w-px h-6 bg-slate-200 mx-1 my-auto"></div>
-                        <button onclick="filtrarTabla('rojo')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50 transition border border-transparent" data-filter="rojo"><i class="fas fa-fire mr-1"></i> Próximos</button>
-                        <button onclick="filtrarTabla('ordinaria')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-blue-500 hover:bg-blue-50 transition border border-transparent" data-filter="ordinaria">Ordinaria</button>
-                        <button onclick="filtrarTabla('avanzada')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-purple-500 hover:bg-purple-50 transition border border-transparent" data-filter="avanzada">Avanzada</button>
-                    </div>
+             <div class="flex min-w-max">
+    <button onclick="filtrarTabla('todos')" class="filter-btn active px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition border border-transparent focus:bg-slate-100" data-filter="todos">Todos</button>
+    
+    <div class="w-px h-6 bg-slate-200 mx-1 my-auto"></div>
+    
+    <button onclick="filtrarTabla('rojo')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50 transition border border-transparent" data-filter="rojo"><i class="fas fa-fire mr-1"></i> Próximos</button>
+    
+    <button onclick="filtrarTabla('ordinaria')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-blue-500 hover:bg-blue-50 transition border border-transparent" data-filter="ordinaria">Ordinaria</button>
+    
+    <button onclick="filtrarTabla('avanzada')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-purple-500 hover:bg-purple-50 transition border border-transparent" data-filter="avanzada">Avanzada</button>
+
+    <button onclick="filtrarTabla('jubilado')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition border border-transparent" data-filter="jubilado">
+        <i class="fas fa-medal mr-1"></i> Jubilados
+    </button>
+</div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
@@ -706,17 +717,21 @@
                 
                 const esJubilado = (data.estado === 'jubilado');
 
-                // Guardar para buscador
+               // Guardar para buscador y reportes (CON MÁXIMO DETALLE)
                 window.datosGlobales.push({
                     legajo: data.legajo,
                     nombre: data.nombre,
                     cuil: data.cuil,
+                    fNac: data.fNac,      // Agregado para reporte
+                    fIng: data.fIng,      // Agregado para reporte
                     edad: prev.edad,
                     antiguedad: prev.antiguedad,
                     fechaRetiro: prev.fpj,
                     tipo: prev.tipo,
                     semaforo: prev.semaforo,
-                    estado: data.estado
+                    estado: data.estado,
+                    faltaAnios: prev.faltaAnios, // Dato preciso
+                    faltaMeses: prev.faltaMeses  // Dato preciso
                 });
 
                 // Contadores
@@ -734,15 +749,30 @@
                 // Badges y Textos
                 const badgeColor = prev.tipo.includes('Jub') ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
                 
+              // --- BLOQUE VISUAL MEJORADO ---
                 let faltaTexto = '';
-                if(esJubilado) faltaTexto = '<span class="text-slate-400 font-mono">-</span>';
-                else {
-                    const anios = Math.floor(prev.aniosRestantes || 0);
-                    if (anios < 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap">¡VENCIDO!</span>`;
-                    else if (anios === 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap"> < 1 Año</span>`;
-                    else faltaTexto = `<span class="whitespace-nowrap font-mono text-slate-500">${prev.faltaAnios || anios}a ${prev.faltaMeses || ''}m</span>`;
-                }
+                if(esJubilado) {
+                    faltaTexto = '<span class="text-slate-400 font-mono">-</span>';
+                } else {
+                    // Usamos las variables precisas, asegurando que no sean undefined
+                    const a = prev.faltaAnios !== undefined ? prev.faltaAnios : 0;
+                    const m = prev.faltaMeses !== undefined ? prev.faltaMeses : 0;
 
+                    if (a < 0) {
+                         // Si se pasó de la fecha
+                         faltaTexto = `<span class="inline-block text-red-600 font-extrabold text-[10px] bg-red-50 border border-red-100 px-2 py-1 rounded shadow-sm">¡VENCIDO!</span>`;
+                    } else if (a === 0 && m === 0) {
+                         // Si es hoy mismo
+                         faltaTexto = `<span class="text-red-600 font-extrabold text-[10px] animate-pulse">¡AHORA!</span>`;
+                    } else {
+                         // Formato: Números en negrita, letras suaves
+                         faltaTexto = `
+                            <div class="flex items-baseline justify-center gap-0.5 font-mono text-xs text-slate-400">
+                                <span class="font-black text-slate-700 text-sm">${a}</span><span class="text-[10px] mr-1">a</span>
+                                <span class="font-black text-slate-700 text-sm">${m}</span><span class="text-[10px]">m</span>
+                            </div>`;
+                    }
+                }
                 // --- DIBUJAR FILA ---
                 const tr = document.createElement('tr');
                 tr.className = `border-b border-slate-50 group hover:bg-slate-50 transition ${esJubilado ? 'bg-slate-50/30' : ''}`;
@@ -1149,7 +1179,7 @@
             }
         };
 
-        // --- FUNCIONES EXPORTACION ---
+        // --- FUNCIONES EXPORTACION (MEJORADAS) ---
         window.procesarDescarga = (formato) => {
             const tipo = document.getElementById('tipoExportacion').value;
             let dataFiltrada = [];
@@ -1159,6 +1189,7 @@
             } else if (tipo === 'proximos') {
                 dataFiltrada = window.datosGlobales.filter(d => d.semaforo === 'rojo' && d.estado !== 'jubilado');
             }
+            // Ordenar por fecha de retiro más cercana
             dataFiltrada.sort((a,b) => a.fechaRetiro - b.fechaRetiro);
 
             if (formato === 'pdf') generarPDF(dataFiltrada, tipo);
@@ -1169,26 +1200,42 @@
 
         function generarPDF(data, tipo) {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const titulo = tipo === 'todos' ? 'NÓMINA GENERAL - SISTEMA PREVISIONAL' : 'ALERTAS DE JUBILACIÓN INMINENTE';
+            // 'l' = Landscape (Horizontal) para que entren todas las columnas cómodas
+            const doc = new jsPDF('l', 'mm', 'a4'); 
             
-            doc.setFontSize(14);
+            const titulo = tipo === 'todos' ? 'NÓMINA DETALLADA - SISTEMA PREVISIONAL' : 'ALERTAS URGENTES DE JUBILACIÓN';
+            
+            // Encabezado
+            doc.setFontSize(16);
             doc.text(titulo, 14, 15);
             doc.setFontSize(10);
-            doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, 14, 22);
+            doc.text(`Fecha de reporte: ${new Date().toLocaleDateString('es-AR')} - Total Registros: ${data.length}`, 14, 22);
 
-            const tableColumn = ["Legajo", "Nombre", "CUIL", "Edad", "Antig.", "Fecha Retiro", "Tipo"];
+            // Columnas más detalladas
+            const tableColumn = ["Legajo", "Nombre Completo", "Edad", "Antig.", "F. Ingreso", "Fecha Retiro", "Tipo", "Tiempo Restante"];
             const tableRows = [];
 
             data.forEach(item => {
+                // Formatear texto de tiempo restante
+                let textoTiempo = "";
+                if (item.estado === 'jubilado') textoTiempo = "JUBILADO";
+                else if (item.faltaAnios < 0) textoTiempo = "VENCIDO";
+                else if (item.faltaAnios === 0 && item.faltaMeses === 0) textoTiempo = "AHORA";
+                else textoTiempo = `${item.faltaAnios} Años, ${item.faltaMeses} Meses`;
+
+                // Formatear fechas
+                const fIngreso = item.fIng ? new Date(item.fIng + "T00:00:00").toLocaleDateString('es-AR') : '-';
+                const fRetiro = item.fechaRetiro ? item.fechaRetiro.toLocaleDateString('es-AR') : '-';
+
                 const row = [
                     item.legajo,
                     item.nombre,
-                    item.cuil,
-                    item.edad,
-                    item.antiguedad,
-                    item.fechaRetiro.toLocaleDateString('es-AR'),
-                    item.tipo
+                    item.edad + " años",
+                    item.antiguedad + " años",
+                    fIngreso,
+                    fRetiro,
+                    item.tipo,
+                    textoTiempo
                 ];
                 tableRows.push(row);
             });
@@ -1198,28 +1245,52 @@
                 body: tableRows,
                 startY: 28,
                 theme: 'grid',
-                headStyles: { fillColor: [30, 41, 59] },
+                headStyles: { fillColor: [30, 41, 59], fontSize: 9 }, // Azul oscuro profesional
+                bodyStyles: { fontSize: 9 },
+                styles: { cellPadding: 2 }
             });
-            doc.save(`reporte_${tipo}.pdf`);
+            doc.save(`Nomina_Detallada_${tipo}.pdf`);
         }
 
         function generarExcel(data, tipo) {
-            const exportData = data.map(item => ({
-                Legajo: item.legajo,
-                Nombre: item.nombre,
-                CUIL: item.cuil,
-                Edad: item.edad,
-                Antiguedad: item.antiguedad,
-                Fecha_Retiro: item.fechaRetiro.toLocaleDateString('es-AR'),
-                Tipo_Jubilacion: item.tipo
-            }));
+            const exportData = data.map(item => {
+                // Cálculo de texto para excel visual
+                let textoTiempo = "";
+                if (item.estado === 'jubilado') textoTiempo = "JUBILADO";
+                else if (item.faltaAnios < 0) textoTiempo = "VENCIDO";
+                else textoTiempo = `${item.faltaAnios} años, ${item.faltaMeses} meses`;
+
+                return {
+                    Legajo: item.legajo,
+                    Agente: item.nombre,
+                    CUIL: item.cuil,
+                    F_Nacimiento: item.fNac, // Fecha cruda para que Excel la entienda
+                    F_Ingreso: item.fIng,
+                    Edad_Actual: item.edad,
+                    Antiguedad: item.antiguedad,
+                    Fecha_Retiro_Est: item.fechaRetiro.toLocaleDateString('es-AR'),
+                    Tipo_Jubilacion: item.tipo,
+                    Estado: item.estado.toUpperCase(),
+                    // Desglose numérico para poder filtrar en Excel (muy útil)
+                    Años_Faltan: item.estado === 'jubilado' ? 0 : item.faltaAnios,
+                    Meses_Faltan: item.estado === 'jubilado' ? 0 : item.faltaMeses,
+                    Situacion_Texto: textoTiempo
+                };
+            });
 
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(exportData);
-            const wscols = [{wch: 10}, {wch: 30}, {wch: 15}, {wch: 8}, {wch: 8}, {wch: 15}, {wch: 20}];
+            
+            // Ajuste automático de anchos de columna
+            const wscols = [
+                {wch: 10}, {wch: 35}, {wch: 15}, {wch: 12}, {wch: 12}, 
+                {wch: 8}, {wch: 8}, {wch: 15}, {wch: 20}, {wch: 10},
+                {wch: 8}, {wch: 8}, {wch: 25}
+            ];
             ws['!cols'] = wscols;
-            XLSX.utils.book_append_sheet(wb, ws, "Reporte");
-            XLSX.writeFile(wb, `reporte_${tipo}.xlsx`);
+
+            XLSX.utils.book_append_sheet(wb, ws, "Nomina_Detallada");
+            XLSX.writeFile(wb, `Nomina_Detallada_${tipo}.xlsx`);
         }
 
         // --- ACCIONES FIREBASE MANUALES ---
