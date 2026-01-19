@@ -803,7 +803,7 @@
             document.getElementById('modalAutor').classList.remove('flex');
         };
 
-       // --- LÓGICA DE IMPORTACIÓN MASIVA CORREGIDA (VERSIÓN DEFINITIVA) ---
+// --- LÓGICA DE IMPORTACIÓN MASIVA CORREGIDA (FORMATO DD/MM/AAAA) ---
         
         let datosImportar = [];
 
@@ -827,23 +827,48 @@
             document.getElementById('modalImportar').classList.remove('flex');
         };
 
-        // Función robusta para fechas y strings
+        // Función de Fechas AJUSTADA para DD/MM/AAAA
         function excelDateToJSDate(serial) {
             if(!serial) return "";
             
-            // Caso: Fecha ya en formato string ISO o con guiones (tu archivo CSV)
+            // Caso: Fecha viene como Texto (ej: "25/05/1987" o "25-05-87")
             if (typeof serial === 'string') {
-                if(serial.match(/^\d{4}-\d{2}-\d{2}$/)) return serial; // Formato YYYY-MM-DD directo
+                const s = serial.trim();
                 
-                // Formato DD/MM/AAAA
-                if(serial.includes('/')) {
-                    const parts = serial.split('/');
-                    if(parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                // Si ya viene perfecta (YYYY-MM-DD), la devolvemos tal cual
+                if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s; 
+
+                // Dividimos por barra (/) o guión (-)
+                const parts = s.split(/[\/\-]/); 
+                
+                if (parts.length === 3) {
+                    // ASUMIMOS TU FORMATO: DD / MM / AAAA
+                    let day = parseInt(parts[0]);
+                    let month = parseInt(parts[1]);
+                    let year = parseInt(parts[2]);
+
+                    // Corrección de seguridad: Si el año parece estar primero (YYYY-MM-DD)
+                    if (day > 31) { 
+                        // Invertimos (asumimos que vino Año-Mes-Día)
+                        let temp = day; day = year; year = temp;
+                    }
+                    
+                    // Si el año tiene 2 dígitos (ej: 87 -> 1987, 03 -> 2003)
+                    if (year < 100) {
+                        year = year > 30 ? 1900 + year : 2000 + year;
+                    }
+
+                    // Formateamos a ISO para la base de datos (YYYY-MM-DD)
+                    const yStr = String(year);
+                    const mStr = String(month).padStart(2, '0');
+                    const dStr = String(day).padStart(2, '0');
+                    
+                    return `${yStr}-${mStr}-${dStr}`;
                 }
-                return serial; 
+                return s; // Si no pudimos procesarla, devolvemos el original
             }
             
-            // Caso: Número serial de Excel
+            // Caso: Fecha Excel Numérica (Serial)
             try {
                 const utc_days  = Math.floor(serial - 25569);
                 const utc_value = utc_days * 86400;                                        
@@ -868,35 +893,27 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
-                    // Convertimos todo a JSON
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet, { 
                         header: 1, 
                         defval: "", 
                         blankrows: false,
-                        raw: false // Importante para que lea tal cual está en el CSV/Excel
+                        raw: false // Importante: lee como texto lo que se ve en Excel
                     });
 
-                    if (jsonData.length < 2) {
-                        throw new Error("El archivo parece vacío o solo tiene el encabezado.");
-                    }
+                    if (jsonData.length < 2) throw new Error("Archivo vacío o solo encabezado.");
 
                     const procesados = [];
-                    // Iteramos todo para encontrar datos reales
                     for (let i = 0; i < jsonData.length; i++) {
                         const row = jsonData[i];
-                        
                         if (!row || row.length === 0) continue;
 
                         const legajoRaw = row[0];
                         if(!legajoRaw) continue;
-                        
-                        // CORRECCIÓN: Filtrar si es el encabezado "LEG" o "LEGAJO"
                         if(String(legajoRaw).toUpperCase().includes("LEG")) continue;
 
                         try {
                             const nombre = row[1] ? String(row[1]).toUpperCase().trim() : "SIN NOMBRE";
-                            
-                            // COLUMNAS: 0=LEG, 1=NOMBRE, 2=NAC, 3=ING
+                            // Leemos col 2 (Nac) y col 3 (Ingreso)
                             let fNac = excelDateToJSDate(row[2]);
                             let fIng = excelDateToJSDate(row[3]);
 
@@ -909,24 +926,20 @@
                                     fIng: fIng
                                 });
                             }
-                        } catch (errFila) {
-                            console.warn("Error leyendo fila " + i, errFila);
-                        }
+                        } catch (errFila) { console.warn("Error fila " + i); }
                     }
 
                     datosImportar = procesados;
 
                     if (datosImportar.length === 0) {
                         statusDiv.className = "p-3 rounded-xl text-xs font-bold border shrink-0 bg-amber-50 border-amber-200 text-amber-600 flex items-center gap-2";
-                        statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-lg"></i> No se encontraron registros válidos. Revise que las columnas sean: Legajo, Nombre, F.Nac, F.Ing.`;
+                        statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-lg"></i> No se encontraron registros válidos.`;
                     } else {
                         statusDiv.className = "p-3 rounded-xl text-xs font-bold border shrink-0 bg-green-50 border-green-200 text-green-600 flex items-center gap-2";
-                        statusDiv.innerHTML = `<i class="fas fa-check-circle text-lg"></i> Archivo válido. Registros listos: ${datosImportar.length}`;
+                        statusDiv.innerHTML = `<i class="fas fa-check-circle text-lg"></i> Registros listos: ${datosImportar.length}`;
                         
-                        // Mostrar Preview
                         document.getElementById('previewContainer').classList.remove('hidden');
                         document.getElementById('previewContainer').classList.add('flex');
-
                         document.getElementById('btnConfirmarImport').disabled = false;
                         document.getElementById('btnConfirmarImport').classList.remove('cursor-not-allowed', 'bg-slate-300');
                         document.getElementById('btnConfirmarImport').classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-lg');
@@ -936,9 +949,9 @@
                     statusDiv.classList.remove('hidden');
 
                 } catch (error) {
-                    console.error("Error parsing Excel:", error);
+                    console.error("Error Excel:", error);
                     statusDiv.className = "p-3 rounded-xl text-xs font-bold border shrink-0 bg-red-50 border-red-200 text-red-600 flex items-center gap-2";
-                    statusDiv.innerHTML = `<i class="fas fa-times-circle text-lg"></i> Error al leer el archivo: ${error.message}`;
+                    statusDiv.innerHTML = `<i class="fas fa-times-circle text-lg"></i> Error: ${error.message}`;
                     statusDiv.classList.remove('hidden');
                 }
             };
@@ -950,7 +963,6 @@
             tbody.innerHTML = "";
             document.getElementById('previewCount').innerText = datosImportar.length;
 
-            // SIN LÍMITE: Recorre toda la lista hasta el final
             for(let i=0; i < datosImportar.length; i++) {
                 const item = datosImportar[i];
                 const tr = document.createElement('tr');
@@ -1000,7 +1012,7 @@
                         batch.set(newRef, {
                             legajo: String(registro.legajo),
                             nombre: registro.nombre,
-                            cuil: "", // El CSV no trae CUIL
+                            cuil: "", 
                             fNac: registro.fNac,
                             fIng: registro.fIng,
                             estado: 'activo',
@@ -1009,7 +1021,6 @@
                     });
 
                     await batch.commit();
-
                     const percent = Math.round(((i + 1) / totalBatches) * 100);
                     progressBar.style.width = `${percent}%`;
                     progressText.innerText = `${percent}% Completado`;
@@ -1024,7 +1035,7 @@
 
             } catch (error) {
                 console.error("Error masivo:", error);
-                alert("Hubo un error en la carga masiva. Verifique su conexión.");
+                alert("Hubo un error en la carga masiva.");
                 location.reload();
             }
         };
@@ -1150,3 +1161,4 @@
     </script>
 </body>
 </html>
+
