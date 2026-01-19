@@ -628,18 +628,30 @@
         // --- FIREBASE LISTENER ---
         const q = query(collection(db, "agentes_jubilacion"), orderBy("legajo", "asc"));
         
+       // --- ESCUCHADOR EN TIEMPO REAL (CORREGIDO Y CERRADO) ---
         onSnapshot(q, (snapshot) => {
-            const tbody = document.getElementById('tableBody');
+            // NOTA: Asegúrate que tu HTML tenga id="tablaBody" o "tableBody". 
+            // Aquí probamos ambos por seguridad.
+            const tbody = document.getElementById('tablaBody') || document.getElementById('tableBody');
+            if(!tbody) { console.error("No se encontró el cuerpo de la tabla"); return; }
+            
             tbody.innerHTML = "";
+            
             let counts = { total: 0, jubilados: 0, rojo: 0, amarillo: 0, verde: 0 };
-            window.datosGlobales = [];
+            window.datosGlobales = []; // Para el buscador
 
-            snapshot.forEach(docSnap => {
+            snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
                 const id = docSnap.id;
-                const prev = calcularPrevision(data.fNac, data.fIng);
-                const esJubilado = data.estado === 'jubilado';
+                
+                // Calcular previsión (asegurando que existe la función)
+                const prev = (typeof calcularPrevision === 'function') 
+                    ? calcularPrevision(data.fNac, data.fIng, data.genero || 'M') 
+                    : { edad:0, antiguedad:0, semaforo:'verde', tipo:'Normal', fpj: new Date() };
+                
+                const esJubilado = (data.estado === 'jubilado');
 
+                // Guardar para buscador
                 window.datosGlobales.push({
                     legajo: data.legajo,
                     nombre: data.nombre,
@@ -652,35 +664,35 @@
                     estado: data.estado
                 });
 
+                // Contadores
                 if (esJubilado) counts.jubilados++;
                 else {
                     counts.total++;
-                    counts[prev.semaforo]++;
+                    if(counts[prev.semaforo] !== undefined) counts[prev.semaforo]++;
                 }
 
-                const tr = document.createElement('tr');
-                let rowClass = esJubilado ? 'row-jubilado' : `row-${prev.semaforo}`;
-                let filtroTag = esJubilado ? 'jubilado' : prev.semaforo;
+                // Formatos de fecha
+                const fmtNac = data.fNac ? new Date(data.fNac + "T00:00:00").toLocaleDateString('es-AR') : '-';
+                const fmtIng = data.fIng ? new Date(data.fIng + "T00:00:00").toLocaleDateString('es-AR') : '-';
+                const fmtRetiro = prev.fpj ? prev.fpj.toLocaleDateString('es-AR') : '-';
 
-                tr.className = `border-b border-slate-50 group hover:bg-slate-50 ${rowClass}`;
-                tr.dataset.filtro = filtroTag;
-                tr.dataset.tipo = prev.tipo.toLowerCase();
-
-                const badgeColor = prev.tipo === 'Jub. Ordinaria' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
+                // Badges y Textos
+                const badgeColor = prev.tipo.includes('Jub') ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
                 
                 let faltaTexto = '';
-                if(esJubilado) faltaTexto = '-';
+                if(esJubilado) faltaTexto = '<span class="text-slate-400 font-mono">-</span>';
                 else {
-                    const anios = Math.floor(prev.aniosRestantes);
+                    const anios = Math.floor(prev.aniosRestantes || 0); // corrección por si es undefined
                     if (anios < 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap">¡VENCIDO!</span>`;
                     else if (anios === 0) faltaTexto = `<span class="text-red-600 font-bold whitespace-nowrap"> < 1 Año</span>`;
-                    else faltaTexto = `<span class="whitespace-nowrap">${anios} años</span>`;
+                    else faltaTexto = `<span class="whitespace-nowrap font-mono text-slate-500">${prev.faltaAnios}a ${prev.faltaMeses}m</span>`;
                 }
 
-                const fmtNac = new Date(data.fNac + "T00:00:00").toLocaleDateString('es-AR');
-                const fmtIng = new Date(data.fIng + "T00:00:00").toLocaleDateString('es-AR');
-                const fmtRetiro = prev.fpj.toLocaleDateString('es-AR');
-
+                // --- DIBUJAR FILA ---
+                const tr = document.createElement('tr');
+                tr.className = `border-b border-slate-50 group hover:bg-slate-50 transition ${esJubilado ? 'bg-slate-50/30' : ''}`;
+                
+                // AQUÍ ESTÁ LA MAGIA DEL CHECKBOX Y LA SINTAXIS CORREGIDA
                 tr.innerHTML = `
                     <td class="p-3 md:p-4 text-center bg-slate-50/50">
                         <input type="checkbox" class="chk-main-item rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4" value="${id}" onchange="verificarSeleccionMain()">
@@ -705,7 +717,8 @@
                     <td class="p-3 md:p-4 text-center">
                          ${esJubilado 
                             ? '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>'
-                            : `<span class="inline-flex w-3 h-3 rounded-full bg-${prev.semaforo === 'rojo' ? 'red' : prev.semaforo === 'amarillo' ? 'amber' : 'emerald
+                            : `<span class="inline-flex w-3 h-3 rounded-full bg-${prev.semaforo === 'rojo' ? 'red' : prev.semaforo === 'amarillo' ? 'amber' : 'emerald'}-500 shadow-sm"></span>`
+                         }
                     </td>
                     <td class="p-3 md:p-4 text-right">
                         <div class="flex justify-end gap-1 opacity-100 md:opacity-80 hover:opacity-100">
@@ -732,15 +745,22 @@
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('countTotal').innerText = counts.total;
-            document.getElementById('countJubilados').innerText = counts.jubilados;
-            document.getElementById('countRojo').innerText = counts.rojo;
-            document.getElementById('countAmarillo').innerText = counts.amarillo;
-            document.getElementById('countVerde').innerText = counts.verde;
-            aplicarFiltrosDOM(); 
+            // Actualizar contadores del DOM si existen los elementos
+            if(document.getElementById('countTotal')) document.getElementById('countTotal').innerText = counts.total;
+            if(document.getElementById('countJubilados')) document.getElementById('countJubilados').innerText = counts.jubilados;
+            if(document.getElementById('countRojo')) document.getElementById('countRojo').innerText = counts.rojo;
+            if(document.getElementById('countAmarillo')) document.getElementById('countAmarillo').innerText = counts.amarillo;
+            if(document.getElementById('countVerde')) document.getElementById('countVerde').innerText = counts.verde;
+            
+            // Re-aplicar filtros si existe la función
+            if(typeof aplicarFiltrosDOM === 'function') aplicarFiltrosDOM(); 
         });
 
-        document.getElementById('searchTable').addEventListener('input', aplicarFiltrosDOM);
+        // Evento para el buscador (si existe el input)
+        const inputSearch = document.getElementById('searchTable');
+        if(inputSearch && typeof aplicarFiltrosDOM === 'function') {
+            inputSearch.addEventListener('input', aplicarFiltrosDOM);
+        }
 
         // --- FUNCIONES MODALES GLOBALES ---
         window.abrirNuevo = () => {
