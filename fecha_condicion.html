@@ -318,8 +318,9 @@
                             <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-4">
                                 <li>Col 1: <strong>Legajo</strong> (Obligatorio)</li>
                                 <li>Col 2: <strong>Nombre y Apellido</strong></li>
-                                <li>Col 3: <strong>Fecha Nacimiento</strong> (DD/MM/AAAA)</li>
-                                <li>Col 4: <strong>Fecha Ingreso</strong> (DD/MM/AAAA)</li>
+                                <li>Col 3: <strong>CUIT/CUIL</strong> (Sin guiones)</li>
+                                <li>Col 4: <strong>Fecha Nacimiento</strong> (DD/MM/AAAA)</li>
+                                <li>Col 5: <strong>Fecha Ingreso</strong> (DD/MM/AAAA)</li>
                             </ul>
                             <p class="text-[10px] text-blue-600 mt-2 font-semibold">* La primera fila se ignora (encabezados).</p>
                         </div>
@@ -354,6 +355,7 @@
                                     </th>
                                     <th class="p-3 bg-slate-50 border-b border-slate-200">Legajo</th>
                                     <th class="p-3 bg-slate-50 border-b border-slate-200">Nombre del Agente</th>
+                                    <th class="p-3 bg-slate-50 border-b border-slate-200 text-center">CUIL</th>
                                     <th class="p-3 bg-slate-50 border-b border-slate-200 text-center">F. Nacimiento</th>
                                     <th class="p-3 bg-slate-50 border-b border-slate-200 text-center">F. Ingreso</th>
                                     <th class="p-3 text-right bg-slate-50 border-b border-slate-200">Acción</th>
@@ -1022,11 +1024,19 @@
 
                         try {
                             const nombre = row[1] ? String(row[1]).toUpperCase().trim() : "SIN NOMBRE";
-                            let fNac = excelDateToJSDate(row[2]);
-                            let fIng = excelDateToJSDate(row[3]);
+                            const cuilRaw = row[2] ? String(row[2]).trim() : ""; // NUEVO CAMPO COL 3 (Index 2)
+                            let fNac = excelDateToJSDate(row[3]); // Index desplazado
+                            let fIng = excelDateToJSDate(row[4]); // Index desplazado
 
                             if(fNac && fIng) {
-                                procesados.push({ id: i, legajo: String(legajoRaw).trim(), nombre: nombre, fNac: fNac, fIng: fIng });
+                                procesados.push({ 
+                                    id: i, 
+                                    legajo: String(legajoRaw).trim(), 
+                                    nombre: nombre, 
+                                    cuil: cuilRaw,
+                                    fNac: fNac, 
+                                    fIng: fIng 
+                                });
                             }
                         } catch (errFila) { console.warn("Error fila " + i); }
                     }
@@ -1088,6 +1098,7 @@
                     </td>
                     <td class="p-3 font-mono text-slate-500 text-xs">${item.legajo}</td>
                     <td class="p-3 font-bold text-slate-700 text-xs uppercase">${item.nombre}</td>
+                    <td class="p-3 text-center text-xs text-slate-500 font-mono">${item.cuil}</td>
                     <td class="p-3 text-center text-xs text-slate-500">${item.fNac}</td>
                     <td class="p-3 text-center text-xs text-slate-500">${item.fIng}</td>
                     <td class="p-3 text-right">
@@ -1156,7 +1167,7 @@
                     batch.set(ref, {
                         legajo: d.legajo,
                         nombre: d.nombre,
-                        cuil: '', // No viene en el excel básico
+                        cuil: d.cuil, // Ahora sí guardamos el CUIL
                         fNac: d.fNac,
                         fIng: d.fIng,
                         estado: 'activo',
