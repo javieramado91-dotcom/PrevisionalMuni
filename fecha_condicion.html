@@ -1222,8 +1222,8 @@
             doc.setFontSize(10);
             doc.text(`Fecha de reporte: ${new Date().toLocaleDateString('es-AR')} - Total Registros: ${data.length}`, 14, 22);
 
-            // Columnas más detalladas
-            const tableColumn = ["Legajo", "Nombre Completo", "Edad", "Antig.", "F. Ingreso", "Fecha Retiro", "Tipo", "Tiempo Restante"];
+            // Columnas más detalladas (SE AGREGÓ CUIL)
+            const tableColumn = ["Legajo", "Nombre", "CUIL", "Edad", "Ant.", "Ingreso", "Retiro", "Tipo", "Tiempo Restante"];
             const tableRows = [];
 
             data.forEach(item => {
@@ -1241,8 +1241,9 @@
                 const row = [
                     item.legajo,
                     item.nombre,
-                    item.edad + " años",
-                    item.antiguedad + " años",
+                    item.cuil, // DATO AGREGADO
+                    item.edad + " a",
+                    item.antiguedad + " a",
                     fIngreso,
                     fRetiro,
                     item.tipo,
@@ -1256,9 +1257,9 @@
                 body: tableRows,
                 startY: 28,
                 theme: 'grid',
-                headStyles: { fillColor: [30, 41, 59], fontSize: 9 }, // Azul oscuro profesional
-                bodyStyles: { fontSize: 9 },
-                styles: { cellPadding: 2 }
+                headStyles: { fillColor: [30, 41, 59], fontSize: 8 }, // Letra un poco más chica para que entre todo
+                bodyStyles: { fontSize: 8 },
+                styles: { cellPadding: 1.5 }
             });
             doc.save(`Nomina_Detallada_${tipo}.pdf`);
         }
