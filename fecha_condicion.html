@@ -191,7 +191,7 @@
                             <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Legajo</th>
                             <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Agente</th>
                             <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Edad / Serv.</th>
-                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-blue-600 uppercase tracking-wider bg-blue-50/30">Retiro</th>
+                            <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-blue-600 uppercase tracking-wider bg-blue-50/30">Retiro / Baja</th>
                             <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Falta</th>
                             <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">Estado</th>
                             <th class="p-3 md:p-4 text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-right">Acciones</th>
@@ -796,6 +796,7 @@
                 const fmtNac = data.fNac ? new Date(data.fNac + "T00:00:00").toLocaleDateString('es-AR') : '-';
                 const fmtIng = data.fIng ? new Date(data.fIng + "T00:00:00").toLocaleDateString('es-AR') : '-';
                 const fmtRetiro = prev.fpj ? prev.fpj.toLocaleDateString('es-AR') : '-';
+                const fmtBaja = data.fechaBaja ? new Date(data.fechaBaja + "T00:00:00").toLocaleDateString('es-AR') : '-';
 
                 const badgeColor = prev.tipo.includes('Jub') ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
                 
@@ -847,9 +848,14 @@
                         <div class="font-bold text-slate-700 text-xs">${prev.edad} años</div>
                         <div class="text-[9px] md:text-[10px] text-slate-400 whitespace-nowrap">${prev.antiguedad} serv.</div>
                     </td>
-                    <td class="p-3 md:p-4 bg-blue-50/10">
-                        <div class="text-xs font-bold text-slate-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-slate-300 mr-1"></i> ${fmtRetiro}</div>
-                        <span class="${badgeColor} px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-transparent bg-opacity-70 whitespace-nowrap">${prev.tipo}</span>
+                    <td class="p-3 md:p-4 ${esBaja ? 'bg-red-50/50' : 'bg-blue-50/10'}">
+                        ${esBaja ? `
+                            <div class="text-xs font-bold text-red-700 whitespace-nowrap"><i class="fas fa-sign-out-alt text-red-400 mr-1"></i> ${fmtBaja}</div>
+                            <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-red-200 whitespace-nowrap">${data.motivoBaja || 'N/A'}</span>
+                        ` : `
+                            <div class="text-xs font-bold text-slate-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-slate-300 mr-1"></i> ${fmtRetiro}</div>
+                            <span class="${badgeColor} px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-transparent bg-opacity-70 whitespace-nowrap">${prev.tipo}</span>
+                        `}
                     </td>
                     <td class="p-3 md:p-4 text-center font-bold text-slate-600 text-xs">
                         ${faltaTexto}
