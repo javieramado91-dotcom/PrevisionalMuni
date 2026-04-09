@@ -21,6 +21,7 @@
         .row-amarillo { border-left: 4px solid #f59e0b; background: linear-gradient(to right, #fffbeb, white); }
         .row-verde { border-left: 4px solid #10b981; background: white; }
         .row-jubilado { border-left: 4px solid #6366f1; background: #f8fafc; opacity: 0.75; }
+        .row-baja { border-left: 4px solid #ef4444; background: #fef2f2; opacity: 0.75; }
         tr { transition: all 0.3s ease; }
         
         /* Correcciones para móvil */
@@ -69,18 +70,23 @@
                 </div>
                 
                 <h3 class="hidden md:block text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">Tablero de Control</h3>
-                <div class="grid grid-cols-2 gap-2 mb-4">
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Activos</span>
-                        <div class="text-2xl font-black text-slate-700 mt-1" id="countTotal">0</div>
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">Activos</span>
+                        <div class="text-xl font-black text-slate-700 mt-1" id="countTotal">0</div>
                     </div>
-                   <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 shadow-sm flex flex-col justify-between cursor-pointer hover:bg-indigo-100 transition group" onclick="filtrarTabla('jubilado'); toggleSidebarIfMobile()">
-    <div class="flex items-center justify-between">
-        <span class="text-[10px] font-bold text-indigo-400 uppercase">Jubilados</span>
-        <i class="fas fa-chevron-right text-indigo-300 text-[10px] group-hover:translate-x-1 transition opacity-0 group-hover:opacity-100"></i>
-    </div>
-    <div class="text-2xl font-black text-indigo-600 mt-1" id="countJubilados">0</div>
-</div>
+                    <div class="bg-indigo-50 p-2 rounded-xl border border-indigo-100 shadow-sm flex flex-col justify-between cursor-pointer hover:bg-indigo-100 transition group" onclick="filtrarTabla('jubilado'); toggleSidebarIfMobile()">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-bold text-indigo-400 uppercase">Jubilados</span>
+                        </div>
+                        <div class="text-xl font-black text-indigo-600 mt-1" id="countJubilados">0</div>
+                    </div>
+                    <div class="bg-red-50 p-2 rounded-xl border border-red-100 shadow-sm flex flex-col justify-between cursor-pointer hover:bg-red-100 transition group" onclick="filtrarTabla('baja'); toggleSidebarIfMobile()">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-bold text-red-500 uppercase">Bajas</span>
+                        </div>
+                        <div class="text-xl font-black text-red-600 mt-1" id="countBajas">0</div>
+                    </div>
                 </div>
 
                 <div class="space-y-3">
@@ -138,8 +144,14 @@
     
     <button onclick="filtrarTabla('avanzada')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-purple-500 hover:bg-purple-50 transition border border-transparent" data-filter="avanzada">Avanzada</button>
 
+    <div class="w-px h-6 bg-slate-200 mx-1 my-auto"></div>
+
     <button onclick="filtrarTabla('jubilado')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition border border-transparent" data-filter="jubilado">
         <i class="fas fa-medal mr-1"></i> Jubilados
+    </button>
+
+    <button onclick="filtrarTabla('baja')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 transition border border-transparent" data-filter="baja">
+        <i class="fas fa-user-slash mr-1"></i> Bajas
     </button>
 </div>
                 </div>
@@ -282,10 +294,8 @@
         </div>
     </div>
 
- <div id="modalImportar" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[55] backdrop-blur-sm transition-opacity px-4">
-        
+    <div id="modalImportar" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[55] backdrop-blur-sm transition-opacity px-4">
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col h-[85vh] md:h-[90vh] overflow-hidden relative transition-all">
-            
             <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-white z-20 shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 shadow-sm">
@@ -331,15 +341,14 @@
                 </div>
 
                 <div id="dropZone" class="flex-1 flex flex-col items-center justify-center p-2 transition-all">
-    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
-    
-    <div onclick="document.getElementById('fileInput').click()" class="group cursor-pointer text-center w-48 border-2 border-dashed border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/30 rounded-xl p-3 transition-all duration-300">
-        <div class="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:text-blue-500 group-hover:scale-110 transition mx-auto mb-2 shadow-sm border border-slate-100">
-            <i class="fas fa-cloud-upload-alt text-sm"></i>
-        </div>
-        <h4 class="text-[10px] font-bold text-slate-700 mb-0 group-hover:text-blue-600 transition uppercase">Elegir Archivo</h4>
-    </div>
-</div>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
+                    <div onclick="document.getElementById('fileInput').click()" class="group cursor-pointer text-center w-48 border-2 border-dashed border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/30 rounded-xl p-3 transition-all duration-300">
+                        <div class="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:text-blue-500 group-hover:scale-110 transition mx-auto mb-2 shadow-sm border border-slate-100">
+                            <i class="fas fa-cloud-upload-alt text-sm"></i>
+                        </div>
+                        <h4 class="text-[10px] font-bold text-slate-700 mb-0 group-hover:text-blue-600 transition uppercase">Elegir Archivo</h4>
+                    </div>
+                </div>
 
                 <div id="importStatus" class="hidden px-4 py-2 bg-white border-b border-slate-200 shrink-0 items-center justify-between text-xs">
                     <span id="statusText" class="font-bold"></span>
@@ -381,6 +390,7 @@
             </div>
         </div>
     </div>
+
     <div id="successOverlay" class="fixed inset-0 bg-emerald-600 z-[75] hidden flex-col items-center justify-center text-white transition-all">
         <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-emerald-600 text-4xl shadow-2xl mb-4 animate-bounce">
             <i class="fas fa-check"></i>
@@ -436,9 +446,51 @@
             <p class="text-sm text-slate-500 mb-6">¿Confirmas que el agente ha iniciado su retiro efectivo? Pasará a la lista de Jubilados.</p>
             <input type="hidden" id="jubilarId">
             <div class="flex gap-2">
-                <button onclick="cerrarJubilar()" class="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-xl">Cancelar</button>
+                <button onclick="cerrarJubilar()" class="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-xl hover:bg-slate-50">Cancelar</button>
                 <button onclick="confirmarJubilacion()" class="flex-1 bg-green-500 text-white font-bold py-2 rounded-xl hover:bg-green-600 shadow-lg shadow-green-200">Sí, Jubilar</button>
             </div>
+        </div>
+    </div>
+
+    <div id="modalBajaConfirm" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-500 text-3xl mx-auto mb-4">
+                <i class="fas fa-user-minus"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Dar de baja</h3>
+            <p class="text-sm text-slate-500 mb-6">¿Quiere dar de baja al agente en actividad?</p>
+            <input type="hidden" id="bajaConfirmId">
+            <div class="flex gap-2">
+                <button onclick="cerrarBajaConfirm()" class="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-xl hover:bg-slate-50">No</button>
+                <button onclick="abrirBajaDatos()" class="flex-1 bg-red-500 text-white font-bold py-2 rounded-xl hover:bg-red-600 shadow-lg shadow-red-200">Sí</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalBajaDatos" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-file-signature text-red-500"></i> Datos de la Baja</h3>
+            <form id="formBaja" class="space-y-4">
+                <input type="hidden" id="bajaDatosId">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Fecha de Baja</label>
+                    <input type="date" id="inpFechaBaja" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold text-slate-600" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Motivo</label>
+                    <select id="inpMotivoBaja" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold text-slate-600" required>
+                        <option value="">Seleccione un motivo...</option>
+                        <option value="cese">Cese</option>
+                        <option value="renuncia">Renuncia</option>
+                        <option value="fin de contrato">Fin de contrato</option>
+                        <option value="despido">Despido</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="cerrarBajaDatos()" class="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-xl hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-red-600 text-white font-bold py-2 rounded-xl hover:bg-red-700 shadow-lg shadow-red-200">Confirmar Baja</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -581,22 +633,18 @@
         const APORTE_AVANZADA = 10;
 
         function calcularPrevision(fechaNac, fechaIng) {
-            // 1. Validar datos
             if(!fechaNac || !fechaIng) return { edad: 0, antiguedad: 0, fpj: new Date(), tipo: 'Error Datos', semaforo: 'rojo', aniosRestantes: -99, faltaAnios: 0, faltaMeses: 0 };
 
             const nac = new Date(fechaNac + "T00:00:00");
             const ing = new Date(fechaIng + "T00:00:00");
             const hoy = new Date(); 
 
-            // 2. Calcular Edad Actual
             let edad = hoy.getFullYear() - nac.getFullYear();
             if (new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate()) > hoy) edad--;
 
-            // 3. Calcular Antigüedad
             let antiguedad = hoy.getFullYear() - ing.getFullYear();
             if (new Date(hoy.getFullYear(), ing.getMonth(), ing.getDate()) > hoy) antiguedad--;
 
-            // 4. Determinar Fecha de Retiro (FPJ)
             const metaEdad = new Date(nac); metaEdad.setFullYear(nac.getFullYear() + EDAD_JUBILATORIA);
             const metaServicio = new Date(ing); metaServicio.setFullYear(ing.getFullYear() + ANIOS_APORTE);
             let fpjOrd = (metaEdad > metaServicio) ? metaEdad : metaServicio;
@@ -613,22 +661,18 @@
                 tipo = "Edad Avanzada";
             }
 
-            // 5. CÁLCULO PRECISO (AÑOS Y MESES RESTANTES)
             let faltaAnios = fechaRetiro.getFullYear() - hoy.getFullYear();
             let faltaMeses = fechaRetiro.getMonth() - hoy.getMonth();
 
-            // Ajuste fino por día del mes
             if (fechaRetiro.getDate() < hoy.getDate()) {
                 faltaMeses--;
             }
 
-            // Ajuste si los meses dan negativo (pedimos prestado un año)
             if (faltaMeses < 0) {
                 faltaAnios--;
                 faltaMeses += 12;
             }
 
-            // 6. Semáforo (Lógica visual)
             const diffTime = fechaRetiro - hoy;
             const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25);
             
@@ -643,9 +687,9 @@
                 fpj: fechaRetiro, 
                 tipo, 
                 semaforo, 
-                aniosRestantes: diffYears, // Para ordenamiento interno
-                faltaAnios: faltaAnios,    // Para mostrar en pantalla
-                faltaMeses: faltaMeses     // Para mostrar en pantalla
+                aniosRestantes: diffYears, 
+                faltaAnios: faltaAnios,    
+                faltaMeses: faltaMeses     
             };
         }
 
@@ -676,19 +720,22 @@
 
                 if (mostrar) {
                     if (filtroActual === 'todos') {
-                        if (dataFilter === 'jubilado') mostrar = false;
+                        if (dataFilter === 'jubilado' || dataFilter === 'baja') mostrar = false;
                     }
                     else if (filtroActual === 'jubilado') {
                         if (dataFilter !== 'jubilado') mostrar = false;
+                    }
+                    else if (filtroActual === 'baja') {
+                        if (dataFilter !== 'baja') mostrar = false;
                     }
                     else if (filtroActual === 'rojo') {
                         if (dataFilter !== 'rojo') mostrar = false;
                     }
                     else if (filtroActual === 'ordinaria') {
-                        if (dataFilter === 'jubilado' || !dataTipo.includes('ordinaria')) mostrar = false;
+                        if (dataFilter === 'jubilado' || dataFilter === 'baja' || !dataTipo.includes('ordinaria')) mostrar = false;
                     }
                     else if (filtroActual === 'avanzada') {
-                         if (dataFilter === 'jubilado' || !dataTipo.includes('avanzada')) mostrar = false;
+                         if (dataFilter === 'jubilado' || dataFilter === 'baja' || !dataTipo.includes('avanzada')) mostrar = false;
                     }
                     else if (['amarillo', 'verde'].includes(filtroActual)) {
                          if (dataFilter !== filtroActual) mostrar = false;
@@ -701,76 +748,69 @@
         // --- FIREBASE LISTENER ---
         const q = query(collection(db, "agentes_jubilacion"), orderBy("legajo", "asc"));
         
-       // --- ESCUCHADOR EN TIEMPO REAL ---
         onSnapshot(q, (snapshot) => {
             const tbody = document.getElementById('tablaBody') || document.getElementById('tableBody');
-            if(!tbody) { console.error("No se encontró el cuerpo de la tabla"); return; }
+            if(!tbody) return;
             
             tbody.innerHTML = "";
             
-            let counts = { total: 0, jubilados: 0, rojo: 0, amarillo: 0, verde: 0 };
-            window.datosGlobales = []; // Para el buscador
+            let counts = { total: 0, jubilados: 0, bajas: 0, rojo: 0, amarillo: 0, verde: 0 };
+            window.datosGlobales = [];
 
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
                 const id = docSnap.id;
                 
-                // Calcular previsión
                 const prev = (typeof calcularPrevision === 'function') 
                     ? calcularPrevision(data.fNac, data.fIng, data.genero || 'M') 
                     : { edad:0, antiguedad:0, semaforo:'verde', tipo:'Normal', fpj: new Date() };
                 
                 const esJubilado = (data.estado === 'jubilado');
+                const esBaja = (data.estado === 'baja');
 
-               // Guardar para buscador y reportes (CON MÁXIMO DETALLE)
                 window.datosGlobales.push({
                     legajo: data.legajo,
                     nombre: data.nombre,
                     cuil: data.cuil,
-                    fNac: data.fNac,      // Agregado para reporte
-                    fIng: data.fIng,      // Agregado para reporte
+                    fNac: data.fNac,
+                    fIng: data.fIng,
                     edad: prev.edad,
                     antiguedad: prev.antiguedad,
                     fechaRetiro: prev.fpj,
                     tipo: prev.tipo,
                     semaforo: prev.semaforo,
                     estado: data.estado,
-                    faltaAnios: prev.faltaAnios, // Dato preciso
-                    faltaMeses: prev.faltaMeses  // Dato preciso
+                    faltaAnios: prev.faltaAnios,
+                    faltaMeses: prev.faltaMeses
                 });
 
-                // Contadores
-                if (esJubilado) counts.jubilados++;
-                else {
+                if (esJubilado) {
+                    counts.jubilados++;
+                } else if (esBaja) {
+                    counts.bajas++;
+                } else {
                     counts.total++;
                     if(counts[prev.semaforo] !== undefined) counts[prev.semaforo]++;
                 }
 
-                // Formatos de fecha
                 const fmtNac = data.fNac ? new Date(data.fNac + "T00:00:00").toLocaleDateString('es-AR') : '-';
                 const fmtIng = data.fIng ? new Date(data.fIng + "T00:00:00").toLocaleDateString('es-AR') : '-';
                 const fmtRetiro = prev.fpj ? prev.fpj.toLocaleDateString('es-AR') : '-';
 
-                // Badges y Textos
                 const badgeColor = prev.tipo.includes('Jub') ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
                 
-              // --- BLOQUE VISUAL MEJORADO ---
                 let faltaTexto = '';
-                if(esJubilado) {
+                if(esJubilado || esBaja) {
                     faltaTexto = '<span class="text-slate-400 font-mono">-</span>';
                 } else {
-                    // Usamos las variables precisas, asegurando que no sean undefined
                     const a = prev.faltaAnios !== undefined ? prev.faltaAnios : 0;
                     const m = prev.faltaMeses !== undefined ? prev.faltaMeses : 0;
 
                     if (a < 0) {
-                         // Si se pasó de la fecha
                          faltaTexto = `<span class="inline-block text-red-600 font-extrabold text-[10px] bg-red-50 border border-red-100 px-2 py-1 rounded shadow-sm">¡VENCIDO!</span>`;
                     } else if (a === 0 && m === 0) {
-                         // Si es hoy mismo
                          faltaTexto = `<span class="text-red-600 font-extrabold text-[10px] animate-pulse">¡AHORA!</span>`;
                     } else {
-                         // Formato: Números en negrita, letras suaves
                          faltaTexto = `
                             <div class="flex items-baseline justify-center gap-0.5 font-mono text-xs text-slate-400">
                                 <span class="font-black text-slate-700 text-sm">${a}</span><span class="text-[10px] mr-1">a</span>
@@ -778,10 +818,19 @@
                             </div>`;
                     }
                 }
-                // --- DIBUJAR FILA ---
+
+                let badgeEstado = '';
+                if (esJubilado) {
+                    badgeEstado = '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>';
+                } else if (esBaja) {
+                    badgeEstado = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700" title="Motivo: ${data.motivoBaja} - Fecha: ${data.fechaBaja}"><i class="fas fa-user-slash"></i> <span class="hidden md:inline">BAJA</span></span>`;
+                } else {
+                    badgeEstado = `<span class="inline-flex w-3 h-3 rounded-full bg-${prev.semaforo === 'rojo' ? 'red' : prev.semaforo === 'amarillo' ? 'amber' : 'emerald'}-500 shadow-sm"></span>`;
+                }
+
                 const tr = document.createElement('tr');
-                tr.className = `border-b border-slate-50 group hover:bg-slate-50 transition ${esJubilado ? 'bg-slate-50/30' : ''}`;
-                tr.dataset.filtro = esJubilado ? 'jubilado' : prev.semaforo;
+                tr.className = `border-b border-slate-50 group hover:bg-slate-50 transition ${esJubilado ? 'bg-slate-50/30' : (esBaja ? 'bg-red-50/30' : '')}`;
+                tr.dataset.filtro = esJubilado ? 'jubilado' : (esBaja ? 'baja' : prev.semaforo);
                 tr.dataset.tipo = prev.tipo.toLowerCase();
                 
                 tr.innerHTML = `
@@ -806,10 +855,7 @@
                         ${faltaTexto}
                     </td>
                     <td class="p-3 md:p-4 text-center">
-                         ${esJubilado 
-                            ? '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>'
-                            : `<span class="inline-flex w-3 h-3 rounded-full bg-${prev.semaforo === 'rojo' ? 'red' : prev.semaforo === 'amarillo' ? 'amber' : 'emerald'}-500 shadow-sm"></span>`
-                         }
+                         ${badgeEstado}
                     </td>
                     <td class="p-3 md:p-4 text-right">
                         <div class="flex justify-end gap-1 opacity-100 md:opacity-80 hover:opacity-100">
@@ -821,10 +867,14 @@
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Editar">
                                 <i class="fas fa-pen text-xs"></i>
                             </button>
-                            ${!esJubilado ? `
+                            ${(!esJubilado && !esBaja) ? `
                             <button onclick="abrirJubilar('${id}')" 
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-yellow-500 hover:bg-yellow-50 transition" title="Jubilar">
                                 <i class="fas fa-medal text-xs"></i>
+                            </button>
+                            <button onclick="abrirConfirmarBaja('${id}')" 
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition" title="Dar de Baja">
+                                <i class="fas fa-user-minus text-xs"></i>
                             </button>` : ''}
                             <button onclick="borrarAgente('${id}')" 
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition" title="Eliminar">
@@ -836,18 +886,16 @@
                 tbody.appendChild(tr);
             });
 
-            // Actualizar contadores del DOM si existen los elementos
             if(document.getElementById('countTotal')) document.getElementById('countTotal').innerText = counts.total;
             if(document.getElementById('countJubilados')) document.getElementById('countJubilados').innerText = counts.jubilados;
+            if(document.getElementById('countBajas')) document.getElementById('countBajas').innerText = counts.bajas;
             if(document.getElementById('countRojo')) document.getElementById('countRojo').innerText = counts.rojo;
             if(document.getElementById('countAmarillo')) document.getElementById('countAmarillo').innerText = counts.amarillo;
             if(document.getElementById('countVerde')) document.getElementById('countVerde').innerText = counts.verde;
             
-            // Re-aplicar filtros
             if(typeof aplicarFiltrosDOM === 'function') aplicarFiltrosDOM(); 
         });
 
-        // Evento para el buscador
         const inputSearch = document.getElementById('searchTable');
         if(inputSearch) {
             inputSearch.addEventListener('input', aplicarFiltrosDOM);
@@ -877,6 +925,8 @@
             document.getElementById('modalEdit').classList.add('hidden');
             document.getElementById('modalEdit').classList.remove('flex');
         };
+        
+        // --- FUNCIONES DE JUBILACION ---
         window.abrirJubilar = (id) => {
             document.getElementById('jubilarId').value = id;
             document.getElementById('modalJubilar').classList.remove('hidden');
@@ -886,6 +936,59 @@
             document.getElementById('modalJubilar').classList.add('hidden');
             document.getElementById('modalJubilar').classList.remove('flex');
         };
+        window.confirmarJubilacion = async () => {
+            try {
+                await updateDoc(doc(db, "agentes_jubilacion", document.getElementById('jubilarId').value), {
+                    estado: 'jubilado',
+                    fechaJubilacionReal: serverTimestamp()
+                });
+                cerrarJubilar();
+            } catch (err) { alert("Error al jubilar"); }
+        };
+
+        // --- FUNCIONES DE BAJA ---
+        window.abrirConfirmarBaja = (id) => {
+            document.getElementById('bajaConfirmId').value = id;
+            document.getElementById('modalBajaConfirm').classList.remove('hidden');
+            document.getElementById('modalBajaConfirm').classList.add('flex');
+        };
+        window.cerrarBajaConfirm = () => {
+            document.getElementById('modalBajaConfirm').classList.add('hidden');
+            document.getElementById('modalBajaConfirm').classList.remove('flex');
+        };
+        window.abrirBajaDatos = () => {
+            const id = document.getElementById('bajaConfirmId').value;
+            document.getElementById('bajaDatosId').value = id;
+            
+            document.getElementById('formBaja').reset(); // Limpia campos de fecha/motivo
+            
+            cerrarBajaConfirm();
+            document.getElementById('modalBajaDatos').classList.remove('hidden');
+            document.getElementById('modalBajaDatos').classList.add('flex');
+        };
+        window.cerrarBajaDatos = () => {
+            document.getElementById('modalBajaDatos').classList.add('hidden');
+            document.getElementById('modalBajaDatos').classList.remove('flex');
+        };
+
+        document.getElementById('formBaja').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('bajaDatosId').value;
+            const fechaBaja = document.getElementById('inpFechaBaja').value;
+            const motivoBaja = document.getElementById('inpMotivoBaja').value;
+
+            try {
+                await updateDoc(doc(db, "agentes_jubilacion", id), {
+                    estado: 'baja',
+                    fechaBaja: fechaBaja,
+                    motivoBaja: motivoBaja,
+                    fechaOperacionBaja: serverTimestamp()
+                });
+                cerrarBajaDatos();
+            } catch (err) { alert("Error al procesar la baja"); }
+        });
+        // -----------------------
+
         window.verDetalle = (legajo, nombre, cuil, fnac, fing, edad, ant, tipo, fretiro) => {
             document.getElementById('detLegajo').innerText = legajo;
             document.getElementById('detNombre').innerText = nombre;
@@ -923,9 +1026,7 @@
             document.getElementById('modalAutor').classList.remove('flex');
         };
 
-// ============================================================
-        // === LÓGICA DE IMPORTACIÓN MASIVA (COMPLETA Y DEFINITIVA) ===
-        // ============================================================
+        // === IMPORTACIÓN MASIVA (COMPLETA Y DEFINITIVA) ===
         
         let datosImportar = [];
 
@@ -933,7 +1034,6 @@
             datosImportar = [];
             document.getElementById('fileInput').value = "";
             
-            // Resetear estados visuales
             const statusDiv = document.getElementById('importStatus');
             if(statusDiv) {
                 statusDiv.className = "hidden p-3 rounded-xl text-xs font-bold border shrink-0";
@@ -950,11 +1050,9 @@
                 btnConfirmar.innerHTML = `<i class="fas fa-check"></i> Confirmar Carga (<span id="previewCountBtn">0</span>)`;
             }
             
-            // Ocultar botón de borrado masivo
             const btnBorrarSel = document.getElementById('btnBorrarSeleccionados');
             if(btnBorrarSel) btnBorrarSel.classList.add('hidden');
             
-            // Desmarcar check general
             if(document.getElementById('checkAll')) document.getElementById('checkAll').checked = false;
 
             cerrarNuevo();
@@ -967,12 +1065,11 @@
             document.getElementById('modalImportar').classList.remove('flex');
         };
 
-        // Función INTELIGENTE para fechas
         function excelDateToJSDate(serial) {
             if(!serial) return "";
             if (typeof serial === 'string') {
                 const s = serial.trim();
-                if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s; // Ya es YYYY-MM-DD
+                if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s; 
                 
                 const parts = s.split(/[\/\-]/); 
                 if (parts.length === 3) {
@@ -1027,9 +1124,9 @@
 
                         try {
                             const nombre = row[1] ? String(row[1]).toUpperCase().trim() : "SIN NOMBRE";
-                            const cuilRaw = row[2] ? String(row[2]).trim() : ""; // NUEVO CAMPO COL 3 (Index 2)
-                            let fNac = excelDateToJSDate(row[3]); // Index desplazado
-                            let fIng = excelDateToJSDate(row[4]); // Index desplazado
+                            const cuilRaw = row[2] ? String(row[2]).trim() : ""; 
+                            let fNac = excelDateToJSDate(row[3]); 
+                            let fIng = excelDateToJSDate(row[4]); 
 
                             if(fNac && fIng) {
                                 procesados.push({ 
@@ -1074,8 +1171,6 @@
             };
             reader.readAsArrayBuffer(file);
         };
-
-        // --- FUNCIONES VISUALES IMPORTACION ---
 
         window.renderPreview = function() {
             const tbody = document.getElementById('previewBody');
@@ -1140,7 +1235,6 @@
 
         window.borrarSeleccionados = () => {
              const checks = document.querySelectorAll('.chk-item:checked');
-             // Obtener índices inversos para borrar sin afectar el orden
              const indices = Array.from(checks).map(c => parseInt(c.dataset.index)).sort((a,b) => b-a);
              
              indices.forEach(idx => {
@@ -1151,7 +1245,6 @@
              renderPreview();
         };
 
-        // --- PROCESAR CARGA MASIVA A FIREBASE ---
         window.procesarImportacionMasiva = async () => {
             if(datosImportar.length === 0) return;
 
@@ -1162,15 +1255,12 @@
             try {
                 const batch = writeBatch(db);
                 
-                // Firestore tiene limite de 500 operaciones por batch.
-                // Aquí asumimos < 500 para simplificar, si son más, habría que dividir arrays.
-                
                 datosImportar.forEach(d => {
                     const ref = doc(collection(db, "agentes_jubilacion"));
                     batch.set(ref, {
                         legajo: d.legajo,
                         nombre: d.nombre,
-                        cuil: d.cuil, // Ahora sí guardamos el CUIL
+                        cuil: d.cuil,
                         fNac: d.fNac,
                         fIng: d.fIng,
                         estado: 'activo',
@@ -1180,7 +1270,6 @@
 
                 await batch.commit();
 
-                // Éxito
                 cerrarImportar();
                 document.getElementById('successOverlay').classList.remove('hidden');
                 document.getElementById('successOverlay').classList.add('flex');
@@ -1193,17 +1282,16 @@
             }
         };
 
-        // --- FUNCIONES EXPORTACION (MEJORADAS) ---
+        // --- EXPORTACION ---
         window.procesarDescarga = (formato) => {
             const tipo = document.getElementById('tipoExportacion').value;
             let dataFiltrada = [];
             
             if (tipo === 'todos') {
-                dataFiltrada = window.datosGlobales.filter(d => d.estado !== 'jubilado');
+                dataFiltrada = window.datosGlobales.filter(d => d.estado !== 'jubilado' && d.estado !== 'baja');
             } else if (tipo === 'proximos') {
-                dataFiltrada = window.datosGlobales.filter(d => d.semaforo === 'rojo' && d.estado !== 'jubilado');
+                dataFiltrada = window.datosGlobales.filter(d => d.semaforo === 'rojo' && d.estado !== 'jubilado' && d.estado !== 'baja');
             }
-            // Ordenar por fecha de retiro más cercana
             dataFiltrada.sort((a,b) => a.fechaRetiro - b.fechaRetiro);
 
             if (formato === 'pdf') generarPDF(dataFiltrada, tipo);
@@ -1214,37 +1302,33 @@
 
         function generarPDF(data, tipo) {
             const { jsPDF } = window.jspdf;
-            // 'l' = Landscape (Horizontal) para que entren todas las columnas cómodas
             const doc = new jsPDF('l', 'mm', 'a4'); 
             
             const titulo = tipo === 'todos' ? 'NÓMINA DETALLADA - SISTEMA PREVISIONAL' : 'ALERTAS URGENTES DE JUBILACIÓN';
             
-            // Encabezado
             doc.setFontSize(16);
             doc.text(titulo, 14, 15);
             doc.setFontSize(10);
             doc.text(`Fecha de reporte: ${new Date().toLocaleDateString('es-AR')} - Total Registros: ${data.length}`, 14, 22);
 
-            // Columnas más detalladas (SE AGREGÓ CUIL)
             const tableColumn = ["Legajo", "Nombre", "CUIL", "Edad", "Ant.", "Ingreso", "Retiro", "Tipo", "Tiempo Restante"];
             const tableRows = [];
 
             data.forEach(item => {
-                // Formatear texto de tiempo restante
                 let textoTiempo = "";
                 if (item.estado === 'jubilado') textoTiempo = "JUBILADO";
+                else if (item.estado === 'baja') textoTiempo = "BAJA";
                 else if (item.faltaAnios < 0) textoTiempo = "VENCIDO";
                 else if (item.faltaAnios === 0 && item.faltaMeses === 0) textoTiempo = "AHORA";
                 else textoTiempo = `${item.faltaAnios} Años, ${item.faltaMeses} Meses`;
 
-                // Formatear fechas
                 const fIngreso = item.fIng ? new Date(item.fIng + "T00:00:00").toLocaleDateString('es-AR') : '-';
                 const fRetiro = item.fechaRetiro ? item.fechaRetiro.toLocaleDateString('es-AR') : '-';
 
                 const row = [
                     item.legajo,
                     item.nombre,
-                    item.cuil, // DATO AGREGADO
+                    item.cuil,
                     item.edad + " a",
                     item.antiguedad + " a",
                     fIngreso,
@@ -1260,7 +1344,7 @@
                 body: tableRows,
                 startY: 28,
                 theme: 'grid',
-                headStyles: { fillColor: [30, 41, 59], fontSize: 8 }, // Letra un poco más chica para que entre todo
+                headStyles: { fillColor: [30, 41, 59], fontSize: 8 }, 
                 bodyStyles: { fontSize: 8 },
                 styles: { cellPadding: 1.5 }
             });
@@ -1269,9 +1353,9 @@
 
         function generarExcel(data, tipo) {
             const exportData = data.map(item => {
-                // Cálculo de texto para excel visual
                 let textoTiempo = "";
                 if (item.estado === 'jubilado') textoTiempo = "JUBILADO";
+                else if (item.estado === 'baja') textoTiempo = "BAJA";
                 else if (item.faltaAnios < 0) textoTiempo = "VENCIDO";
                 else textoTiempo = `${item.faltaAnios} años, ${item.faltaMeses} meses`;
 
@@ -1279,16 +1363,15 @@
                     Legajo: item.legajo,
                     Agente: item.nombre,
                     CUIL: item.cuil,
-                    F_Nacimiento: item.fNac, // Fecha cruda para que Excel la entienda
+                    F_Nacimiento: item.fNac,
                     F_Ingreso: item.fIng,
                     Edad_Actual: item.edad,
                     Antiguedad: item.antiguedad,
                     Fecha_Retiro_Est: item.fechaRetiro.toLocaleDateString('es-AR'),
                     Tipo_Jubilacion: item.tipo,
                     Estado: item.estado.toUpperCase(),
-                    // Desglose numérico para poder filtrar en Excel (muy útil)
-                    Años_Faltan: item.estado === 'jubilado' ? 0 : item.faltaAnios,
-                    Meses_Faltan: item.estado === 'jubilado' ? 0 : item.faltaMeses,
+                    Años_Faltan: (item.estado === 'jubilado' || item.estado === 'baja') ? 0 : item.faltaAnios,
+                    Meses_Faltan: (item.estado === 'jubilado' || item.estado === 'baja') ? 0 : item.faltaMeses,
                     Situacion_Texto: textoTiempo
                 };
             });
@@ -1296,7 +1379,6 @@
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(exportData);
             
-            // Ajuste automático de anchos de columna
             const wscols = [
                 {wch: 10}, {wch: 35}, {wch: 15}, {wch: 12}, {wch: 12}, 
                 {wch: 8}, {wch: 8}, {wch: 15}, {wch: 20}, {wch: 10},
@@ -1339,30 +1421,16 @@
             } catch (err) { alert("Error al editar"); }
         });
 
-        window.confirmarJubilacion = async () => {
-            try {
-                await updateDoc(doc(db, "agentes_jubilacion", document.getElementById('jubilarId').value), {
-                    estado: 'jubilado',
-                    fechaJubilacionReal: serverTimestamp()
-                });
-                cerrarJubilar();
-            } catch (err) { alert("Error al jubilar"); }
-        };
-
         window.borrarAgente = async (id) => {
             if(confirm("¿Eliminar agente permanentemente?")) await deleteDoc(doc(db, "agentes_jubilacion", id));
         };
-		
-		// --- LÓGICA DE BORRADO MASIVO (BASE DE DATOS) ---
-
-        // 1. Marcar/Desmarcar todos los checkboxes
+        
         window.toggleSelectAllMain = (source) => {
             const checkboxes = document.querySelectorAll('.chk-main-item');
             checkboxes.forEach(cb => cb.checked = source.checked);
             verificarSeleccionMain();
         };
 
-        // 2. Verificar si hay seleccionados para mostrar el botón rojo
         window.verificarSeleccionMain = () => {
             const count = document.querySelectorAll('.chk-main-item:checked').length;
             const btn = document.getElementById('btnBorrarMasivo');
@@ -1370,36 +1438,30 @@
             
             if(count > 0) {
                 btn.classList.remove('hidden');
-                btn.classList.add('flex'); // Se muestra
+                btn.classList.add('flex');
                 span.innerText = count;
             } else {
-                btn.classList.add('hidden'); // Se oculta
+                btn.classList.add('hidden');
                 btn.classList.remove('flex');
             }
         };
 
-        // 3. Ejecutar el borrado real en Firebase
         window.borrarMasivoDB = async () => {
             const checked = document.querySelectorAll('.chk-main-item:checked');
             if(checked.length === 0) return;
             
-            // PREGUNTA DE SEGURIDAD
             if(!confirm(`⚠️ ATENCIÓN: Vas a eliminar ${checked.length} registros de la base de datos.\n\n¿Estás seguro? Esta acción no se puede deshacer.`)) return;
 
             const batch = writeBatch(db);
             checked.forEach(cb => {
-                // El value del checkbox tiene el ID del documento
                 const docRef = doc(db, "agentes_jubilacion", cb.value);
                 batch.delete(docRef);
             });
 
             try {
                 await batch.commit();
-                
-                // Limpiar la selección visual
                 document.getElementById('checkAllMain').checked = false;
                 document.getElementById('btnBorrarMasivo').classList.add('hidden');
-                
                 alert("✅ Registros eliminados correctamente.");
             } catch(e) {
                 console.error(e);
