@@ -437,6 +437,55 @@
         </div>
     </div>
 
+    <div id="modalInterrupciones" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[55] backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3 shrink-0">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-history text-purple-500"></i> Interrupciones de Servicio
+                </h3>
+                <button onclick="cerrarInterrupciones()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+
+            <div class="mb-4 shrink-0">
+                <form id="formAgregarInterrupcion" class="bg-slate-50 p-3 rounded-xl border border-slate-200 grid grid-cols-2 gap-2">
+                    <input type="hidden" id="intAgenteId">
+                    <div class="col-span-2">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Motivo</label>
+                        <input type="text" id="intMotivo" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs" placeholder="Ej: Renuncia, Licencia s/goce" required>
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Desde</label>
+                        <input type="date" id="intDesde" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs" required>
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Hasta</label>
+                        <input type="date" id="intHasta" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs" required>
+                    </div>
+                    <div class="col-span-2 mt-1">
+                        <button type="submit" class="w-full py-2 bg-purple-600 text-white rounded-lg font-bold text-xs hover:bg-purple-700 shadow-sm flex items-center justify-center gap-2">
+                            <i class="fas fa-plus"></i> Agregar Período
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scroll border border-slate-100 rounded-lg">
+                <table class="w-full text-left border-collapse">
+                    <thead class="text-[10px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-100 z-10 tracking-wider">
+                        <tr>
+                            <th class="p-2 border-b border-slate-200">Motivo</th>
+                            <th class="p-2 border-b border-slate-200 text-center">Desde</th>
+                            <th class="p-2 border-b border-slate-200 text-center">Hasta</th>
+                            <th class="p-2 border-b border-slate-200 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaInterrupciones" class="text-xs text-slate-600 divide-y divide-slate-50">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div id="modalJubilar" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
             <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 text-3xl mx-auto mb-4 animate-bounce">
@@ -626,13 +675,13 @@
 
         window.datosGlobales = [];
 
-        // LÓGICA DE CALCULO JUBILATORIO
+        // LÓGICA DE CALCULO JUBILATORIO CON INTERRUPCIONES
         const EDAD_JUBILATORIA = 60;
         const ANIOS_APORTE = 35;
         const EDAD_AVANZADA = 65;
         const APORTE_AVANZADA = 10;
 
-        function calcularPrevision(fechaNac, fechaIng) {
+        function calcularPrevision(fechaNac, fechaIng, interrupciones = []) {
             if(!fechaNac || !fechaIng) return { edad: 0, antiguedad: 0, fpj: new Date(), tipo: 'Error Datos', semaforo: 'rojo', aniosRestantes: -99, faltaAnios: 0, faltaMeses: 0 };
 
             const nac = new Date(fechaNac + "T00:00:00");
@@ -642,15 +691,36 @@
             let edad = hoy.getFullYear() - nac.getFullYear();
             if (new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate()) > hoy) edad--;
 
-            let antiguedad = hoy.getFullYear() - ing.getFullYear();
-            if (new Date(hoy.getFullYear(), ing.getMonth(), ing.getDate()) > hoy) antiguedad--;
+            // Calcular días de interrupción
+            let diasInterrupcion = 0;
+            if (interrupciones && interrupciones.length > 0) {
+                interrupciones.forEach(int => {
+                    if (int.inicio && int.fin) {
+                        const start = new Date(int.inicio + "T00:00:00");
+                        const end = new Date(int.fin + "T00:00:00");
+                        if (end >= start) {
+                            diasInterrupcion += Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1; 
+                        }
+                    }
+                });
+            }
+
+            // Desplazamos la fecha de ingreso sumando los días inactivos
+            const ingAjustado = new Date(ing.getTime());
+            ingAjustado.setDate(ingAjustado.getDate() + diasInterrupcion);
+
+            let antiguedad = hoy.getFullYear() - ingAjustado.getFullYear();
+            if (new Date(hoy.getFullYear(), ingAjustado.getMonth(), ingAjustado.getDate()) > hoy) antiguedad--;
+            if (antiguedad < 0) antiguedad = 0;
 
             const metaEdad = new Date(nac); metaEdad.setFullYear(nac.getFullYear() + EDAD_JUBILATORIA);
-            const metaServicio = new Date(ing); metaServicio.setFullYear(ing.getFullYear() + ANIOS_APORTE);
+            
+            // Metas de servicio usando el ingreso ajustado
+            const metaServicio = new Date(ingAjustado); metaServicio.setFullYear(ingAjustado.getFullYear() + ANIOS_APORTE);
             let fpjOrd = (metaEdad > metaServicio) ? metaEdad : metaServicio;
 
             const metaEdadAdv = new Date(nac); metaEdadAdv.setFullYear(nac.getFullYear() + EDAD_AVANZADA);
-            const metaServicioAdv = new Date(ing); metaServicioAdv.setFullYear(ing.getFullYear() + APORTE_AVANZADA);
+            const metaServicioAdv = new Date(ingAjustado); metaServicioAdv.setFullYear(ingAjustado.getFullYear() + APORTE_AVANZADA);
             let fpjAdv = (metaEdadAdv > metaServicioAdv) ? metaEdadAdv : metaServicioAdv;
 
             let fechaRetiro = fpjOrd;
@@ -762,13 +832,14 @@
                 const id = docSnap.id;
                 
                 const prev = (typeof calcularPrevision === 'function') 
-                    ? calcularPrevision(data.fNac, data.fIng, data.genero || 'M') 
+                    ? calcularPrevision(data.fNac, data.fIng, data.interrupciones || []) 
                     : { edad:0, antiguedad:0, semaforo:'verde', tipo:'Normal', fpj: new Date() };
                 
                 const esJubilado = (data.estado === 'jubilado');
                 const esBaja = (data.estado === 'baja');
 
                 window.datosGlobales.push({
+                    id: id,
                     legajo: data.legajo,
                     nombre: data.nombre,
                     cuil: data.cuil,
@@ -781,7 +852,8 @@
                     semaforo: prev.semaforo,
                     estado: data.estado,
                     faltaAnios: prev.faltaAnios,
-                    faltaMeses: prev.faltaMeses
+                    faltaMeses: prev.faltaMeses,
+                    interrupciones: data.interrupciones || []
                 });
 
                 if (esJubilado) {
@@ -873,6 +945,10 @@
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Editar">
                                 <i class="fas fa-pen text-xs"></i>
                             </button>
+                             <button onclick="abrirInterrupciones('${id}')" 
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition" title="Gestionar Interrupciones">
+                                <i class="fas fa-history text-xs"></i>
+                            </button>
                             ${(!esJubilado && !esBaja) ? `
                             <button onclick="abrirJubilar('${id}')" 
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-yellow-500 hover:bg-yellow-50 transition" title="Jubilar">
@@ -931,6 +1007,104 @@
             document.getElementById('modalEdit').classList.add('hidden');
             document.getElementById('modalEdit').classList.remove('flex');
         };
+
+        // --- GESTIÓN DE INTERRUPCIONES ---
+        window.abrirInterrupciones = (id) => {
+            document.getElementById('intAgenteId').value = id;
+            document.getElementById('formAgregarInterrupcion').reset();
+            renderTablaInterrupciones(id);
+            document.getElementById('modalInterrupciones').classList.remove('hidden');
+            document.getElementById('modalInterrupciones').classList.add('flex');
+        };
+
+        window.cerrarInterrupciones = () => {
+            document.getElementById('modalInterrupciones').classList.add('hidden');
+            document.getElementById('modalInterrupciones').classList.remove('flex');
+        };
+
+        window.renderTablaInterrupciones = (id) => {
+            const agente = window.datosGlobales.find(a => a.id === id);
+            const tbody = document.getElementById('tablaInterrupciones');
+            tbody.innerHTML = '';
+
+            if(!agente || !agente.interrupciones || agente.interrupciones.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No hay interrupciones registradas</td></tr>';
+                return;
+            }
+
+            // Ordenar de más reciente a más antigua
+            const arr = [...agente.interrupciones].sort((a,b) => new Date(b.inicio) - new Date(a.inicio));
+
+            arr.forEach((int, index) => {
+                const tr = document.createElement('tr');
+                const desdeStr = new Date(int.inicio + "T00:00:00").toLocaleDateString('es-AR');
+                const hastaStr = new Date(int.fin + "T00:00:00").toLocaleDateString('es-AR');
+                tr.innerHTML = `
+                    <td class="p-2 font-bold">${int.motivo}</td>
+                    <td class="p-2 text-center">${desdeStr}</td>
+                    <td class="p-2 text-center">${hastaStr}</td>
+                    <td class="p-2 text-right">
+                        <button onclick="eliminarInterrupcion('${id}', ${index})" class="text-red-400 hover:text-red-600 transition p-1"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        document.getElementById('formAgregarInterrupcion').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('intAgenteId').value;
+            const motivo = document.getElementById('intMotivo').value;
+            const inicio = document.getElementById('intDesde').value;
+            const fin = document.getElementById('intHasta').value;
+
+            if(new Date(inicio) > new Date(fin)) {
+                alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
+                return;
+            }
+
+            const agente = window.datosGlobales.find(a => a.id === id);
+            const interrupciones = agente.interrupciones ? [...agente.interrupciones] : [];
+
+            interrupciones.push({ motivo, inicio, fin });
+
+            try {
+                await updateDoc(doc(db, "agentes_jubilacion", id), {
+                    interrupciones: interrupciones
+                });
+                setTimeout(() => renderTablaInterrupciones(id), 500); // Dar un momento a onSnapshot
+                document.getElementById('formAgregarInterrupcion').reset();
+                document.getElementById('intAgenteId').value = id;
+            } catch(e) {
+                alert("Error al guardar interrupción: " + e.message);
+            }
+        });
+
+        window.eliminarInterrupcion = async (id, index) => {
+            if(!confirm("¿Eliminar este período de interrupción? Esto recalculará la antigüedad real.")) return;
+
+            const agente = window.datosGlobales.find(a => a.id === id);
+            // Re-ordenamos para mapear el index correcto si la lista estaba ordenada en UI
+            const arr = [...agente.interrupciones].sort((a,b) => new Date(b.inicio) - new Date(a.inicio));
+            
+            // Buscar el elemento original a eliminar y quitarlo del array sin ordenar
+            const elemToRemove = arr[index];
+            const interrupcionesOriginal = [...agente.interrupciones];
+            const originalIndex = interrupcionesOriginal.findIndex(i => i.inicio === elemToRemove.inicio && i.fin === elemToRemove.fin && i.motivo === elemToRemove.motivo);
+            
+            if(originalIndex > -1) {
+                interrupcionesOriginal.splice(originalIndex, 1);
+            }
+
+            try {
+                await updateDoc(doc(db, "agentes_jubilacion", id), {
+                    interrupciones: interrupcionesOriginal
+                });
+                setTimeout(() => renderTablaInterrupciones(id), 500);
+            } catch(e) {
+                alert("Error al eliminar interrupción: " + e.message);
+            }
+        };
         
         // --- FUNCIONES DE JUBILACION ---
         window.abrirJubilar = (id) => {
@@ -966,7 +1140,7 @@
             const id = document.getElementById('bajaConfirmId').value;
             document.getElementById('bajaDatosId').value = id;
             
-            document.getElementById('formBaja').reset(); // Limpia campos de fecha/motivo
+            document.getElementById('formBaja').reset(); 
             
             cerrarBajaConfirm();
             document.getElementById('modalBajaDatos').classList.remove('hidden');
@@ -1002,7 +1176,7 @@
             document.getElementById('detNac').innerText = fnac;
             document.getElementById('detIng').innerText = fing;
             document.getElementById('detEdad').innerText = edad + ' años';
-            document.getElementById('detAnt').innerText = ant + ' años';
+            document.getElementById('detAnt').innerText = ant + ' años netos';
             document.getElementById('detTipo').innerText = tipo;
             document.getElementById('detRetiro').innerText = fretiro;
             document.getElementById('modalDetalle').classList.remove('hidden');
@@ -1032,7 +1206,7 @@
             document.getElementById('modalAutor').classList.remove('flex');
         };
 
-        // === IMPORTACIÓN MASIVA (COMPLETA Y DEFINITIVA) ===
+        // === IMPORTACIÓN MASIVA ===
         
         let datosImportar = [];
 
@@ -1270,6 +1444,7 @@
                         fNac: d.fNac,
                         fIng: d.fIng,
                         estado: 'activo',
+                        interrupciones: [], // Array vacío por defecto
                         timestamp: serverTimestamp()
                     });
                 });
@@ -1317,7 +1492,7 @@
             doc.setFontSize(10);
             doc.text(`Fecha de reporte: ${new Date().toLocaleDateString('es-AR')} - Total Registros: ${data.length}`, 14, 22);
 
-            const tableColumn = ["Legajo", "Nombre", "CUIL", "Edad", "Ant.", "Ingreso", "Retiro", "Tipo", "Tiempo Restante"];
+            const tableColumn = ["Legajo", "Nombre", "CUIL", "Edad", "Ant. Neta", "Ingreso", "Retiro", "Tipo", "Tiempo Restante"];
             const tableRows = [];
 
             data.forEach(item => {
@@ -1372,7 +1547,8 @@
                     F_Nacimiento: item.fNac,
                     F_Ingreso: item.fIng,
                     Edad_Actual: item.edad,
-                    Antiguedad: item.antiguedad,
+                    Antiguedad_Neta: item.antiguedad,
+                    Dias_Inactivos: item.interrupciones ? item.interrupciones.reduce((acc, int) => acc + (Math.floor((new Date(int.fin) - new Date(int.inicio)) / (1000*60*60*24)) + 1), 0) : 0,
                     Fecha_Retiro_Est: item.fechaRetiro.toLocaleDateString('es-AR'),
                     Tipo_Jubilacion: item.tipo,
                     Estado: item.estado.toUpperCase(),
@@ -1387,7 +1563,7 @@
             
             const wscols = [
                 {wch: 10}, {wch: 35}, {wch: 15}, {wch: 12}, {wch: 12}, 
-                {wch: 8}, {wch: 8}, {wch: 15}, {wch: 20}, {wch: 10},
+                {wch: 8}, {wch: 12}, {wch: 12}, {wch: 15}, {wch: 20}, {wch: 10},
                 {wch: 8}, {wch: 8}, {wch: 25}
             ];
             ws['!cols'] = wscols;
@@ -1407,6 +1583,7 @@
                     fNac: document.getElementById('inpNacimiento').value,
                     fIng: document.getElementById('inpIngreso').value,
                     estado: 'activo',
+                    interrupciones: [],
                     timestamp: serverTimestamp()
                 });
                 cerrarNuevo();
