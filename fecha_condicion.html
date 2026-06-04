@@ -139,7 +139,8 @@
     <div class="w-px h-6 bg-slate-200 mx-1 my-auto"></div>
     
     <button onclick="filtrarTabla('rojo')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50 transition border border-transparent" data-filter="rojo"><i class="fas fa-fire mr-1"></i> Próximos</button>
-    
+    <button onclick="filtrarTabla('falta_sap')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-orange-500 hover:bg-orange-50 transition border border-transparent" data-filter="falta_sap"><i class="fas fa-exclamation-circle mr-1"></i> Faltan SAP</button>
+	
     <button onclick="filtrarTabla('ordinaria')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-blue-500 hover:bg-blue-50 transition border border-transparent" data-filter="ordinaria">Ordinaria</button>
     
     <button onclick="filtrarTabla('avanzada')" class="filter-btn px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold text-purple-500 hover:bg-purple-50 transition border border-transparent" data-filter="avanzada">Avanzada</button>
@@ -801,6 +802,9 @@
                     else if (filtroActual === 'rojo') {
                         if (dataFilter !== 'rojo') mostrar = false;
                     }
+					else if (filtroActual === 'falta_sap') {
+						if (dataSap === 'si' || dataFilter === 'jubilado' || dataFilter === 'baja') mostrar = false;
+}
                     else if (filtroActual === 'ordinaria') {
                         if (dataFilter === 'jubilado' || dataFilter === 'baja' || !dataTipo.includes('ordinaria')) mostrar = false;
                     }
@@ -837,6 +841,7 @@
                 
                 const esJubilado = (data.estado === 'jubilado');
                 const esBaja = (data.estado === 'baja');
+				const cargadoSAP = data.cargadoSAP || false;
 
                 window.datosGlobales.push({
                     id: id,
@@ -853,7 +858,10 @@
                     estado: data.estado,
                     faltaAnios: prev.faltaAnios,
                     faltaMeses: prev.faltaMeses,
-                    interrupciones: data.interrupciones || []
+                    interrupciones: data.interrupciones || [],
+					cargadoSAP: cargadoSAP,
+					fechaBaja: data.fechaBaja || null,
+					motivoBaja: data.motivoBaja || null
                 });
 
                 if (esJubilado) {
@@ -905,6 +913,7 @@
                 tr.className = `border-b border-slate-50 group hover:bg-slate-50 transition ${esJubilado ? 'bg-slate-50/30' : (esBaja ? 'bg-red-50/30' : '')}`;
                 tr.dataset.filtro = esJubilado ? 'jubilado' : (esBaja ? 'baja' : prev.semaforo);
                 tr.dataset.tipo = prev.tipo.toLowerCase();
+				tr.dataset.sap = cargadoSAP ? 'si' : 'no';
                 
                 tr.innerHTML = `
                     <td class="p-3 md:p-4 text-center bg-slate-50/50">
@@ -935,8 +944,12 @@
                     <td class="p-3 md:p-4 text-center">
                          ${badgeEstado}
                     </td>
-                    <td class="p-3 md:p-4 text-right">
-                        <div class="flex justify-end gap-1 opacity-100 md:opacity-80 hover:opacity-100">
+                    <td class="p-3 md:p-4 text-right flex flex-col md:flex-row items-end md:items-center justify-end gap-2">
+    ${cargadoSAP ? 
+        `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[9px] font-bold tracking-wide border border-green-200 uppercase whitespace-nowrap">En SAP</span>` : 
+        `<button onclick="marcarSAP('${id}')" class="bg-slate-200 text-slate-600 hover:bg-blue-600 hover:text-white px-2 py-1 rounded text-[9px] font-bold tracking-wide transition uppercase whitespace-nowrap shadow-sm border border-slate-300">¿SAP?</button>`
+    }
+    <div class="flex justify-end gap-1 opacity-100 md:opacity-80 hover:opacity-100 mt-1 md:mt-0">
                              <button onclick="verDetalle('${data.legajo}', '${data.nombre}', '${data.cuil}', '${fmtNac}', '${fmtIng}', '${prev.edad}', '${prev.antiguedad}', '${prev.tipo}', '${fmtRetiro}')" 
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 transition" title="Ver Ficha">
                                 <i class="fas fa-eye text-xs"></i>
@@ -1651,7 +1664,99 @@
                 alert("❌ Error al eliminar: " + e.message);
             }
         };
-        
+        // --- FUNCION SAP ---
+        window.marcarSAP = async (id) => {
+            if(confirm("¿Estás seguro que este agente ya está cargado en el SAP?")) {
+                try {
+                    await updateDoc(doc(db, "agentes_jubilacion", id), { cargadoSAP: true });
+                } catch (error) { alert("Error al actualizar estado en SAP."); console.error(error); }
+            }
+        };
+
+        // --- SISTEMA DE ESTADISTICAS ---
+        window.abrirEstadisticas = () => {
+            const selectAnio = document.getElementById('selectAnioEstadistica');
+            selectAnio.innerHTML = '<option value="">Seleccione un año...</option>';
+            
+            const anios = new Set();
+            window.datosGlobales.forEach(agente => {
+                if(agente.fIng) anios.add(agente.fIng.substring(0, 4));
+                if(agente.fechaBaja) anios.add(agente.fechaBaja.substring(0, 4));
+            });
+            anios.add(new Date().getFullYear().toString());
+            
+            Array.from(anios).sort((a,b) => b - a).forEach(anio => {
+                const option = document.createElement('option');
+                option.value = anio; option.textContent = `Gestión ${anio}`; selectAnio.appendChild(option);
+            });
+            
+            selectAnio.removeEventListener('change', window.actualizarTarjetasEstadisticas);
+            selectAnio.addEventListener('change', window.actualizarTarjetasEstadisticas);
+            document.getElementById('resumenAnual').classList.add('hidden');
+            document.getElementById('modalEstadisticas').classList.remove('hidden'); 
+            document.getElementById('modalEstadisticas').classList.add('flex');
+        };
+
+        window.cerrarEstadisticas = () => { 
+            document.getElementById('modalEstadisticas').classList.add('hidden'); 
+            document.getElementById('modalEstadisticas').classList.remove('flex'); 
+        };
+
+        window.actualizarTarjetasEstadisticas = (e) => {
+            const anioSeleccionado = e.target.value;
+            if(!anioSeleccionado) { document.getElementById('resumenAnual').classList.add('hidden'); return; }
+            
+            let activos = 0, bajas = 0, jubilados = 0;
+            
+            window.datosGlobales.forEach(agente => {
+                const anioIng = agente.fIng ? agente.fIng.substring(0, 4) : null;
+                const anioBaja = agente.fechaBaja ? agente.fechaBaja.substring(0, 4) : null;
+                const anioJub = agente.fechaRetiro ? agente.fechaRetiro.getFullYear().toString() : null;
+
+                if(agente.estado === 'baja' && anioBaja === anioSeleccionado) { bajas++; } 
+                else if(agente.estado === 'jubilado' && anioJub === anioSeleccionado) { jubilados++; } 
+                else if(agente.estado === 'activo' && anioIng <= anioSeleccionado) { activos++; }
+            });
+            
+            document.getElementById('statActivos').textContent = activos; 
+            document.getElementById('statBajas').textContent = bajas; 
+            document.getElementById('statJubilados').textContent = jubilados;
+            document.getElementById('resumenAnual').classList.remove('hidden');
+        };
+
+        window.descargarEstadisticaAnual = () => {
+            const anio = document.getElementById('selectAnioEstadistica').value;
+            if(!anio) return alert("Seleccione un año primero.");
+            
+            const exportData = [];
+            window.datosGlobales.forEach(agente => {
+                const anioIng = agente.fIng ? agente.fIng.substring(0, 4) : null;
+                const anioBaja = agente.fechaBaja ? agente.fechaBaja.substring(0, 4) : null;
+                const anioJub = agente.fechaRetiro ? agente.fechaRetiro.getFullYear().toString() : null;
+                let coincide = false; let estadoMostrar = agente.estado;
+
+                if(agente.estado === 'baja' && anioBaja === anio) coincide = true;
+                else if(agente.estado === 'jubilado' && anioJub === anio) coincide = true;
+                else if(agente.estado === 'activo' && anioIng <= anio) coincide = true;
+                
+                if(coincide) {
+                    exportData.push({
+                        Legajo: agente.legajo, Nombre: agente.nombre, CUIL: agente.cuil,
+                        Estado_en_Anio: estadoMostrar.toUpperCase(),
+                        Motivo: agente.estado === 'baja' ? (agente.motivoBaja || 'Cese') : 'N/A',
+                        Cargado_SAP: agente.cargadoSAP ? 'SÍ' : 'NO'
+                    });
+                }
+            });
+            
+            if(exportData.length === 0) return alert("No hay registros para este año.");
+
+            const wb = XLSX.utils.book_new(); 
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wscols = [{wch: 10}, {wch: 35}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 12}]; ws['!cols'] = wscols;
+            XLSX.utils.book_append_sheet(wb, ws, `Estadistica_${anio}`); 
+            XLSX.writeFile(wb, `Informe_Estadistico_${anio}.xlsx`);
+        };
         console.log("Sistema Cargado Correctamente");
 
     </script>
