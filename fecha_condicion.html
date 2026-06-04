@@ -127,39 +127,6 @@
                         <div class="text-xl font-black text-emerald-600" id="countVerde">0</div>
                     </div>
                 </div>
-				<div id="modalReporteBajas" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center z-[60] backdrop-blur-sm px-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-sign-out-alt text-orange-500"></i> Exportar Bajas
-                </h3>
-                <button onclick="cerrarReporteBajas()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
-            </div>
-            <div class="space-y-4">
-                <p class="text-xs text-slate-500">Seleccione el rango de fechas para emitir el reporte.</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Desde</label>
-                        <input type="date" id="repBajasDesde" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-sm font-bold text-slate-600">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hasta</label>
-                        <input type="date" id="repBajasHasta" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-sm font-bold text-slate-600">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                    <button onclick="descargarReporteBajas('pdf')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-100 hover:border-red-500 hover:bg-red-50 transition group">
-                        <i class="fas fa-file-pdf text-2xl text-red-500 group-hover:scale-110 transition"></i>
-                        <span class="text-[10px] font-bold text-slate-600 group-hover:text-red-700">PDF</span>
-                    </button>
-                    <button onclick="descargarReporteBajas('excel')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-100 hover:border-green-500 hover:bg-green-50 transition group">
-                        <i class="fas fa-file-excel text-2xl text-green-600 group-hover:scale-110 transition"></i>
-                        <span class="text-[10px] font-bold text-slate-600 group-hover:text-green-700">Excel</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
             </div>
         </aside>
 
@@ -197,7 +164,12 @@
                         <i class="fas fa-trash-alt"></i> Borrar (<span id="countBorrar">0</span>)
                     </button>
 
-                    
+                    <button onclick="prepararExportacion('todos')" class="flex-1 sm:flex-none px-3 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-700 transition shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
+                        <i class="fas fa-print"></i> Todos
+                    </button>
+                    <button onclick="prepararExportacion('proximos')" class="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 flex items-center justify-center gap-2">
+                        <i class="fas fa-print"></i> Próximos
+                    </button>
                 </div>
 
                     <div class="relative w-full sm:w-64">
@@ -1785,84 +1757,6 @@
             XLSX.utils.book_append_sheet(wb, ws, `Estadistica_${anio}`); 
             XLSX.writeFile(wb, `Informe_Estadistico_${anio}.xlsx`);
         };
-		// --- REPORTE DE BAJAS POR PERIODO ---
-        window.abrirReporteBajas = () => {
-            document.getElementById('repBajasDesde').value = '';
-            document.getElementById('repBajasHasta').value = '';
-            document.getElementById('modalReporteBajas').classList.remove('hidden');
-            document.getElementById('modalReporteBajas').classList.add('flex');
-        };
-        
-        window.cerrarReporteBajas = () => {
-            document.getElementById('modalReporteBajas').classList.add('hidden');
-            document.getElementById('modalReporteBajas').classList.remove('flex');
-        };
-
-        window.descargarReporteBajas = (formato) => {
-            const desde = document.getElementById('repBajasDesde').value;
-            const hasta = document.getElementById('repBajasHasta').value;
-
-            if (!desde || !hasta) return alert("Por favor, selecciona las fechas Desde y Hasta.");
-
-            const fechaDesde = new Date(desde + "T00:00:00");
-            const fechaHasta = new Date(hasta + "T23:59:59");
-
-            const bajasFiltradas = window.datosGlobales.filter(agente => {
-                if (agente.estado !== 'baja' || !agente.fechaBaja) return false;
-                const fBaja = new Date(agente.fechaBaja + "T00:00:00");
-                return fBaja >= fechaDesde && fBaja <= fechaHasta;
-            });
-
-            if (bajasFiltradas.length === 0) return alert("No hay bajas registradas en este período.");
-
-            bajasFiltradas.sort((a, b) => new Date(a.fechaBaja) - new Date(b.fechaBaja));
-
-            if (formato === 'pdf') generarPDFBajas(bajasFiltradas, desde, hasta);
-            else generarExcelBajas(bajasFiltradas, desde, hasta);
-            
-            cerrarReporteBajas();
-        };
-
-        function generarPDFBajas(data, desde, hasta) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4'); 
-            
-            doc.setFontSize(16);
-            doc.text('REPORTE DE BAJAS DE AGENTES', 14, 15);
-            doc.setFontSize(10);
-            doc.text(`Período: ${new Date(desde + "T00:00:00").toLocaleDateString('es-AR')} al ${new Date(hasta + "T00:00:00").toLocaleDateString('es-AR')}`, 14, 22);
-
-            const tableColumn = ["Fecha Baja", "Legajo", "Nombre", "CUIL", "Motivo"];
-            const tableRows = data.map(item => [
-                new Date(item.fechaBaja + "T00:00:00").toLocaleDateString('es-AR'),
-                item.legajo,
-                item.nombre,
-                item.cuil || '-',
-                (item.motivoBaja || 'N/A').toUpperCase()
-            ]);
-
-            doc.autoTable({
-                head: [tableColumn], body: tableRows, startY: 28, theme: 'grid',
-                headStyles: { fillColor: [234, 88, 12], fontSize: 9 },
-                bodyStyles: { fontSize: 8 }, styles: { cellPadding: 2 }
-            });
-            doc.save(`Reporte_Bajas_${desde}_al_${hasta}.pdf`);
-        }
-
-        function generarExcelBajas(data, desde, hasta) {
-            const exportData = data.map(item => ({
-                Fecha_Baja: new Date(item.fechaBaja + "T00:00:00").toLocaleDateString('es-AR'),
-                Legajo: item.legajo, Agente: item.nombre, CUIL: item.cuil,
-                Motivo: (item.motivoBaja || 'N/A').toUpperCase(),
-                Antiguedad_Al_Baja: item.antiguedad + " años"
-            }));
-
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            ws['!cols'] = [{wch: 12}, {wch: 10}, {wch: 35}, {wch: 15}, {wch: 20}, {wch: 15}];
-            XLSX.utils.book_append_sheet(wb, ws, "Bajas_Periodo");
-            XLSX.writeFile(wb, `Reporte_Bajas_${desde}_al_${hasta}.xlsx`);
-        }
         console.log("Sistema Cargado Correctamente");
 
     </script>
