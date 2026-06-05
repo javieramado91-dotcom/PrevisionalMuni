@@ -157,27 +157,39 @@
 </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
                  
-                 <div class="flex gap-1 justify-between sm:justify-start items-center">
-                    <button id="btnBorrarMasivo" onclick="borrarMasivoDB()" class="hidden px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 items-center justify-center gap-2 mr-2 animate-pulse">
-                        <i class="fas fa-trash-alt"></i> Borrar (<span id="countBorrar">0</span>)
-                    </button>
-
-                    <button onclick="prepararExportacion('todos')" class="flex-1 sm:flex-none px-3 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-700 transition shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
-                        <i class="fas fa-print"></i> Todos
-                    </button>
-                    <button onclick="prepararExportacion('proximos')" class="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 flex items-center justify-center gap-2">
-                        <i class="fas fa-print"></i> Próximos
-                    </button>
-                </div>
-
-                    <div class="relative w-full sm:w-64">
-                        <input type="text" id="searchTable" placeholder="Buscar..." class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition">
-                        <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <div class="flex gap-1 justify-between sm:justify-start items-center">
+                        <button id="btnBorrarMasivo" onclick="borrarMasivoDB()" class="hidden px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 items-center justify-center gap-2 mr-2 animate-pulse">
+                            <i class="fas fa-trash-alt"></i> Borrar (<span id="countBorrar">0</span>)
+                        </button>
+    
+                        <button onclick="prepararExportacion('todos')" class="flex-1 sm:flex-none px-3 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-700 transition shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
+                            <i class="fas fa-print"></i> Todos
+                        </button>
+                        <button onclick="prepararExportacion('proximos')" class="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg shadow-red-200 flex items-center justify-center gap-2">
+                            <i class="fas fa-print"></i> Próximos
+                        </button>
+                        
+                        <button id="btnExportarBajas" onclick="prepararExportacion('bajas')" class="hidden flex-1 sm:flex-none px-3 py-2 bg-red-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-900 transition shadow-lg shadow-red-200 items-center justify-center gap-2">
+                            <i class="fas fa-file-pdf"></i> Listado Bajas
+                        </button>
+                    </div>
+    
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <select id="filtroAnioBaja" onchange="aplicarFiltrosDOM()" class="hidden w-24 px-2 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-600 focus:ring-2 focus:ring-red-500 outline-none shadow-sm transition cursor-pointer">
+                            <option value="">Todo</option>
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                        </select>
+    
+                        <div class="relative flex-1 sm:w-64">
+                            <input type="text" id="searchTable" placeholder="Buscar..." class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex-1 overflow-hidden flex flex-col">
                 <div class="overflow-auto custom-scroll flex-1 touch-pan-x touch-pan-y overscroll-contain" style="-webkit-overflow-scrolling: touch;">
@@ -775,16 +787,58 @@
                     btn.classList.remove('bg-slate-100', 'ring-2', 'ring-slate-200');
                 }
             });
+
+            // 1. Mostrar/Ocultar controles exclusivos para Bajas
+            const selectAnio = document.getElementById('filtroAnioBaja');
+            const btnBajas = document.getElementById('btnExportarBajas');
+            
+            if (selectAnio && btnBajas) {
+                if (filtro === 'baja') {
+                    selectAnio.classList.remove('hidden');
+                    btnBajas.classList.remove('hidden');
+                    btnBajas.classList.add('flex');
+                } else {
+                    selectAnio.classList.add('hidden');
+                    btnBajas.classList.add('hidden');
+                    btnBajas.classList.remove('flex');
+                    selectAnio.value = ""; // Resetea el año al cambiar de pestaña
+                }
+            }
+
+            // 2. Aplicar filtros visuales de texto
             aplicarFiltrosDOM();
+
+            // 3. Ordenar las filas dinámicamente en el DOM
+            const tbody = document.getElementById('tableBody');
+            if (tbody) {
+                const filas = Array.from(tbody.children);
+                if (filtro === 'baja') {
+                    // Orden descendente por fecha de baja (más reciente arriba)
+                    filas.sort((a, b) => new Date(b.dataset.fechabaja || '1900-01-01') - new Date(a.dataset.fechabaja || '1900-01-01'));
+                } else {
+                    // Si sale de Bajas, vuelve al orden normal por número de legajo
+                    filas.sort((a, b) => parseInt(a.dataset.legajo || 0) - parseInt(b.dataset.legajo || 0));
+                }
+                filas.forEach(fila => tbody.appendChild(fila)); // Re-inyecta las filas ordenadas
+            }
         };
 
-        function aplicarFiltrosDOM() {
+       function aplicarFiltrosDOM() {
             const filas = document.getElementById('tableBody').children;
             const term = document.getElementById('searchTable').value.toLowerCase();
+            
+            // NUEVO: Capturamos el año si el select existe y tiene valor
+            const selectAnio = document.getElementById('filtroAnioBaja');
+            const anioFiltro = selectAnio && selectAnio.value !== "" ? selectAnio.value : null;
+
             Array.from(filas).forEach(row => {
                 const dataFilter = row.dataset.filtro;
                 const dataTipo = row.dataset.tipo;
-				const dataSap = row.dataset.sap;
+                const dataSap = row.dataset.sap; 
+                
+                // NUEVO: Capturar fecha de baja de la fila
+                const dataFechaBaja = row.dataset.fechabaja;
+
                 const texto = row.innerText.toLowerCase();
                 let mostrar = true;
 
@@ -799,13 +853,16 @@
                     }
                     else if (filtroActual === 'baja') {
                         if (dataFilter !== 'baja') mostrar = false;
+                        
+                        // NUEVO: Lógica para filtrar por el año seleccionado
+                        if (anioFiltro && dataFechaBaja && !dataFechaBaja.startsWith(anioFiltro)) mostrar = false;
                     }
                     else if (filtroActual === 'rojo') {
                         if (dataFilter !== 'rojo') mostrar = false;
                     }
-					else if (filtroActual === 'falta_sap') {
-						if (dataSap === 'si' || dataFilter === 'jubilado' || dataFilter === 'baja') mostrar = false;
-}
+                    else if (filtroActual === 'falta_sap') {
+                        if (dataSap === 'si' || dataFilter === 'jubilado' || dataFilter === 'baja') mostrar = false;
+                    }
                     else if (filtroActual === 'ordinaria') {
                         if (dataFilter === 'jubilado' || dataFilter === 'baja' || !dataTipo.includes('ordinaria')) mostrar = false;
                     }
@@ -915,6 +972,8 @@
                 tr.dataset.filtro = esJubilado ? 'jubilado' : (esBaja ? 'baja' : prev.semaforo);
                 tr.dataset.tipo = prev.tipo.toLowerCase();
 				tr.dataset.sap = cargadoSAP ? 'si' : 'no';
+				tr.dataset.fechabaja = data.fechaBaja || '';
+				tr.dataset.legajo = data.legajo || 0;
                 
                 tr.innerHTML = `
                     <td class="p-3 md:p-4 text-center bg-slate-50/50">
@@ -1200,9 +1259,17 @@
             document.getElementById('modalDetalle').classList.add('hidden');
             document.getElementById('modalDetalle').classList.remove('flex');
         };
-        window.prepararExportacion = (tipo) => {
+      window.prepararExportacion = (tipo) => {
             document.getElementById('tipoExportacion').value = tipo;
-            const texto = tipo === 'todos' ? 'Listado Completo (Activos)' : 'Alertas Próximas a Jubilación';
+            let texto = '';
+            
+            if (tipo === 'todos') texto = 'Listado Completo (Activos)';
+            else if (tipo === 'proximos') texto = 'Alertas Próximas a Jubilación';
+            else if (tipo === 'bajas') {
+                const anio = document.getElementById('filtroAnioBaja').value;
+                texto = anio ? `Listado de Bajas (Año ${anio})` : 'Listado Completo de Bajas';
+            }
+            
             document.getElementById('txtExportar').innerHTML = `Vas a descargar: <strong>${texto}</strong>.<br>Elige el formato:`;
             document.getElementById('modalExportar').classList.remove('hidden');
             document.getElementById('modalExportar').classList.add('flex');
@@ -1478,16 +1545,30 @@
         };
 
         // --- EXPORTACION ---
-        window.procesarDescarga = (formato) => {
+       window.procesarDescarga = (formato) => {
             const tipo = document.getElementById('tipoExportacion').value;
             let dataFiltrada = [];
             
             if (tipo === 'todos') {
                 dataFiltrada = window.datosGlobales.filter(d => d.estado !== 'jubilado' && d.estado !== 'baja');
-            } else if (tipo === 'proximos') {
+                dataFiltrada.sort((a,b) => a.fechaRetiro - b.fechaRetiro);
+            } 
+            else if (tipo === 'proximos') {
                 dataFiltrada = window.datosGlobales.filter(d => d.semaforo === 'rojo' && d.estado !== 'jubilado' && d.estado !== 'baja');
+                dataFiltrada.sort((a,b) => a.fechaRetiro - b.fechaRetiro);
+            } 
+            else if (tipo === 'bajas') {
+                const anio = document.getElementById('filtroAnioBaja').value;
+                dataFiltrada = window.datosGlobales.filter(d => d.estado === 'baja');
+                
+                // Filtra por año si hay uno seleccionado en el desplegable
+                if (anio) {
+                    dataFiltrada = dataFiltrada.filter(d => d.fechaBaja && d.fechaBaja.startsWith(anio));
+                }
+                
+                // Ordena la exportación descendente por fecha de baja
+                dataFiltrada.sort((a,b) => new Date(b.fechaBaja || '1900-01-01') - new Date(a.fechaBaja || '1900-01-01'));
             }
-            dataFiltrada.sort((a,b) => a.fechaRetiro - b.fechaRetiro);
 
             if (formato === 'pdf') generarPDF(dataFiltrada, tipo);
             else if (formato === 'excel') generarExcel(dataFiltrada, tipo);
