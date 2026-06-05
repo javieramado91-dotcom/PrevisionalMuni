@@ -180,9 +180,6 @@
                     <div class="flex gap-2 w-full xl:w-auto">
                         <select id="filtroAnioBaja" onchange="aplicarFiltrosDOM()" class="hidden w-24 px-2 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-600 focus:ring-2 focus:ring-red-500 outline-none shadow-sm transition cursor-pointer">
                             <option value="">Todo</option>
-                            <option value="2026">2026</option>
-                            <option value="2025">2025</option>
-                            <option value="2024">2024</option>
                         </select>
 
                         <div class="relative flex-1 sm:w-64">
@@ -1049,6 +1046,32 @@
             if(document.getElementById('countRojo')) document.getElementById('countRojo').innerText = counts.rojo;
             if(document.getElementById('countAmarillo')) document.getElementById('countAmarillo').innerText = counts.amarillo;
             if(document.getElementById('countVerde')) document.getElementById('countVerde').innerText = counts.verde;
+			
+			// --- NUEVO: GENERAR AÑOS DE BAJAS DINÁMICAMENTE ---
+            const selectAnioBaja = document.getElementById('filtroAnioBaja');
+            if (selectAnioBaja) {
+                const valorActual = selectAnioBaja.value; 
+                selectAnioBaja.innerHTML = '<option value="">Todo</option>';
+                
+                const aniosBaja = new Set();
+                window.datosGlobales.forEach(agente => {
+                    if (agente.estado === 'baja' && agente.fechaBaja) {
+                        aniosBaja.add(agente.fechaBaja.substring(0, 4));
+                    }
+                });
+                
+                Array.from(aniosBaja).sort((a,b) => b - a).forEach(anio => {
+                    const option = document.createElement('option');
+                    option.value = anio;
+                    option.textContent = anio;
+                    selectAnioBaja.appendChild(option);
+                });
+                
+                if (Array.from(aniosBaja).includes(valorActual)) {
+                    selectAnioBaja.value = valorActual;
+                }
+            }
+            // ----------------------------------------------------
             
             if(typeof aplicarFiltrosDOM === 'function') aplicarFiltrosDOM(); 
         });
