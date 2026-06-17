@@ -506,6 +506,16 @@
             <h3 class="text-xl font-bold text-slate-800 mb-2">¡Hora de celebrar!</h3>
             <p class="text-sm text-slate-500 mb-6">¿Confirmas que el agente ha iniciado su retiro efectivo? Pasará a la lista de Jubilados.</p>
             <input type="hidden" id="jubilarId">
+            <div class="text-left mb-6">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Organismo Previsional</label>
+                <select id="inpOrganismoJub" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-green-500 outline-none">
+                    <option value="">Seleccione un organismo...</option>
+                    <option value="Dirección de Escuelas">Dirección de Escuelas</option>
+                    <option value="ANSES">ANSES</option>
+                    <option value="IPS">IPS</option>
+                    <option value="Mixta">Mixta</option>
+                </select>
+            </div>
             <div class="flex gap-2">
                 <button onclick="cerrarJubilar()" class="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-xl hover:bg-slate-50">Cancelar</button>
                 <button onclick="confirmarJubilacion()" class="flex-1 bg-green-500 text-white font-bold py-2 rounded-xl hover:bg-green-600 shadow-lg shadow-green-200">Sí, Jubilar</button>
@@ -546,6 +556,16 @@
                         <option value="fin de contrato">Fin de contrato</option>
                         <option value="despido">Despido</option>
                     </select>
+                </div>
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">N° de Decreto</label>
+                        <input type="text" id="inpNroDecretoBaja" placeholder="Ej: 1234" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold text-slate-600">
+                    </div>
+                    <div class="w-24">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Año</label>
+                        <input type="number" id="inpAnioDecretoBaja" placeholder="2026" min="1900" max="2100" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-bold text-slate-600">
+                    </div>
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="cerrarBajaDatos()" class="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-xl hover:bg-slate-50">Cancelar</button>
@@ -918,7 +938,10 @@
                     interrupciones: data.interrupciones || [],
 					cargadoSAP: cargadoSAP,
 					fechaBaja: data.fechaBaja || null,
-					motivoBaja: data.motivoBaja || null
+					motivoBaja: data.motivoBaja || null,
+					nroDecretoBaja: data.nroDecretoBaja || null,
+					anioDecretoBaja: data.anioDecretoBaja || null,
+						organismoJubilacion: data.organismoJubilacion || null
                 });
 
                 if (esJubilado) {
@@ -959,7 +982,7 @@
 
                 let badgeEstado = '';
                 if (esJubilado) {
-                    badgeEstado = '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>';
+                    badgeEstado = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700" title="${data.organismoJubilacion ? 'Organismo: ' + data.organismoJubilacion : 'Jubilado'}"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>`;
                 } else if (esBaja) {
                     badgeEstado = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700" title="Motivo: ${data.motivoBaja} - Fecha: ${data.fechaBaja}"><i class="fas fa-user-slash"></i> <span class="hidden md:inline">BAJA</span></span>`;
                 } else {
@@ -992,9 +1015,11 @@
                         ${esBaja ? `
                             <div class="text-xs font-bold text-red-700 whitespace-nowrap"><i class="fas fa-sign-out-alt text-red-400 mr-1"></i> ${fmtBaja}</div>
                             <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-red-200 whitespace-nowrap">${data.motivoBaja || 'N/A'}</span>
+                            ${data.nroDecretoBaja ? `<div class="text-[9px] md:text-[10px] text-red-500 font-bold mt-1 whitespace-nowrap"><i class="fas fa-file-contract mr-1"></i> Dto. ${data.nroDecretoBaja}${data.anioDecretoBaja ? '/' + data.anioDecretoBaja : ''}</div>` : ''}
                         ` : `
                             <div class="text-xs font-bold text-slate-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-slate-300 mr-1"></i> ${fmtRetiro}</div>
                             <span class="${badgeColor} px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-transparent bg-opacity-70 whitespace-nowrap">${prev.tipo}</span>
+                            ${(esJubilado && data.organismoJubilacion) ? `<div class="text-[9px] md:text-[10px] text-indigo-500 font-bold mt-1 whitespace-nowrap"><i class="fas fa-building-columns mr-1"></i> ${data.organismoJubilacion}</div>` : ''}
                         `}
                     </td>
                     <td class="p-3 md:p-4 text-center font-bold text-slate-600 text-xs">
@@ -1207,6 +1232,7 @@
         // --- FUNCIONES DE JUBILACION ---
         window.abrirJubilar = (id) => {
             document.getElementById('jubilarId').value = id;
+            document.getElementById('inpOrganismoJub').value = '';
             document.getElementById('modalJubilar').classList.remove('hidden');
             document.getElementById('modalJubilar').classList.add('flex');
         };
@@ -1215,9 +1241,12 @@
             document.getElementById('modalJubilar').classList.remove('flex');
         };
         window.confirmarJubilacion = async () => {
+            const organismoJub = document.getElementById('inpOrganismoJub').value;
+            if (!organismoJub) { alert("Seleccione un organismo previsional."); return; }
             try {
                 await updateDoc(doc(db, "agentes_jubilacion", document.getElementById('jubilarId').value), {
                     estado: 'jubilado',
+                    organismoJubilacion: organismoJub,
                     fechaJubilacionReal: serverTimestamp()
                 });
                 cerrarJubilar();
@@ -1254,12 +1283,16 @@
             const id = document.getElementById('bajaDatosId').value;
             const fechaBaja = document.getElementById('inpFechaBaja').value;
             const motivoBaja = document.getElementById('inpMotivoBaja').value;
+            const nroDecretoBaja = document.getElementById('inpNroDecretoBaja').value.trim();
+            const anioDecretoBaja = document.getElementById('inpAnioDecretoBaja').value.trim();
 
             try {
                 await updateDoc(doc(db, "agentes_jubilacion", id), {
                     estado: 'baja',
                     fechaBaja: fechaBaja,
                     motivoBaja: motivoBaja,
+                    nroDecretoBaja: nroDecretoBaja || null,
+                    anioDecretoBaja: anioDecretoBaja || null,
                     fechaOperacionBaja: serverTimestamp()
                 });
                 cerrarBajaDatos();
@@ -1674,7 +1707,10 @@
                     Estado: item.estado.toUpperCase(),
                     Años_Faltan: (item.estado === 'jubilado' || item.estado === 'baja') ? 0 : item.faltaAnios,
                     Meses_Faltan: (item.estado === 'jubilado' || item.estado === 'baja') ? 0 : item.faltaMeses,
-                    Situacion_Texto: textoTiempo
+                    Situacion_Texto: textoTiempo,
+                    Nro_Decreto_Baja: item.estado === 'baja' ? (item.nroDecretoBaja || '') : '',
+                    Anio_Decreto_Baja: item.estado === 'baja' ? (item.anioDecretoBaja || '') : '',
+                    Organismo_Jubilacion: item.estado === 'jubilado' ? (item.organismoJubilacion || '') : ''
                 };
             });
 
@@ -1851,16 +1887,19 @@
                         Legajo: agente.legajo, Nombre: agente.nombre, CUIL: agente.cuil,
                         Estado_en_Anio: estadoMostrar.toUpperCase(),
                         Motivo: agente.estado === 'baja' ? (agente.motivoBaja || 'Cese') : 'N/A',
+                        Nro_Decreto: agente.estado === 'baja' ? (agente.nroDecretoBaja || '') : '',
+                        Anio_Decreto: agente.estado === 'baja' ? (agente.anioDecretoBaja || '') : '',
+                        Organismo: agente.estado === 'jubilado' ? (agente.organismoJubilacion || '') : '',
                         Cargado_SAP: agente.cargadoSAP ? 'SÍ' : 'NO'
                     });
                 }
             });
-            
+
             if(exportData.length === 0) return alert("No hay registros para este año.");
 
-            const wb = XLSX.utils.book_new(); 
+            const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(exportData);
-            const wscols = [{wch: 10}, {wch: 35}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 12}]; ws['!cols'] = wscols;
+            const wscols = [{wch: 10}, {wch: 35}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 12}, {wch: 8}, {wch: 22}, {wch: 12}]; ws['!cols'] = wscols;
             XLSX.utils.book_append_sheet(wb, ws, `Estadistica_${anio}`); 
             XLSX.writeFile(wb, `Informe_Estadistico_${anio}.xlsx`);
         };
