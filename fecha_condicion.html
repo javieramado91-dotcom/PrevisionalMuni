@@ -498,6 +498,91 @@
         </div>
     </div>
 
+    <!-- MODAL HISTORIAL DE DECRETOS -->
+    <div id="modalDecretos" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[55] backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3 shrink-0">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-scroll text-amber-500"></i> Historial de Decretos
+                </h3>
+                <button onclick="cerrarDecretos()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+
+            <div class="mb-4 shrink-0">
+                <form id="formAgregarDecreto" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <input type="hidden" id="decAgenteId">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-2">
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">N° de Decreto</label>
+                            <input type="text" id="decNro" placeholder="Ej: 1234" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold" required>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">Año</label>
+                            <input type="number" id="decAnio" placeholder="2026" min="1900" max="2100" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Motivo</label>
+                        <select id="decMotivo" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold" required onchange="actualizarCamposDecreto()">
+                            <option value="">Seleccione un motivo...</option>
+                            <option value="alta">Alta</option>
+                            <option value="baja">Baja</option>
+                            <option value="recategorizacion">Recategorización</option>
+                            <option value="reubicacion">Reubicación</option>
+                            <option value="renuncia">Renuncia</option>
+                        </select>
+                    </div>
+                    <!-- Campos condicionales según motivo -->
+                    <div id="decCamposAlta" class="hidden grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">Lugar</label>
+                            <input type="text" id="decAltaLugar" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">Cargo</label>
+                            <input type="text" id="decAltaCargo" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs">
+                        </div>
+                    </div>
+                    <div id="decCamposBaja" class="hidden">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Tipo de Baja</label>
+                        <input type="text" id="decBajaTipo" placeholder="Ej: Renuncia, Cese, Despido..." class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs">
+                    </div>
+                    <div id="decCamposRecateg" class="hidden">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Se recategoriza a</label>
+                        <input type="text" id="decRecategA" placeholder="Ej: Categoría 14, Técnico Superior..." class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs">
+                    </div>
+                    <div id="decCamposReubic" class="hidden">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Se reubica a</label>
+                        <input type="text" id="decReubicA" placeholder="Ej: Secretaría de Salud, Dirección..." class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase">Detalles adicionales</label>
+                        <textarea id="decDetalles" rows="2" placeholder="Observaciones, aclaraciones..." class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs resize-none"></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-2 bg-amber-500 text-white rounded-lg font-bold text-xs hover:bg-amber-600 shadow-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-plus"></i> Agregar Decreto
+                    </button>
+                </form>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scroll border border-slate-100 rounded-lg">
+                <table class="w-full text-left border-collapse">
+                    <thead class="text-[10px] text-slate-400 uppercase font-extrabold sticky top-0 bg-slate-100 z-10 tracking-wider">
+                        <tr>
+                            <th class="p-2 border-b border-slate-200">Decreto</th>
+                            <th class="p-2 border-b border-slate-200">Motivo</th>
+                            <th class="p-2 border-b border-slate-200">Datos</th>
+                            <th class="p-2 border-b border-slate-200">Detalles</th>
+                            <th class="p-2 border-b border-slate-200 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaDecretos" class="text-xs text-slate-600 divide-y divide-slate-50">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div id="modalJubilar" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-50 backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
             <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 text-3xl mx-auto mb-4 animate-bounce">
@@ -1042,9 +1127,13 @@
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Editar">
                                 <i class="fas fa-pen text-xs"></i>
                             </button>
-                             <button onclick="abrirInterrupciones('${id}')" 
+                             <button onclick="abrirInterrupciones('${id}')"
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition" title="Gestionar Interrupciones">
                                 <i class="fas fa-history text-xs"></i>
+                            </button>
+                             <button onclick="abrirDecretos('${id}')"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition" title="Historial de Decretos">
+                                <i class="fas fa-scroll text-xs"></i>
                             </button>
                             ${(!esJubilado && !esBaja) ? `
                             <button onclick="abrirJubilar('${id}')" 
@@ -1229,6 +1318,124 @@
             }
         };
         
+        // --- GESTIÓN DE DECRETOS ---
+        window.actualizarCamposDecreto = () => {
+            const motivo = document.getElementById('decMotivo').value;
+            document.getElementById('decCamposAlta').classList.toggle('hidden', motivo !== 'alta');
+            document.getElementById('decCamposAlta').classList.toggle('grid', motivo === 'alta');
+            document.getElementById('decCamposBaja').classList.toggle('hidden', motivo !== 'baja');
+            document.getElementById('decCamposRecateg').classList.toggle('hidden', motivo !== 'recategorizacion');
+            document.getElementById('decCamposReubic').classList.toggle('hidden', motivo !== 'reubicacion');
+        };
+
+        window.abrirDecretos = (id) => {
+            document.getElementById('decAgenteId').value = id;
+            document.getElementById('formAgregarDecreto').reset();
+            document.getElementById('decCamposAlta').classList.add('hidden');
+            document.getElementById('decCamposAlta').classList.remove('grid');
+            document.getElementById('decCamposBaja').classList.add('hidden');
+            document.getElementById('decCamposRecateg').classList.add('hidden');
+            document.getElementById('decCamposReubic').classList.add('hidden');
+            renderTablaDecretos(id);
+            document.getElementById('modalDecretos').classList.remove('hidden');
+            document.getElementById('modalDecretos').classList.add('flex');
+        };
+
+        window.cerrarDecretos = () => {
+            document.getElementById('modalDecretos').classList.add('hidden');
+            document.getElementById('modalDecretos').classList.remove('flex');
+        };
+
+        const MOTIVO_LABELS = {
+            alta: 'Alta', baja: 'Baja', recategorizacion: 'Recategorización',
+            reubicacion: 'Reubicación', renuncia: 'Renuncia'
+        };
+        const MOTIVO_COLORS = {
+            alta: 'bg-green-100 text-green-700', baja: 'bg-red-100 text-red-700',
+            recategorizacion: 'bg-blue-100 text-blue-700', reubicacion: 'bg-indigo-100 text-indigo-700',
+            renuncia: 'bg-orange-100 text-orange-700'
+        };
+
+        window.renderTablaDecretos = (id) => {
+            const agente = window.datosGlobales.find(a => a.id === id);
+            const tbody = document.getElementById('tablaDecretos');
+            tbody.innerHTML = '';
+
+            if (!agente || !agente.decretos || agente.decretos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">No hay decretos registrados</td></tr>';
+                return;
+            }
+
+            const arr = [...agente.decretos].sort((a, b) => (b.anioDecreto - a.anioDecreto) || (b.nroDecreto - a.nroDecreto));
+
+            arr.forEach((dec, index) => {
+                const tr = document.createElement('tr');
+                const badgeClass = MOTIVO_COLORS[dec.motivo] || 'bg-slate-100 text-slate-600';
+                const motivoLabel = MOTIVO_LABELS[dec.motivo] || dec.motivo;
+                let datosExtra = '';
+                if (dec.motivo === 'alta') datosExtra = [dec.altaLugar, dec.altaCargo].filter(Boolean).join(' — ');
+                else if (dec.motivo === 'baja') datosExtra = dec.bajaTipo || '';
+                else if (dec.motivo === 'recategorizacion') datosExtra = dec.recategA ? `→ ${dec.recategA}` : '';
+                else if (dec.motivo === 'reubicacion') datosExtra = dec.reubicA ? `→ ${dec.reubicA}` : '';
+
+                tr.innerHTML = `
+                    <td class="p-2 font-bold font-mono text-slate-700 whitespace-nowrap">${dec.nroDecreto}/${dec.anioDecreto}</td>
+                    <td class="p-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">${motivoLabel}</span></td>
+                    <td class="p-2 text-slate-600 text-[11px]">${datosExtra}</td>
+                    <td class="p-2 text-slate-400 text-[11px] max-w-[160px] truncate" title="${dec.detalles || ''}">${dec.detalles || ''}</td>
+                    <td class="p-2 text-right">
+                        <button onclick="eliminarDecreto('${id}', ${index})" class="text-red-400 hover:text-red-600 transition p-1"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        document.getElementById('formAgregarDecreto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('decAgenteId').value;
+            const nroDecreto = document.getElementById('decNro').value.trim();
+            const anioDecreto = parseInt(document.getElementById('decAnio').value);
+            const motivo = document.getElementById('decMotivo').value;
+            const detalles = document.getElementById('decDetalles').value.trim();
+
+            const nuevo = { nroDecreto, anioDecreto, motivo, detalles };
+            if (motivo === 'alta') { nuevo.altaLugar = document.getElementById('decAltaLugar').value.trim(); nuevo.altaCargo = document.getElementById('decAltaCargo').value.trim(); }
+            else if (motivo === 'baja') { nuevo.bajaTipo = document.getElementById('decBajaTipo').value.trim(); }
+            else if (motivo === 'recategorizacion') { nuevo.recategA = document.getElementById('decRecategA').value.trim(); }
+            else if (motivo === 'reubicacion') { nuevo.reubicA = document.getElementById('decReubicA').value.trim(); }
+
+            const agente = window.datosGlobales.find(a => a.id === id);
+            const decretos = agente.decretos ? [...agente.decretos] : [];
+            decretos.push(nuevo);
+
+            try {
+                await updateDoc(doc(db, "agentes_jubilacion", id), { decretos });
+                setTimeout(() => renderTablaDecretos(id), 500);
+                document.getElementById('formAgregarDecreto').reset();
+                document.getElementById('decAgenteId').value = id;
+                actualizarCamposDecreto();
+            } catch (err) {
+                alert("Error al guardar decreto: " + err.message);
+            }
+        });
+
+        window.eliminarDecreto = async (id, index) => {
+            if (!confirm("¿Eliminar este decreto del historial?")) return;
+            const agente = window.datosGlobales.find(a => a.id === id);
+            const arr = [...agente.decretos].sort((a, b) => (b.anioDecreto - a.anioDecreto) || (b.nroDecreto - a.nroDecreto));
+            const elemToRemove = arr[index];
+            const decretos = [...agente.decretos];
+            const origIdx = decretos.findIndex(d => d.nroDecreto === elemToRemove.nroDecreto && d.anioDecreto === elemToRemove.anioDecreto && d.motivo === elemToRemove.motivo);
+            if (origIdx > -1) decretos.splice(origIdx, 1);
+            try {
+                await updateDoc(doc(db, "agentes_jubilacion", id), { decretos });
+                setTimeout(() => renderTablaDecretos(id), 500);
+            } catch (err) {
+                alert("Error al eliminar decreto: " + err.message);
+            }
+        };
+
         // --- FUNCIONES DE JUBILACION ---
         window.abrirJubilar = (id) => {
             document.getElementById('jubilarId').value = id;
