@@ -1,0 +1,7 @@
+# Archivos internos de Claude Code (no forman parte del sitio)
+.claude/
+
+# Archivos del sistema operativo
+Thumbs.db
+Desktop.ini
+.DS_Store
