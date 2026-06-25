@@ -518,11 +518,8 @@
                         </div>
                         <div>
                             <label class="text-[9px] font-bold text-slate-400 uppercase">Fecha del Decreto</label>
-                            <div class="flex gap-1">
-                                <input type="date" id="decFechaCal" class="flex-1 bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold cursor-pointer" onchange="document.getElementById('decFechaManual').value = this.value.split('-').reverse().join('/')">
-                                <input type="text" id="decFechaManual" placeholder="dd/mm/aaaa" maxlength="10" class="flex-1 bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold text-center" oninput="sincronizarFechaDecreto(this)">
-                            </div>
-                            <p class="text-[8px] text-slate-400 mt-0.5 ml-1">Calendario o manual (ej: 15/03/2026)</p>
+                            <input type="date" id="decFechaCal" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold cursor-pointer">
+                            <p class="text-[8px] text-slate-400 mt-0.5 ml-1">Escribí dd/mm/aaaa o usá el calendario 📅</p>
                         </div>
                     </div>
                     <div>
@@ -1324,21 +1321,6 @@
         };
         
         // --- GESTIÓN DE DECRETOS ---
-        window.sincronizarFechaDecreto = (input) => {
-            let v = input.value.replace(/[^0-9]/g, '');
-            if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
-            if (v.length > 5) v = v.slice(0, 5) + '/' + v.slice(5);
-            if (v.length > 10) v = v.slice(0, 10);
-            input.value = v;
-            if (v.length === 10) {
-                const parts = v.split('/');
-                const iso = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                if (!isNaN(new Date(iso).getTime())) {
-                    document.getElementById('decFechaCal').value = iso;
-                }
-            }
-        };
-
         window.actualizarCamposDecreto = () => {
             const motivo = document.getElementById('decMotivo').value;
             document.getElementById('decCamposAlta').classList.toggle('hidden', motivo !== 'alta');
@@ -1418,15 +1400,7 @@
             e.preventDefault();
             const id = document.getElementById('decAgenteId').value;
             const nroDecreto = document.getElementById('decNro').value.trim();
-            const fechaCal = document.getElementById('decFechaCal').value;
-            const fechaManual = document.getElementById('decFechaManual').value.trim();
-            let fechaDecreto = '';
-            if (fechaCal) {
-                fechaDecreto = fechaCal;
-            } else if (fechaManual.length === 10) {
-                const p = fechaManual.split('/');
-                fechaDecreto = `${p[2]}-${p[1]}-${p[0]}`;
-            }
+            const fechaDecreto = document.getElementById('decFechaCal').value;
             if (!fechaDecreto || isNaN(new Date(fechaDecreto).getTime())) {
                 alert("Ingrese una fecha válida para el decreto.");
                 return;
