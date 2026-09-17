@@ -732,13 +732,18 @@
                         <input type="file" id="inputAporte" accept="application/pdf,.pdf" class="hidden" onchange="subirAporte(event)">
                     </div>
 
+                    <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                        <i class="fas fa-circle-info text-amber-500 text-sm shrink-0"></i>
+                        <span class="text-[11px] font-bold text-amber-800 leading-snug">
+                            Solo archivos <strong>PDF</strong> · Tamaño máximo <strong>5 MB</strong> por archivo
+                        </span>
+                    </div>
+
                     <div id="aporteEstado" class="hidden mb-2 text-[11px] font-bold"></div>
 
                     <div id="listaAportes" class="space-y-2">
                         <p class="text-[11px] text-slate-400 italic text-center py-3">Cargando...</p>
                     </div>
-
-                    <p class="text-[10px] text-slate-400 mt-2 text-center">Solo archivos PDF, hasta 5 MB cada uno.</p>
                 </div>
             </div>
             
