@@ -1,0 +1,45 @@
+// ============================================================
+//  REGLAS DE SEGURIDAD — Cloud Storage  (previsional-muni)
+// ============================================================
+//
+//  CÓMO SE APLICAN:
+//    console.firebase.google.com  →  proyecto previsional-muni
+//    →  Storage  →  pestaña "Reglas"
+//    →  borrar todo y pegar ESTE archivo  →  "Publicar"
+//
+//  Mismo criterio que firestore.rules: no alcanza con estar
+//  logueado, hace falta tener perfil en app_users/{uid}.
+//  Los PDFs son legajos de personal, no pueden quedar públicos.
+// ============================================================
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Consulta Firestore para confirmar que el usuario está habilitado.
+    function habilitado() {
+      return request.auth != null
+             && firestore.exists(/databases/(default)/documents/app_users/$(request.auth.uid));
+    }
+
+    // Aportes de ANSES: un PDF por archivo, hasta 5 MB, agrupados por agente.
+    match /aportes_anses/{agenteId}/{archivo} {
+
+      allow read: if habilitado();
+
+      allow create, update: if habilitado()
+                            && request.resource.size <= 5 * 1024 * 1024
+                            && request.resource.contentType == 'application/pdf';
+
+      // En un borrado no existe request.resource, por eso va separado
+      // del control de tamaño y tipo.
+      allow delete: if habilitado();
+    }
+
+    // Cualquier otra ruta del bucket queda cerrada.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

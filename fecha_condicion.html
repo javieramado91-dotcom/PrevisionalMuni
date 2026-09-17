@@ -718,6 +718,28 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- APORTES DE ANSES (PDFs adjuntos) -->
+                <div class="md:col-span-2 border-t border-slate-100 pt-5">
+                    <div class="flex items-center justify-between mb-3 gap-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fas fa-file-pdf text-red-400"></i> Aportes de ANSES
+                        </label>
+                        <button type="button" onclick="document.getElementById('inputAporte').click()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1.5 uppercase tracking-wide shrink-0">
+                            <i class="fas fa-plus"></i> Adjuntar PDF
+                        </button>
+                        <input type="file" id="inputAporte" accept="application/pdf,.pdf" class="hidden" onchange="subirAporte(event)">
+                    </div>
+
+                    <div id="aporteEstado" class="hidden mb-2 text-[11px] font-bold"></div>
+
+                    <div id="listaAportes" class="space-y-2">
+                        <p class="text-[11px] text-slate-400 italic text-center py-3">Cargando...</p>
+                    </div>
+
+                    <p class="text-[10px] text-slate-400 mt-2 text-center">Solo archivos PDF, hasta 5 MB cada uno.</p>
+                </div>
             </div>
             
             <div class="bg-slate-50 p-4 border-t border-slate-200 text-center shrink-0">
@@ -751,6 +773,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc, doc, getDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, listAll, deleteObject, getMetadata } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         // FIREBASE CONFIG
         const firebaseConfig = {
@@ -766,6 +789,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
 
         // Evita que un dato cargado por el usuario se interprete como HTML.
         function esc(v) {
@@ -1582,12 +1606,188 @@
             document.getElementById('detAnt').innerText = a.antiguedad + ' años netos';
             document.getElementById('detTipo').innerText = a.tipo ?? '';
             document.getElementById('detRetiro').innerText = a.fechaRetiro ? a.fechaRetiro.toLocaleDateString('es-AR') : '-';
+            agenteDetalleId = id;
+            avisoAporte(null);
+            renderAportes(id);
+
             document.getElementById('modalDetalle').classList.remove('hidden');
             document.getElementById('modalDetalle').classList.add('flex');
         };
         window.cerrarDetalle = () => {
             document.getElementById('modalDetalle').classList.add('hidden');
             document.getElementById('modalDetalle').classList.remove('flex');
+        };
+
+        // --- APORTES DE ANSES (PDFs en Cloud Storage) ---
+        // Los archivos viven en  aportes_anses/{agenteId}/{timestamp}__{nombre}.pdf
+        // El prefijo de tiempo mantiene el orden y evita que dos archivos con el
+        // mismo nombre se pisen.
+
+        let agenteDetalleId = null;
+        const LIMITE_APORTE = 5 * 1024 * 1024;   // 5 MB
+
+        const carpetaAportes = (id) => `aportes_anses/${id}`;
+
+        function nombreLimpio(nombre) {
+            return nombre.replace(/[\/\\#?\[\]]/g, '-').replace(/\s+/g, '_').slice(-80);
+        }
+
+        function nombreVisible(rutaCompleta) {
+            const base = rutaCompleta.split('/').pop();
+            const corte = base.indexOf('__');
+            return corte > -1 ? base.slice(corte + 2) : base;
+        }
+
+        function pesoLegible(bytes) {
+            if (!bytes && bytes !== 0) return '';
+            return bytes < 1024 * 1024
+                ? `${Math.round(bytes / 1024)} KB`
+                : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        }
+
+        function avisoAporte(texto, tipo) {
+            const el = document.getElementById('aporteEstado');
+            if (!el) return;
+            if (!texto) { el.classList.add('hidden'); return; }
+            const colores = { ok: 'text-emerald-600', error: 'text-red-600', info: 'text-slate-500' };
+            el.className = `mb-2 text-[11px] font-bold ${colores[tipo] || colores.info}`;
+            el.textContent = texto;
+            el.classList.remove('hidden');
+        }
+
+        window.renderAportes = async (id) => {
+            const cont = document.getElementById('listaAportes');
+            if (!cont) return;
+            cont.innerHTML = '<p class="text-[11px] text-slate-400 italic text-center py-3">Cargando...</p>';
+
+            try {
+                const { items } = await listAll(storageRef(storage, carpetaAportes(id)));
+
+                if (items.length === 0) {
+                    cont.innerHTML = '<p class="text-[11px] text-slate-400 italic text-center py-3">No hay aportes adjuntos</p>';
+                    return;
+                }
+
+                // Más nuevo arriba (el nombre arranca con la fecha en milisegundos).
+                items.sort((a, b) => b.name.localeCompare(a.name));
+
+                const filas = await Promise.all(items.map(async (item) => {
+                    const [url, meta] = await Promise.all([
+                        getDownloadURL(item),
+                        getMetadata(item).catch(() => null)
+                    ]);
+                    return {
+                        ruta: item.fullPath,
+                        nombre: nombreVisible(item.fullPath),
+                        url,
+                        peso: meta ? pesoLegible(meta.size) : '',
+                        fecha: meta ? new Date(meta.timeCreated).toLocaleDateString('es-AR') : ''
+                    };
+                }));
+
+                cont.innerHTML = '';
+                filas.forEach(f => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2.5";
+                    div.innerHTML = `
+                        <i class="fas fa-file-pdf text-red-500 text-lg shrink-0"></i>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[11px] font-bold text-slate-700 truncate" title="${esc(f.nombre)}">${esc(f.nombre)}</div>
+                            <div class="text-[9px] text-slate-400 font-mono">${esc(f.fecha)}${f.peso ? ' · ' + esc(f.peso) : ''}</div>
+                        </div>
+                        <div class="flex gap-1 shrink-0">
+                            <button data-accion="ver" title="Ver e imprimir"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition">
+                                <i class="fas fa-eye text-xs"></i>
+                            </button>
+                            <button data-accion="descargar" title="Descargar"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition">
+                                <i class="fas fa-download text-xs"></i>
+                            </button>
+                            <button data-accion="borrar" title="Eliminar"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                    // Los datos van por closure, no dentro del HTML: así un nombre
+                    // de archivo con comillas o apóstrofe no puede romper nada.
+                    div.querySelector('[data-accion="ver"]').addEventListener('click', () => verAporte(f.url));
+                    div.querySelector('[data-accion="descargar"]').addEventListener('click', () => descargarAporte(f.url, f.nombre));
+                    div.querySelector('[data-accion="borrar"]').addEventListener('click', () => borrarAporte(f.ruta));
+
+                    cont.appendChild(div);
+                });
+            } catch (e) {
+                console.error(e);
+                cont.innerHTML = '<p class="text-[11px] text-red-500 font-bold text-center py-3">No se pudieron cargar los adjuntos</p>';
+            }
+        };
+
+        window.subirAporte = async (evento) => {
+            const input = evento.target;
+            const archivo = input.files && input.files[0];
+            if (!archivo || !agenteDetalleId) return;
+
+            const esPdf = archivo.type === 'application/pdf'
+                       || archivo.name.toLowerCase().endsWith('.pdf');
+
+            if (!esPdf) {
+                avisoAporte("Solo se pueden adjuntar archivos PDF.", 'error');
+                input.value = "";
+                return;
+            }
+            if (archivo.size > LIMITE_APORTE) {
+                avisoAporte(`El archivo pesa ${pesoLegible(archivo.size)} y el máximo son 5 MB.`, 'error');
+                input.value = "";
+                return;
+            }
+
+            avisoAporte("Subiendo archivo...", 'info');
+            try {
+                const ruta = `${carpetaAportes(agenteDetalleId)}/${Date.now()}__${nombreLimpio(archivo.name)}`;
+                await uploadBytes(storageRef(storage, ruta), archivo, { contentType: 'application/pdf' });
+                avisoAporte("Archivo adjuntado correctamente.", 'ok');
+                setTimeout(() => avisoAporte(null), 4000);
+                renderAportes(agenteDetalleId);
+            } catch (e) {
+                console.error(e);
+                avisoAporte("No se pudo subir el archivo.", 'error');
+            } finally {
+                input.value = "";   // permite volver a elegir el mismo archivo
+            }
+        };
+
+        // Abre el PDF en otra pestaña: desde ahí el visor del navegador
+        // permite leerlo e imprimirlo.
+        window.verAporte = (url) => window.open(url, '_blank', 'noopener');
+
+        window.descargarAporte = async (url, nombre) => {
+            try {
+                const resp = await fetch(url);
+                const blob = await resp.blob();
+                const enlace = document.createElement('a');
+                enlace.href = URL.createObjectURL(blob);
+                enlace.download = nombre;
+                document.body.appendChild(enlace);
+                enlace.click();
+                document.body.removeChild(enlace);
+                setTimeout(() => URL.revokeObjectURL(enlace.href), 10000);
+            } catch (e) {
+                console.error(e);
+                avisoAporte("No se pudo descargar el archivo.", 'error');
+            }
+        };
+
+        window.borrarAporte = async (ruta) => {
+            if (!confirm("¿Eliminar este archivo? No se puede deshacer.")) return;
+            try {
+                await deleteObject(storageRef(storage, ruta));
+                renderAportes(agenteDetalleId);
+            } catch (e) {
+                console.error(e);
+                avisoAporte("No se pudo eliminar el archivo.", 'error');
+            }
         };
       window.prepararExportacion = (tipo) => {
             document.getElementById('tipoExportacion').value = tipo;

@@ -24,8 +24,8 @@ y los datos viven en la nube en **Firebase / Firestore** (base de datos de Googl
 SISTEMA PREVISIONAL/
 ├── index.html            → Login + tablero de novedades
 ├── fecha_condicion.html  → Núcleo del sistema (gestión de agentes)
-├── firestore.rules       → Reglas de seguridad (se pegan en la consola de Firebase)
-├── migrar_usuarios.html  → Herramienta de un solo uso (NO se sube al repo)
+├── firestore.rules       → Reglas de la base (se pegan en la consola de Firebase)
+├── storage.rules         → Reglas de los archivos adjuntos (idem)
 ├── CLAUDE.md             → Este archivo (contexto)
 └── .gitignore            → Excluye .claude/, migrar_usuarios.html y archivos del SO
 ```
@@ -63,9 +63,18 @@ No hay archivos .js o .css separados, ni proceso de build.
 - `fecha_condicion.html` arranca el listener de agentes recién cuando la sesión
   está confirmada (`escucharAgentes()`).
 
+### Plan de Firebase
+El proyecto está en **Blaze (pago por uso)** desde el 2026-09-17, porque Cloud
+Storage no existe en el plan gratuito. Con un solo usuario real el consumo queda
+muy por debajo del tramo sin cargo (el día que se midió: 3.3 K de 50 K lecturas).
+⚠️ Blaze **no tiene tope de gasto**: se pueden configurar alertas por mail, pero
+no cortan el servicio. Un bucle que consulte la base sin parar sí costaría plata.
+
 ### Reglas de seguridad
-Están en `firestore.rules` y se aplican a mano en la consola de Firebase
-(Firestore Database → Reglas → pegar → Publicar). Resumen:
+Están en `firestore.rules` y `storage.rules`, y se aplican a mano en la consola
+(Firestore Database → Reglas, y Storage → Reglas → pegar → Publicar). Resumen:
+- `aportes_anses/...`: leer y borrar, usuarios habilitados; subir, además, solo
+  PDFs de hasta 5 MB. El resto del bucket, cerrado.
 - `agentes_jubilacion`: leer/escribir solo usuarios habilitados.
 - `novedades`: todos los habilitados leen; editar/borrar solo el autor o un master.
 - `app_users`: cada uno lee su perfil; crear/modificar/borrar solo el master.
@@ -103,6 +112,14 @@ cada vez. Reglas:
   Opciones del organismo: Dirección de Escuelas, ANSES, IPS, Mixta, **Cierre de Cómputos**.
 - **Exportaciones:** nómina y listado de bajas (PDF con jsPDF / Excel con XLSX) e
   informe estadístico anual.
+- **Aportes de ANSES** (desde 2026-09-17): dentro de la ficha 👁️ se pueden adjuntar
+  PDFs por agente. Ver / imprimir (abre en otra pestaña), descargar y eliminar.
+  - Viven en **Cloud Storage**, en `aportes_anses/{agenteId}/{timestamp}__{nombre}.pdf`.
+  - El prefijo de tiempo ordena la lista y evita pisar archivos de igual nombre.
+  - Límite: **PDF únicamente, 5 MB**. Se valida en el navegador y otra vez en
+    `storage.rules` (el control del navegador solo evita el viaje al servidor).
+  - No se guarda nada en Firestore: la lista sale de `listAll()` sobre la carpeta,
+    así no hay dos fuentes que se puedan desincronizar.
 
 ---
 
