@@ -124,26 +124,28 @@ repo tenía la función de "Decretos" que el local no tenía, y casi se pisa.
 
 ---
 
-## 6. ⚠️ Puesta en marcha de la seguridad (hacer UNA vez, en este orden)
+## 6. ✅ Migración de seguridad — COMPLETADA el 2026-09-17
 
-El código nuevo ya está escrito, pero **no sirve hasta completar estos pasos**.
-Si se publica el código sin hacer el paso A y B, nadie puede entrar al sistema.
+**No hay que volver a hacer nada de esto.** Queda como registro.
 
-| # | Paso | ¿Rompe algo si me detengo acá? |
-|---|------|--------------------------------|
-| A | Consola Firebase → **Authentication** → Sign-in method → **Email/Password** → Habilitar | No, el sitio viejo sigue funcionando |
-| B | Abrir `migrar_usuarios.html` desde la PC → **Paso 1** y **Paso 2** (crea las cuentas) | No, el sitio viejo sigue funcionando |
-| C | `git push` del código nuevo → probar el login en el sitio | Si falla, `git revert` y vuelve el anterior |
-| D | Volver a `migrar_usuarios.html` → **Paso 3** (borra las contraseñas viejas) | Sí: ya no se puede volver atrás al login viejo |
-| E | Consola Firebase → Firestore → **Reglas** → pegar `firestore.rules` → Publicar | Sí: cierra la base |
-| F | Borrar `migrar_usuarios.html` de la carpeta | No |
+Se ejecutó en este orden: habilitar Email/Password en Authentication → crear las
+cuentas reales con `migrar_usuarios.html` → publicar el código nuevo y probarlo →
+borrar los documentos viejos con contraseña → publicar `firestore.rules` →
+borrar `migrar_usuarios.html`.
 
-Notas:
-- Las contraseñas deben tener **6 caracteres como mínimo** (lo exige Firebase).
-  La página de migración avisa y deja escribir una nueva donde haga falta.
-- En el Paso 2 hay que marcar quién es **Master** (el que administra usuarios).
-- Si se cierra la página entre el Paso 2 y el Paso 3, se puede volver a correr
-  Paso 1 y Paso 2 sin problema: detecta las cuentas ya creadas.
+**Estado final verificado:**
+- Usuarios migrados: **YULI** (`role: master`) y **MARY** (`role: user`).
+  Sus emails internos son `yuli@previsional-muni.web.app` y `mary@...`.
+- `app_users` quedó con 2 documentos, ambos sin campo `password`.
+- Las reglas viejas eran `allow read, write: if true` en las tres colecciones,
+  o sea la base estaba **abierta a cualquiera sin login**. Ya no.
+- Comprobado con una consulta sin sesión a la API de Firestore: las tres
+  colecciones responden `403 PERMISSION_DENIED`.
+
+### Pendiente menor
+- En Authentication sigue habilitado el proveedor **Anónimo**, que la app no usa,
+  y hay ~4 usuarios anónimos viejos (de enero 2026). No dan acceso a nada porque
+  las reglas exigen perfil en `app_users`, pero conviene desactivarlo y borrarlos.
 
 ---
 
