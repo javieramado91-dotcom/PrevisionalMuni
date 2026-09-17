@@ -142,10 +142,10 @@ borrar `migrar_usuarios.html`.
 - Comprobado con una consulta sin sesión a la API de Firestore: las tres
   colecciones responden `403 PERMISSION_DENIED`.
 
-### Pendiente menor
-- En Authentication sigue habilitado el proveedor **Anónimo**, que la app no usa,
-  y hay ~4 usuarios anónimos viejos (de enero 2026). No dan acceso a nada porque
-  las reglas exigen perfil en `app_users`, pero conviene desactivarlo y borrarlos.
+### Limpieza posterior (también hecha el 2026-09-17)
+- Se **inhabilitó el proveedor Anónimo** en Authentication (la app nunca lo usó).
+- Se borraron las 4 cuentas anónimas viejas de enero 2026.
+- En Authentication quedan exactamente 2 cuentas: `yuli@...` y `mary@...`.
 
 ---
 
