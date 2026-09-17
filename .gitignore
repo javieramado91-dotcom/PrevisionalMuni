@@ -5,3 +5,7 @@
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Herramienta de migración de un solo uso: lee contraseñas viejas,
+# no debe quedar publicada en el sitio. Se usa localmente y se borra.
+migrar_usuarios.html

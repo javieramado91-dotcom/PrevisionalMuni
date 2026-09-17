@@ -1,0 +1,78 @@
+// ============================================================
+//  REGLAS DE SEGURIDAD — Firestore  (proyecto: previsional-muni)
+// ============================================================
+//
+//  CÓMO SE APLICAN:
+//    console.firebase.google.com  →  proyecto previsional-muni
+//    →  Firestore Database  →  pestaña "Reglas"
+//    →  borrar todo lo que haya y pegar ESTE archivo completo
+//    →  botón "Publicar"
+//
+//  ⚠️ NO aplicar estas reglas antes de haber migrado los usuarios
+//     a Firebase Authentication. Si se aplican antes, nadie puede
+//     entrar al sistema. Ver el paso a paso en CLAUDE.md.
+//
+//  IDEA DE FONDO:
+//    Estar logueado en Firebase Auth NO alcanza. Además hace falta
+//    tener un documento de perfil en app_users/{uid}, que solo un
+//    master puede crear. Así, si un desconocido se registra por su
+//    cuenta, queda sin perfil y no puede leer ni escribir NADA.
+// ============================================================
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Funciones de ayuda ----------
+
+    // Documento de perfil del usuario que está haciendo la consulta.
+    function perfil() {
+      return get(/databases/$(database)/documents/app_users/$(request.auth.uid)).data;
+    }
+
+    // Logueado Y con perfil creado por un master.
+    function habilitado() {
+      return request.auth != null
+             && exists(/databases/$(database)/documents/app_users/$(request.auth.uid));
+    }
+
+    function esMaster() {
+      return habilitado() && perfil().role == 'master';
+    }
+
+    function miUsuario() {
+      return perfil().username;
+    }
+
+    // ---------- Perfiles de usuario ----------
+    // Cada uno puede leer solo su propio perfil. El master puede leer todos.
+    // Crear / modificar / borrar perfiles: solo el master.
+    match /app_users/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || esMaster());
+      allow create, update, delete: if esMaster();
+    }
+
+    // ---------- Agentes (datos previsionales) ----------
+    // Cualquier usuario habilitado puede ver y editar la nómina.
+    match /agentes_jubilacion/{agenteId} {
+      allow read, write: if habilitado();
+    }
+
+    // ---------- Novedades (tablero) ----------
+    // Todos los habilitados leen. Cada uno crea novedades a su nombre.
+    // Editar o borrar: el autor, o el master.
+    match /novedades/{novedadId} {
+      allow read: if habilitado();
+      allow create: if habilitado() && request.resource.data.autor == miUsuario();
+      allow update, delete: if esMaster()
+                            || (habilitado() && resource.data.autor == miUsuario());
+    }
+
+    // ---------- Todo lo demás ----------
+    // Cualquier otra colección queda cerrada.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

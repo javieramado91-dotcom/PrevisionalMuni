@@ -52,11 +52,14 @@
                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 truncate">Control de Gestión & Alertas</p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3 md:gap-4">
             <div class="flex flex-col items-end">
                 <span class="text-xs font-bold text-slate-700 hidden md:block" id="userNameDisplay">Usuario</span>
                 <span class="text-[9px] md:text-[10px] text-emerald-500 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> <span class="hidden sm:inline">Sistema </span>Activo</span>
             </div>
+            <button onclick="cerrarSesion()" class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 border border-slate-200 transition active:scale-95" title="Cerrar Sesión">
+                <i class="fas fa-power-off text-sm"></i>
+            </button>
         </div>
     </header>
 
@@ -746,7 +749,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc, doc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc, doc, getDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // FIREBASE CONFIG
         const firebaseConfig = {
@@ -761,17 +765,53 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        // SESION
-        const storedUser = localStorage.getItem('usuarioActivo');
-        if (!storedUser) {
-            window.location.href = 'index.html';
-        } else {
-            const currentUser = JSON.parse(storedUser);
-            // Aseguramos que el elemento exista antes de asignar
-            const userDisplay = document.getElementById('userNameDisplay');
-            if(userDisplay) userDisplay.textContent = currentUser.username;
+        // Evita que un dato cargado por el usuario se interprete como HTML.
+        function esc(v) {
+            return String(v ?? "").replace(/[&<>"']/g, c => (
+                { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+            ));
         }
+
+        // SESION — ahora la valida Firebase Authentication de verdad.
+        // Ya no alcanza con tener algo escrito en el navegador.
+        let appIniciada = false;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.replace('index.html');
+                return;
+            }
+
+            // Además de estar logueado hace falta un perfil habilitado.
+            let perfil = null;
+            try {
+                const snap = await getDoc(doc(db, "app_users", user.uid));
+                if (snap.exists()) perfil = snap.data();
+            } catch (e) {
+                console.error(e);
+            }
+
+            if (!perfil) {
+                await signOut(auth);
+                window.location.replace('index.html');
+                return;
+            }
+
+            const userDisplay = document.getElementById('userNameDisplay');
+            if (userDisplay) userDisplay.textContent = perfil.username;
+
+            if (!appIniciada) {
+                appIniciada = true;
+                escucharAgentes();
+            }
+        });
+
+        window.cerrarSesion = async () => {
+            await signOut(auth);
+            window.location.replace('index.html');
+        };
 
         // UI HELPERS
         window.toggleSidebar = () => {
@@ -983,8 +1023,11 @@
         }
 
         // --- FIREBASE LISTENER ---
+        // Se arranca recién cuando la sesión está confirmada: con las reglas de
+        // seguridad puestas, leer sin estar logueado es rechazado por Firestore.
+        function escucharAgentes() {
         const q = query(collection(db, "agentes_jubilacion"), orderBy("legajo", "asc"));
-        
+
         onSnapshot(q, (snapshot) => {
             const tbody = document.getElementById('tablaBody') || document.getElementById('tableBody');
             if(!tbody) return;
@@ -1069,9 +1112,9 @@
 
                 let badgeEstado = '';
                 if (esJubilado) {
-                    badgeEstado = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700" title="${data.organismoJubilacion ? 'Organismo: ' + data.organismoJubilacion : 'Jubilado'}"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>`;
+                    badgeEstado = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700" title="${esc(data.organismoJubilacion ? 'Organismo: ' + data.organismoJubilacion : 'Jubilado')}"><i class="fas fa-check"></i> <span class="hidden md:inline">JUBILADO</span></span>`;
                 } else if (esBaja) {
-                    badgeEstado = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700" title="Motivo: ${data.motivoBaja} - Fecha: ${data.fechaBaja}"><i class="fas fa-user-slash"></i> <span class="hidden md:inline">BAJA</span></span>`;
+                    badgeEstado = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700" title="Motivo: ${esc(data.motivoBaja)} - Fecha: ${esc(data.fechaBaja)}"><i class="fas fa-user-slash"></i> <span class="hidden md:inline">BAJA</span></span>`;
                 } else {
                     badgeEstado = `<span class="inline-flex w-3 h-3 rounded-full bg-${prev.semaforo === 'rojo' ? 'red' : prev.semaforo === 'amarillo' ? 'amber' : 'emerald'}-500 shadow-sm"></span>`;
                 }
@@ -1089,10 +1132,10 @@
                         <input type="checkbox" class="chk-main-item rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4" value="${id}" onchange="verificarSeleccionMain()">
                     </td>
 
-                    <td class="p-3 md:p-4 font-mono font-bold text-slate-600">${data.legajo}</td>
+                    <td class="p-3 md:p-4 font-mono font-bold text-slate-600">${esc(data.legajo)}</td>
                     <td class="p-3 md:p-4">
-                        <div class="font-bold text-slate-800 text-sm md:text-base">${data.nombre}</div>
-                        <div class="text-[9px] md:text-[10px] text-slate-400 font-mono">${data.cuil || '-'}</div>
+                        <div class="font-bold text-slate-800 text-sm md:text-base">${esc(data.nombre)}</div>
+                        <div class="text-[9px] md:text-[10px] text-slate-400 font-mono">${esc(data.cuil || '-')}</div>
                     </td>
                     <td class="p-3 md:p-4 text-center">
                         <div class="font-bold text-slate-700 text-xs">${prev.edad} años</div>
@@ -1101,12 +1144,12 @@
                     <td class="p-3 md:p-4 ${esBaja ? 'bg-red-50/50' : 'bg-blue-50/10'}">
                         ${esBaja ? `
                             <div class="text-xs font-bold text-red-700 whitespace-nowrap"><i class="fas fa-sign-out-alt text-red-400 mr-1"></i> ${fmtBaja}</div>
-                            <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-red-200 whitespace-nowrap">${data.motivoBaja || 'N/A'}</span>
-                            ${data.nroDecretoBaja ? `<div class="text-[9px] md:text-[10px] text-red-500 font-bold mt-1 whitespace-nowrap"><i class="fas fa-file-contract mr-1"></i> Dto. ${data.nroDecretoBaja}${data.anioDecretoBaja ? '/' + data.anioDecretoBaja : ''}</div>` : ''}
+                            <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-red-200 whitespace-nowrap">${esc(data.motivoBaja || 'N/A')}</span>
+                            ${data.nroDecretoBaja ? `<div class="text-[9px] md:text-[10px] text-red-500 font-bold mt-1 whitespace-nowrap"><i class="fas fa-file-contract mr-1"></i> Dto. ${esc(data.nroDecretoBaja)}${data.anioDecretoBaja ? '/' + esc(data.anioDecretoBaja) : ''}</div>` : ''}
                         ` : `
                             <div class="text-xs font-bold text-slate-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-slate-300 mr-1"></i> ${fmtRetiro}</div>
-                            <span class="${badgeColor} px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-transparent bg-opacity-70 whitespace-nowrap">${prev.tipo}</span>
-                            ${(esJubilado && data.organismoJubilacion) ? `<div class="text-[9px] md:text-[10px] text-indigo-500 font-bold mt-1 whitespace-nowrap"><i class="fas fa-building-columns mr-1"></i> ${data.organismoJubilacion}</div>` : ''}
+                            <span class="${badgeColor} px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase mt-1 inline-block tracking-wide border border-transparent bg-opacity-70 whitespace-nowrap">${esc(prev.tipo)}</span>
+                            ${(esJubilado && data.organismoJubilacion) ? `<div class="text-[9px] md:text-[10px] text-indigo-500 font-bold mt-1 whitespace-nowrap"><i class="fas fa-building-columns mr-1"></i> ${esc(data.organismoJubilacion)}</div>` : ''}
                         `}
                     </td>
                     <td class="p-3 md:p-4 text-center font-bold text-slate-600 text-xs">
@@ -1121,11 +1164,11 @@
         `<button onclick="marcarSAP('${id}')" class="bg-slate-200 text-slate-600 hover:bg-blue-600 hover:text-white px-2 py-1 rounded text-[9px] font-bold tracking-wide transition uppercase whitespace-nowrap shadow-sm border border-slate-300">¿SAP?</button>`
     }
     <div class="flex justify-end gap-1 opacity-100 md:opacity-80 hover:opacity-100 mt-1 md:mt-0">
-                             <button onclick="verDetalle('${data.legajo}', '${data.nombre}', '${data.cuil}', '${fmtNac}', '${fmtIng}', '${prev.edad}', '${prev.antiguedad}', '${prev.tipo}', '${fmtRetiro}')" 
+                             <button onclick="verDetalle('${id}')"
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 transition" title="Ver Ficha">
                                 <i class="fas fa-eye text-xs"></i>
                             </button>
-                             <button onclick="abrirEditar('${id}', '${data.legajo}', '${data.nombre}', '${data.cuil}', '${data.fNac}', '${data.fIng}')" 
+                             <button onclick="abrirEditar('${id}')"
                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Editar">
                                 <i class="fas fa-pen text-xs"></i>
                             </button>
@@ -1189,8 +1232,13 @@
             }
             // ----------------------------------------------------
             
-            if(typeof aplicarFiltrosDOM === 'function') aplicarFiltrosDOM(); 
+            if(typeof aplicarFiltrosDOM === 'function') aplicarFiltrosDOM();
+        }, (error) => {
+            console.error("Firestore:", error);
+            const tbody = document.getElementById('tableBody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-red-500 text-sm font-bold">No se pudieron cargar los agentes. Cerrá sesión y volvé a entrar.</td></tr>';
         });
+        }
 
         const inputSearch = document.getElementById('searchTable');
         if(inputSearch) {
@@ -1207,13 +1255,15 @@
             document.getElementById('modalNuevo').classList.add('hidden');
             document.getElementById('modalNuevo').classList.remove('flex');
         };
-        window.abrirEditar = (id, legajo, nombre, cuil, fNac, fIng) => {
+        window.abrirEditar = (id) => {
+            const a = window.datosGlobales.find(x => x.id === id);
+            if (!a) return;
             document.getElementById('editId').value = id;
-            document.getElementById('editLegajo').value = legajo;
-            document.getElementById('editNombre').value = nombre;
-            document.getElementById('editCuil').value = cuil;
-            document.getElementById('editNacimiento').value = fNac;
-            document.getElementById('editIngreso').value = fIng;
+            document.getElementById('editLegajo').value = a.legajo || '';
+            document.getElementById('editNombre').value = a.nombre || '';
+            document.getElementById('editCuil').value = a.cuil || '';
+            document.getElementById('editNacimiento').value = a.fNac || '';
+            document.getElementById('editIngreso').value = a.fIng || '';
             document.getElementById('modalEdit').classList.remove('hidden');
             document.getElementById('modalEdit').classList.add('flex');
         };
@@ -1254,9 +1304,9 @@
                 const desdeStr = new Date(int.inicio + "T00:00:00").toLocaleDateString('es-AR');
                 const hastaStr = new Date(int.fin + "T00:00:00").toLocaleDateString('es-AR');
                 tr.innerHTML = `
-                    <td class="p-2 font-bold">${int.motivo}</td>
-                    <td class="p-2 text-center">${desdeStr}</td>
-                    <td class="p-2 text-center">${hastaStr}</td>
+                    <td class="p-2 font-bold">${esc(int.motivo)}</td>
+                    <td class="p-2 text-center">${esc(desdeStr)}</td>
+                    <td class="p-2 text-center">${esc(hastaStr)}</td>
                     <td class="p-2 text-right">
                         <button onclick="eliminarInterrupcion('${id}', ${index})" class="text-red-400 hover:text-red-600 transition p-1"><i class="fas fa-trash"></i></button>
                     </td>
@@ -1384,10 +1434,10 @@
                 const fechaStr = dec.fechaDecreto ? new Date(dec.fechaDecreto + 'T00:00:00').toLocaleDateString('es-AR') : dec.anioDecreto;
 
                 tr.innerHTML = `
-                    <td class="p-2 font-bold font-mono text-slate-700 whitespace-nowrap"><div>${dec.nroDecreto}</div><div class="text-[10px] text-slate-400 font-normal">${fechaStr}</div></td>
-                    <td class="p-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">${motivoLabel}</span></td>
-                    <td class="p-2 text-slate-600 text-[11px]">${datosExtra}</td>
-                    <td class="p-2 text-slate-400 text-[11px] max-w-[160px] truncate" title="${dec.detalles || ''}">${dec.detalles || ''}</td>
+                    <td class="p-2 font-bold font-mono text-slate-700 whitespace-nowrap"><div>${esc(dec.nroDecreto)}</div><div class="text-[10px] text-slate-400 font-normal">${esc(fechaStr)}</div></td>
+                    <td class="p-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">${esc(motivoLabel)}</span></td>
+                    <td class="p-2 text-slate-600 text-[11px]">${esc(datosExtra)}</td>
+                    <td class="p-2 text-slate-400 text-[11px] max-w-[160px] truncate" title="${esc(dec.detalles || '')}">${esc(dec.detalles || '')}</td>
                     <td class="p-2 text-right">
                         <button onclick="eliminarDecreto('${id}', ${index})" class="text-red-400 hover:text-red-600 transition p-1"><i class="fas fa-trash"></i></button>
                     </td>
@@ -1517,16 +1567,21 @@
         });
         // -----------------------
 
-        window.verDetalle = (legajo, nombre, cuil, fnac, fing, edad, ant, tipo, fretiro) => {
-            document.getElementById('detLegajo').innerText = legajo;
-            document.getElementById('detNombre').innerText = nombre;
-            document.getElementById('detCuil').innerText = 'CUIL: ' + (cuil || 'No especificado');
-            document.getElementById('detNac').innerText = fnac;
-            document.getElementById('detIng').innerText = fing;
-            document.getElementById('detEdad').innerText = edad + ' años';
-            document.getElementById('detAnt').innerText = ant + ' años netos';
-            document.getElementById('detTipo').innerText = tipo;
-            document.getElementById('detRetiro').innerText = fretiro;
+        window.verDetalle = (id) => {
+            const a = window.datosGlobales.find(x => x.id === id);
+            if (!a) return;
+            const fmt = f => f ? new Date(f + "T00:00:00").toLocaleDateString('es-AR') : '-';
+
+            // innerText (no innerHTML): el texto se muestra tal cual, nunca se ejecuta.
+            document.getElementById('detLegajo').innerText = a.legajo ?? '';
+            document.getElementById('detNombre').innerText = a.nombre ?? '';
+            document.getElementById('detCuil').innerText = 'CUIL: ' + (a.cuil || 'No especificado');
+            document.getElementById('detNac').innerText = fmt(a.fNac);
+            document.getElementById('detIng').innerText = fmt(a.fIng);
+            document.getElementById('detEdad').innerText = a.edad + ' años';
+            document.getElementById('detAnt').innerText = a.antiguedad + ' años netos';
+            document.getElementById('detTipo').innerText = a.tipo ?? '';
+            document.getElementById('detRetiro').innerText = a.fechaRetiro ? a.fechaRetiro.toLocaleDateString('es-AR') : '-';
             document.getElementById('modalDetalle').classList.remove('hidden');
             document.getElementById('modalDetalle').classList.add('flex');
         };
@@ -1730,11 +1785,11 @@
                     <td class="p-3 text-center w-10">
                         <input type="checkbox" class="chk-item rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-3.5 h-3.5" onchange="verificarSeleccion()" data-index="${i}">
                     </td>
-                    <td class="p-3 font-mono text-slate-500 text-xs">${item.legajo}</td>
-                    <td class="p-3 font-bold text-slate-700 text-xs uppercase">${item.nombre}</td>
-                    <td class="p-3 text-center text-xs text-slate-500 font-mono">${item.cuil}</td>
-                    <td class="p-3 text-center text-xs text-slate-500">${item.fNac}</td>
-                    <td class="p-3 text-center text-xs text-slate-500">${item.fIng}</td>
+                    <td class="p-3 font-mono text-slate-500 text-xs">${esc(item.legajo)}</td>
+                    <td class="p-3 font-bold text-slate-700 text-xs uppercase">${esc(item.nombre)}</td>
+                    <td class="p-3 text-center text-xs text-slate-500 font-mono">${esc(item.cuil)}</td>
+                    <td class="p-3 text-center text-xs text-slate-500">${esc(item.fNac)}</td>
+                    <td class="p-3 text-center text-xs text-slate-500">${esc(item.fIng)}</td>
                     <td class="p-3 text-right">
                         <button onclick="eliminarFilaImport(${i})" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-times"></i></button>
                     </td>

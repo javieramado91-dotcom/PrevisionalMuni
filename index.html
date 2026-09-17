@@ -363,9 +363,13 @@
                 <div class="flex flex-col gap-3">
                     <input type="text" id="manageUserName" placeholder="USUARIO (Ej: MARIA)" class="w-full p-3 text-sm border border-slate-200 rounded-xl uppercase font-semibold focus:border-blue-500 outline-none bg-white">
                     <div class="flex gap-2">
-                        <input type="text" id="manageUserPass" placeholder="Contraseña" class="w-full p-3 text-sm border border-slate-200 rounded-xl outline-none bg-white">
+                        <input type="password" id="manageUserPass" placeholder="Contraseña (mín. 6)" class="w-full p-3 text-sm border border-slate-200 rounded-xl outline-none bg-white">
                         <button onclick="saveUser()" class="bg-blue-600 text-white px-5 rounded-xl hover:bg-blue-700 transition shadow font-bold"><i class="fas fa-plus"></i></button>
                     </div>
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-500 ml-1 cursor-pointer">
+                        <input type="checkbox" id="manageUserMaster" class="w-4 h-4 rounded"> Administrador (puede gestionar usuarios)
+                    </label>
+                    <p id="manageUserAviso" class="text-xs font-semibold hidden"></p>
                 </div>
             </div>
 
@@ -383,15 +387,20 @@
             
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Nuevo Nombre</label>
-                    <input type="text" id="profileName" class="w-full mt-1 p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase font-bold text-slate-700">
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Usuario</label>
+                    <input type="text" id="profileName" readonly class="w-full mt-1 p-3 text-sm bg-slate-100 border border-slate-200 rounded-xl outline-none uppercase font-bold text-slate-500 cursor-not-allowed">
+                    <p class="text-[10px] text-slate-400 mt-1 ml-1">El nombre de usuario no se puede cambiar: es con el que entrás al sistema.</p>
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">Nueva Clave</label>
-                    <input type="text" id="profilePass" class="w-full mt-1 p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="password" id="profilePass" placeholder="Mínimo 6 caracteres" class="w-full mt-1 p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Repetir Clave</label>
+                    <input type="password" id="profilePass2" placeholder="Repetila para confirmar" class="w-full mt-1 p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
                 <button onclick="saveProfile()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition mt-2">
-                    Actualizar Datos
+                    Cambiar Contraseña
                 </button>
             </div>
         </div>
@@ -420,8 +429,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, where, getDocs, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, getDoc, updateDoc, deleteDoc, where, getDocs, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // Configuración
         const firebaseConfig = {
@@ -436,6 +445,26 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // El login sigue siendo por NOMBRE DE USUARIO (ej: YULI), pero por debajo
+        // Firebase necesita un email. Lo armamos siempre igual a partir del nombre.
+        // ⚠️ Esta función debe ser idéntica a la de migrar_usuarios.html.
+        const DOMINIO_INTERNO = "previsional-muni.web.app";
+        function usuarioAEmail(username) {
+            const slug = (username || "")
+                .trim().toLowerCase()
+                .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                .replace(/[^a-z0-9]/g, '');
+            return slug ? `${slug}@${DOMINIO_INTERNO}` : "";
+        }
+
+        // Evita que un nombre o un texto cargado por el usuario se interprete como HTML.
+        function esc(v) {
+            return String(v ?? "").replace(/[&<>"']/g, c => (
+                { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+            ));
+        }
 
         // State
         let currentUser = null;
@@ -465,89 +494,115 @@
             }
         };
 
-        // --- Auth Logic ---
-        // (Función insegura eliminada)
+        // --- Auth Logic (Firebase Authentication) ---
+        // La contraseña ya no se guarda ni se compara acá: la maneja Firebase,
+        // cifrada del lado de Google. El navegador solo conserva un token de sesión.
+
+        const mostrarErrorLogin = (txt) => {
+            const errorMsg = document.getElementById('loginError');
+            errorMsg.innerHTML = `<i class="fas fa-circle-xmark mr-1"></i> ${esc(txt)}`;
+            errorMsg.classList.remove('hidden');
+        };
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const userIn = document.getElementById('loginUser').value.trim().toUpperCase();
-            const passIn = document.getElementById('loginPass').value.trim();
-            const errorMsg = document.getElementById('loginError');
+            const passIn = document.getElementById('loginPass').value;
+            const email = usuarioAEmail(userIn);
+
+            document.getElementById('loginError').classList.add('hidden');
+
+            if (!email) return mostrarErrorLogin("Nombre de usuario inválido");
 
             try {
-                const usersRef = collection(db, "app_users");
-                const q = query(usersRef, where("username", "==", userIn), where("password", "==", passIn));
-                const snapshot = await getDocs(q);
-
-                if (!snapshot.empty) {
-                    const userData = snapshot.docs[0].data();
-                    loginSuccess({ ...userData, id: snapshot.docs[0].id });
-                    errorMsg.classList.add('hidden');
-                } else {
-                    errorMsg.classList.remove('hidden');
-                }
+                await signInWithEmailAndPassword(auth, email, passIn);
+                // El resto lo maneja onAuthStateChanged.
             } catch (error) {
-                console.error(error);
-                errorMsg.textContent = "Error de conexión";
-                errorMsg.classList.remove('hidden');
+                console.error(error.code);
+                if (error.code === 'auth/network-request-failed') {
+                    mostrarErrorLogin("Error de conexión");
+                } else {
+                    mostrarErrorLogin("Datos incorrectos");
+                }
             }
         });
 
-        function loginSuccess(user) {
-            currentUser = user;
-            // --- NUEVO: GUARDAR SESION ---
-            localStorage.setItem('usuarioActivo', JSON.stringify(user));
-            // -----------------------------
+        // Se dispara al entrar, al salir y al abrir la página con sesión activa.
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                currentUser = null;
+                isMaster = false;
+                dom.mainApp.classList.add('hidden');
+                dom.loginView.classList.remove('hidden');
+                return;
+            }
 
-            isMaster = (user.role === 'master' || user.username === 'YULI');
-            document.getElementById('displayUserName').textContent = user.username;
+            // Estar logueado no alcanza: hace falta un perfil habilitado por un master.
+            let perfil = null;
+            try {
+                const snap = await getDoc(doc(db, "app_users", user.uid));
+                if (snap.exists()) perfil = snap.data();
+            } catch (e) {
+                console.error(e);
+            }
+
+            if (!perfil) {
+                await signOut(auth);
+                mostrarErrorLogin("Tu usuario no tiene permisos asignados");
+                return;
+            }
+
+            abrirSesion(user, perfil);
+        });
+
+        function abrirSesion(user, perfil) {
+            currentUser = { uid: user.uid, username: perfil.username, role: perfil.role || 'user' };
+            isMaster = (currentUser.role === 'master');
+
+            document.getElementById('displayUserName').textContent = currentUser.username;
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginError').classList.add('hidden');
             dom.loginView.classList.add('hidden');
             dom.mainApp.classList.remove('hidden');
-            
-            if (isMaster) {
-                document.getElementById('btnManageUsers').classList.remove('hidden');
-                document.getElementById('btnManageUsers').classList.add('flex');
-            }
+
+            const btnUsers = document.getElementById('btnManageUsers');
+            btnUsers.classList.toggle('hidden', !isMaster);
+            btnUsers.classList.toggle('flex', isMaster);
+
             loadNovedades();
         }
 
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            localStorage.removeItem('usuarioActivo'); // Limpiar sesión
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            await signOut(auth);
             location.reload();
         });
 
         // --- Profile Management ---
         window.openProfileModal = () => {
             document.getElementById('profileName').value = currentUser.username;
-            document.getElementById('profilePass').value = currentUser.password;
+            document.getElementById('profilePass').value = "";
+            document.getElementById('profilePass2').value = "";
             document.getElementById('profileModal').classList.remove('hidden');
         }
 
         window.saveProfile = async () => {
-            const newName = document.getElementById('profileName').value.trim().toUpperCase();
-            const newPass = document.getElementById('profilePass').value.trim();
+            const newPass = document.getElementById('profilePass').value;
+            const repetida = document.getElementById('profilePass2').value;
 
-            if (!newName || !newPass) return alert("Completa todos los campos");
+            if (newPass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres.");
+            if (newPass !== repetida) return alert("Las dos contraseñas no coinciden.");
 
             try {
-                // Actualizar en Firebase
-                await updateDoc(doc(db, "app_users", currentUser.id), {
-                    username: newName,
-                    password: newPass
-                });
-
-                // Actualizar estado local
-                currentUser.username = newName;
-                currentUser.password = newPass;
-                document.getElementById('displayUserName').textContent = newName;
-                // Actualizar storage
-                localStorage.setItem('usuarioActivo', JSON.stringify(currentUser));
-
-                alert("Perfil actualizado correctamente.");
+                await updatePassword(auth.currentUser, newPass);
+                alert("Contraseña actualizada correctamente.");
                 closeModal('profileModal');
             } catch (e) {
                 console.error(e);
-                alert("Error al actualizar perfil.");
+                if (e.code === 'auth/requires-recent-login') {
+                    alert("Por seguridad, cerrá sesión, volvé a entrar y cambiala de nuevo.");
+                } else {
+                    alert("Error al cambiar la contraseña.");
+                }
             }
         }
 
@@ -585,9 +640,11 @@
         }
 
         // --- Data & Logic ---
+        let unsubNovedades = null;
         function loadNovedades() {
+            if (unsubNovedades) unsubNovedades();   // evita suscripciones duplicadas
             const q = query(collection(db, "novedades"), orderBy("fecha", "desc"));
-            onSnapshot(q, (snapshot) => {
+            unsubNovedades = onSnapshot(q, (snapshot) => {
                 allNovedades = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
@@ -615,20 +672,23 @@
         }
 
         // --- EDIT FEATURE ---
-        window.openEditModal = (id, text, priority, author, state) => {
-            const isOwner = author === currentUser.username;
-            const isPending = state === 'pendiente';
+        window.openEditModal = (id) => {
+            const n = allNovedades.find(x => x.id === id);
+            if (!n) return;
+
+            const isOwner = n.autor === currentUser.username;
+            const isPending = n.estado === 'pendiente';
 
             if (!isMaster) {
                 if (!isOwner || !isPending) {
                     return alert("Solo puedes editar tus registros pendientes.");
                 }
             }
-            
+
             document.getElementById('editNovedadId').value = id;
-            document.getElementById('editNovedadText').value = text;
-            document.getElementById('editNovedadPriority').value = priority;
-            
+            document.getElementById('editNovedadText').value = n.detalle;
+            document.getElementById('editNovedadPriority').value = n.importancia;
+
             const modal = document.getElementById('editModal');
             modal.classList.remove('hidden');
         }
@@ -658,9 +718,12 @@
             try { await updateDoc(doc(db, "novedades", id), { estado: "terminado" }); } catch (e) {}
         }
 
-        window.deleteNovedad = async (id, author, state) => {
-            const isOwner = author === currentUser.username;
-            const isPending = state === 'pendiente';
+        window.deleteNovedad = async (id) => {
+            const n = allNovedades.find(x => x.id === id);
+            if (!n) return;
+
+            const isOwner = n.autor === currentUser.username;
+            const isPending = n.estado === 'pendiente';
 
             if (!isMaster) {
                 if (!isOwner || !isPending) {
@@ -710,8 +773,8 @@
                         li.innerHTML = `
                             <div class="mt-1 w-2 h-2 bg-red-500 rounded-full shrink-0"></div>
                             <div>
-                                <p class="text-xs font-bold text-slate-700 line-clamp-2">${n.detalle}</p>
-                                <span class="text-[10px] text-slate-400">${n.fechaDate.toLocaleDateString()} - ${n.autor}</span>
+                                <p class="text-xs font-bold text-slate-700 line-clamp-2">${esc(n.detalle)}</p>
+                                <span class="text-[10px] text-slate-400">${esc(n.fechaDate.toLocaleDateString())} - ${esc(n.autor)}</span>
                             </div>
                         `;
                         alertList.appendChild(li);
@@ -781,13 +844,14 @@
             let actionBtns = '';
             
             if (canEditOrDelete) {
-                const safeText = data.detalle.replace(/'/g, "\\'");
+                // Se pasa SOLO el id: los datos se buscan después en allNovedades.
+                // Así un texto con comillas no puede romper ni inyectar nada.
                 actionBtns += `
-                    <button onclick="openEditModal('${data.id}', '${safeText}', '${data.importancia}', '${data.autor}', '${data.estado}')" 
+                    <button onclick="openEditModal('${esc(data.id)}')"
                         class="text-slate-400 hover:text-blue-600 transition p-1.5 hover:bg-blue-50 rounded-lg">
                         <i class="fas fa-pen"></i>
                     </button>
-                    <button onclick="deleteNovedad('${data.id}', '${data.autor}', '${data.estado}')" 
+                    <button onclick="deleteNovedad('${esc(data.id)}')"
                         class="text-slate-400 hover:text-red-600 transition p-1.5 hover:bg-red-50 rounded-lg">
                         <i class="fas fa-trash-alt"></i>
                     </button>
@@ -811,13 +875,13 @@
                         ${actionBtns}
                     </div>
                 </div>
-                <p class="text-sm text-slate-700 mb-4 font-medium leading-relaxed whitespace-pre-wrap">${data.detalle}</p>
+                <p class="text-sm text-slate-700 mb-4 font-medium leading-relaxed whitespace-pre-wrap">${esc(data.detalle)}</p>
                 <div class="flex justify-between items-center border-t border-slate-100 pt-3 mt-1">
                     <div class="flex items-center gap-1.5">
                         <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-500 border border-slate-200">
-                            ${data.autor.charAt(0)}
+                            ${esc((data.autor || '?').charAt(0))}
                         </div>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase">${data.autor}</span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">${esc(data.autor)}</span>
                     </div>
                     <div>${statusBtns}</div>
                 </div>
@@ -867,47 +931,98 @@
             document.getElementById('userModal').classList.remove('hidden');
         });
 
+        // Para crear cuentas sin perder la sesión del master usamos una segunda
+        // instancia de Firebase: el alta se hace ahí y no toca la sesión de esta pestaña.
+        let appAlta = null;
+        function authAlta() {
+            if (!appAlta) appAlta = initializeApp(firebaseConfig, 'altaUsuarios');
+            return getAuth(appAlta);
+        }
+
+        const avisoUser = (txt, ok) => {
+            const el = document.getElementById('manageUserAviso');
+            el.textContent = txt;
+            el.className = `text-xs font-semibold ${ok ? 'text-emerald-600' : 'text-red-600'}`;
+            el.classList.remove('hidden');
+        };
+
         window.saveUser = async () => {
+            if (!isMaster) return alert("Acceso denegado.");
+
             const name = document.getElementById('manageUserName').value.trim().toUpperCase();
-            const pass = document.getElementById('manageUserPass').value.trim();
-            if (!name || !pass) return;
+            const pass = document.getElementById('manageUserPass').value;
+            const esMaster = document.getElementById('manageUserMaster').checked;
+            const email = usuarioAEmail(name);
+
+            if (!name || !email) return avisoUser("Nombre de usuario inválido.", false);
+            if (pass.length < 6) return avisoUser("La contraseña debe tener al menos 6 caracteres.", false);
+
+            avisoUser("Creando usuario...", true);
             try {
-                 const usersRef = collection(db, "app_users");
-                const q = query(usersRef, where("username", "==", name));
-                const snap = await getDocs(q);
-                if (!snap.empty) {
-                    await updateDoc(doc(db, "app_users", snap.docs[0].id), { password: pass });
-                } else {
-                    await addDoc(usersRef, { username: name, password: pass, role: 'user' });
-                }
+                const aux = authAlta();
+                const cred = await createUserWithEmailAndPassword(aux, email, pass);
+
+                // El perfil lo escribe el MASTER (esta sesión), que es quien tiene permiso.
+                await setDoc(doc(db, "app_users", cred.user.uid), {
+                    username: name,
+                    role: esMaster ? 'master' : 'user'
+                });
+
+                await signOut(aux);
+
                 document.getElementById('manageUserName').value = "";
                 document.getElementById('manageUserPass').value = "";
+                document.getElementById('manageUserMaster').checked = false;
+                avisoUser(`Usuario ${name} creado.`, true);
                 loadUsersList();
-            } catch (e) { alert("Error"); }
+            } catch (e) {
+                console.error(e);
+                if (e.code === 'auth/email-already-in-use') {
+                    avisoUser("Ese nombre de usuario ya existe.", false);
+                } else {
+                    avisoUser("No se pudo crear el usuario.", false);
+                }
+            }
         }
 
         async function loadUsersList() {
             const container = document.getElementById('usersListContainer');
             container.innerHTML = '<p class="text-center p-4 text-xs">Cargando...</p>';
-            const q = query(collection(db, "app_users"));
-            const snap = await getDocs(q);
-            container.innerHTML = "";
-            snap.forEach(doc => {
-                const u = doc.data();
-                const d = document.createElement('div');
-                d.className = "flex justify-between items-center p-3 hover:bg-slate-50";
-                d.innerHTML = `
-                    <div>
-                        <span class="font-bold text-sm text-slate-700">${u.username}</span>
-                        <div class="text-[10px] text-slate-400">Clave: ${u.password}</div>
-                    </div>
-                    ${u.username !== 'YULI' ? `<button onclick="deleteUser('${doc.id}')" class="text-slate-400 hover:text-red-500 px-2"><i class="fas fa-trash"></i></button>` : ''}
-                `;
-                container.appendChild(d);
-            });
+            try {
+                const snap = await getDocs(collection(db, "app_users"));
+                container.innerHTML = "";
+                snap.forEach(docSnap => {
+                    const u = docSnap.data();
+                    const esYo = docSnap.id === currentUser.uid;
+                    const d = document.createElement('div');
+                    d.className = "flex justify-between items-center p-3 hover:bg-slate-50";
+                    d.innerHTML = `
+                        <div>
+                            <span class="font-bold text-sm text-slate-700">${esc(u.username)}</span>
+                            <div class="text-[10px] font-bold uppercase ${u.role === 'master' ? 'text-blue-500' : 'text-slate-400'}">
+                                ${u.role === 'master' ? 'Administrador' : 'Usuario'}${esYo ? ' · vos' : ''}
+                            </div>
+                        </div>
+                        ${!esYo ? `<button onclick="deleteUser('${esc(docSnap.id)}', '${esc(u.username)}')" class="text-slate-400 hover:text-red-500 px-2" title="Quitar acceso"><i class="fas fa-trash"></i></button>` : ''}
+                    `;
+                    container.appendChild(d);
+                });
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<p class="text-center p-4 text-xs text-red-500">No se pudo leer la lista de usuarios.</p>';
+            }
         }
-        window.deleteUser = async (id) => {
-            if(confirm("Eliminar?")) { await deleteDoc(doc(db, "app_users", id)); loadUsersList(); }
+
+        window.deleteUser = async (id, nombre) => {
+            if (!isMaster) return alert("Acceso denegado.");
+            if (!confirm(`¿Quitarle el acceso al sistema a ${nombre}?`)) return;
+            try {
+                await deleteDoc(doc(db, "app_users", id));
+                loadUsersList();
+            } catch (e) {
+                console.error(e);
+                alert("No se pudo quitar el acceso.");
+            }
         }
 
         document.getElementById('authorBtn').addEventListener('click', () => document.getElementById('authorModal').classList.remove('hidden'));
@@ -917,12 +1032,9 @@
         document.getElementById('currentDateDisplay').textContent = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 
         // Init Check
-        // --- AUTO LOGIN ACTIVADO ---
-        const sessionUser = localStorage.getItem('usuarioActivo');
-        if (sessionUser) {
-           loginSuccess(JSON.parse(sessionUser));
-        }
-        
+        // La sesión la restaura Firebase Auth a través de onAuthStateChanged.
+        // Ya no se guarda el usuario (ni su contraseña) en localStorage.
+
     </script>
 </body>
 </html>

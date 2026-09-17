@@ -2,7 +2,7 @@
 
 > Archivo ancla. Se carga al iniciar cada sesión. Sirve como punto de partida
 > para retomar el trabajo sin perder el hilo entre sesiones.
-> Última actualización: 2026-06-27.
+> Última actualización: 2026-09-17.
 
 ---
 
@@ -24,8 +24,10 @@ y los datos viven en la nube en **Firebase / Firestore** (base de datos de Googl
 SISTEMA PREVISIONAL/
 ├── index.html            → Login + tablero de novedades
 ├── fecha_condicion.html  → Núcleo del sistema (gestión de agentes)
+├── firestore.rules       → Reglas de seguridad (se pegan en la consola de Firebase)
+├── migrar_usuarios.html  → Herramienta de un solo uso (NO se sube al repo)
 ├── CLAUDE.md             → Este archivo (contexto)
-└── .gitignore            → Excluye .claude/ y archivos del SO
+└── .gitignore            → Excluye .claude/, migrar_usuarios.html y archivos del SO
 ```
 
 Todo el código (HTML, CSS con Tailwind por CDN, y JS) está **dentro de cada .html**.
@@ -39,12 +41,37 @@ No hay archivos .js o .css separados, ni proceso de build.
   HTML (la apiKey de Firebase es pública del lado cliente, es normal).
 - **Colecciones de Firestore:**
   - `agentes_jubilacion` → cada agente (legajo, nombre, cuil, fNac, fIng, estado, etc.).
-  - `app_users` → usuarios y contraseñas del login.
+  - `app_users` → **perfiles**. El id del documento es el UID de Firebase Auth y solo
+    guarda `{ username, role }`. **Nunca contraseñas.**
   - `novedades` → tablero de novedades en index.html.
 - **Tiempo real:** `fecha_condicion.html` usa `onSnapshot` sobre `agentes_jubilacion`,
   así que cualquier cambio se ve al instante en todas las pantallas conectadas.
-- **Sesión:** el login guarda el usuario en `localStorage` (`usuarioActivo`).
-  Si no hay sesión, `fecha_condicion.html` redirige a `index.html`.
+
+### Autenticación (desde 2026-09-17)
+- El login usa **Firebase Authentication** (email + contraseña). Las contraseñas las
+  guarda Google cifradas: no están en Firestore ni las puede ver nadie.
+- El usuario sigue escribiendo su **nombre** (ej: `YULI`). La función
+  `usuarioAEmail()` lo convierte a `yuli@previsional-muni.web.app`.
+  ⚠️ Esa función está duplicada en `index.html` y `migrar_usuarios.html`:
+  **si se toca una, hay que tocar la otra igual**, o nadie puede entrar.
+- **Doble condición para entrar:** estar logueado en Auth **y** tener un documento
+  en `app_users/{uid}`. Solo un master puede crear ese documento. Así, si un
+  desconocido se registra por su cuenta en Auth, queda sin perfil y no accede a nada.
+- `role: 'master'` habilita la gestión de usuarios. Ya **no** existe el atajo
+  "si se llama YULI es master".
+- La sesión la maneja Firebase (`onAuthStateChanged`). Ya no se usa `localStorage`.
+- `fecha_condicion.html` arranca el listener de agentes recién cuando la sesión
+  está confirmada (`escucharAgentes()`).
+
+### Reglas de seguridad
+Están en `firestore.rules` y se aplican a mano en la consola de Firebase
+(Firestore Database → Reglas → pegar → Publicar). Resumen:
+- `agentes_jubilacion`: leer/escribir solo usuarios habilitados.
+- `novedades`: todos los habilitados leen; editar/borrar solo el autor o un master.
+- `app_users`: cada uno lee su perfil; crear/modificar/borrar solo el master.
+
+⚠️ Si se borra por error el documento `app_users/{uid}` del master, nadie puede
+volver a crear usuarios. Se arregla a mano desde la consola de Firebase.
 
 ### Cálculo previsional (función `calcularPrevision`)
 No se guardan fechas de retiro calculadas: se **recalculan con la fecha de hoy**
@@ -97,7 +124,30 @@ repo tenía la función de "Decretos" que el local no tenía, y casi se pisa.
 
 ---
 
-## 6. Cómo retomar en una sesión nueva
+## 6. ⚠️ Puesta en marcha de la seguridad (hacer UNA vez, en este orden)
+
+El código nuevo ya está escrito, pero **no sirve hasta completar estos pasos**.
+Si se publica el código sin hacer el paso A y B, nadie puede entrar al sistema.
+
+| # | Paso | ¿Rompe algo si me detengo acá? |
+|---|------|--------------------------------|
+| A | Consola Firebase → **Authentication** → Sign-in method → **Email/Password** → Habilitar | No, el sitio viejo sigue funcionando |
+| B | Abrir `migrar_usuarios.html` desde la PC → **Paso 1** y **Paso 2** (crea las cuentas) | No, el sitio viejo sigue funcionando |
+| C | `git push` del código nuevo → probar el login en el sitio | Si falla, `git revert` y vuelve el anterior |
+| D | Volver a `migrar_usuarios.html` → **Paso 3** (borra las contraseñas viejas) | Sí: ya no se puede volver atrás al login viejo |
+| E | Consola Firebase → Firestore → **Reglas** → pegar `firestore.rules` → Publicar | Sí: cierra la base |
+| F | Borrar `migrar_usuarios.html` de la carpeta | No |
+
+Notas:
+- Las contraseñas deben tener **6 caracteres como mínimo** (lo exige Firebase).
+  La página de migración avisa y deja escribir una nueva donde haga falta.
+- En el Paso 2 hay que marcar quién es **Master** (el que administra usuarios).
+- Si se cierra la página entre el Paso 2 y el Paso 3, se puede volver a correr
+  Paso 1 y Paso 2 sin problema: detecta las cuentas ya creadas.
+
+---
+
+## 7. Cómo retomar en una sesión nueva
 
 1. Leer este `CLAUDE.md` y la carpeta de memoria del proyecto.
 2. `git fetch origin && git status` para ver si el repo se adelantó.
@@ -109,7 +159,7 @@ repo tenía la función de "Decretos" que el local no tenía, y casi se pisa.
 
 ---
 
-## 7. Historial de cambios hechos con Claude
+## 8. Historial de cambios hechos con Claude
 
 - **Baja con decreto:** se agregaron campos N° de decreto y año al modal de baja;
   se guardan, se muestran en la tabla y salen en las exportaciones.
@@ -119,10 +169,17 @@ repo tenía la función de "Decretos" que el local no tenía, y casi se pisa.
   con la versión completa del repo (que ya incluía Decretos).
 - **`.gitignore`:** agregado para excluir `.claude/`.
 - **"Cierre de Cómputos":** agregado como opción de organismo en el modal de jubilación.
+- **Migración de seguridad (2026-09-17):** se pasó de un login casero (contraseñas
+  en texto plano en Firestore, sesión falsificable desde el navegador) a Firebase
+  Authentication + reglas de seguridad. Además: se sacó el master hardcodeado
+  `YULI`, se dejó de guardar la contraseña en el navegador y en pantalla, se agregó
+  botón de cerrar sesión en `fecha_condicion.html`, y se escapó el HTML de todos
+  los datos cargados por el usuario (nombres, novedades, decretos, importación)
+  para evitar inyección.
 
 ---
 
-## 8. Preferencias del usuario
+## 9. Preferencias del usuario
 
 - Habla en **español**. Escribe a veces en MAYÚSCULAS (no es énfasis especial).
 - No es programador: explicar en términos simples y concretos, sin jerga innecesaria.
